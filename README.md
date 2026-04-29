@@ -46,9 +46,12 @@ Tokenize real estate. Settle instantly. Borrow non-recourse. No intermediaries.
 
 ## Tech Stack
 
-**Smart Contracts**: Rust + Anchor  
-**Frontend**: React + Phantom integration  
-**Oracles**: Switchboard (valuations)  
+**Smart Contracts**: 
+**Frontend**: 
+**Backend**: 
+**Oracles**: 
+**Lending Protocol**: 
+**Collateral**:
 **Settlement**: Solana devnet  
 
 ---
@@ -60,8 +63,7 @@ Tokenize real estate. Settle instantly. Borrow non-recourse. No intermediaries.
 ### What You'll See:
 
 - Asset creation & metadata
-- Token purchase (real Phantom integration)
-- Yield distribution (live)
+- Token purchase (Phantom integration)
 - Collateral lending UI
 
 ---
