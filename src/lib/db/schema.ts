@@ -1,0 +1,300 @@
+/**
+ * Drizzle ORM Schema for Neon Postgres
+ *
+ * This is the single source of truth for the database schema.
+ * Uses Postgres-native types: numeric, jsonb, timestamptz, boolean.
+ */
+
+import {
+  pgTable,
+  pgEnum,
+  text,
+  uuid,
+  numeric,
+  boolean,
+  timestamp,
+  jsonb,
+  integer,
+  index,
+  unique,
+} from 'drizzle-orm/pg-core';
+
+// Enums
+export const positionStatusEnum = pgEnum('position_status', ['LOCKED', 'ACTIVE', 'REPAID', 'LIQUIDATED', 'CLOSED']);
+export const supplyPositionStatusEnum = pgEnum('supply_position_status', ['ACTIVE', 'CLOSED']);
+export const eventModuleEnum = pgEnum('event_module', ['SWAP', 'LENDING', 'FAUCET', 'TRUST', 'SYSTEM']);
+export const eventStatusEnum = pgEnum('event_status', ['PENDING', 'COMPLETED', 'FAILED']);
+export const assetSideEnum = pgEnum('asset_side', ['COLLATERAL', 'DEBT']);
+export const purchaseOrderStatusEnum = pgEnum('purchase_order_status', [
+  'CREATED',
+  'PAYMENT_PENDING',
+  'PAYMENT_CONFIRMED',
+  'TOKEN_PENDING',
+  'COMPLETED',
+  'FAILED',
+  'CANCELLED',
+]);
+
+// Users table
+export const users = pgTable(
+  'users',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    walletAddress: text('wallet_address').notNull().unique(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    idxUsersWalletAddress: index('idx_users_wallet_address').on(table.walletAddress),
+  })
+);
+
+// Markets table
+export const markets = pgTable(
+  'markets',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull().unique(),
+    collateralCurrency: text('collateral_currency').notNull(),
+    collateralIssuer: text('collateral_issuer').notNull(),
+    debtCurrency: text('debt_currency').notNull(),
+    debtIssuer: text('debt_issuer').notNull(),
+    maxLtvRatio: numeric('max_ltv_ratio', { precision: 10, scale: 6 }).notNull(),
+    liquidationLtvRatio: numeric('liquidation_ltv_ratio', { precision: 10, scale: 6 }).notNull(),
+    baseInterestRate: numeric('base_interest_rate', { precision: 10, scale: 6 }).notNull(),
+    liquidationPenalty: numeric('liquidation_penalty', { precision: 10, scale: 6 }).notNull(),
+    minCollateralAmount: numeric('min_collateral_amount', { precision: 20, scale: 8 }).notNull(),
+    minBorrowAmount: numeric('min_borrow_amount', { precision: 20, scale: 8 }).notNull(),
+    minSupplyAmount: numeric('min_supply_amount', { precision: 20, scale: 8 }).notNull().default('5'),
+    liquidityPoolId: text('liquidity_pool_id'),
+    positionTokenAssetId: text('position_token_asset_id'),
+    liquidityShareScale: integer('liquidity_share_scale').notNull().default(6),
+    totalSupplied: numeric('total_supplied', { precision: 20, scale: 8 }).notNull().default('0'),
+    totalBorrowed: numeric('total_borrowed', { precision: 20, scale: 8 }).notNull().default('0'),
+    globalYieldIndex: numeric('global_yield_index', { precision: 20, scale: 18 }).notNull().default('1.0'),
+    lastIndexUpdate: timestamp('last_index_update', { withTimezone: true }).notNull().defaultNow(),
+    reserveFactor: numeric('reserve_factor', { precision: 10, scale: 6 }).notNull().default('0.1'),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    idxMarketsName: index('idx_markets_name').on(table.name),
+    idxMarketsIsActive: index('idx_markets_is_active').on(table.isActive),
+  })
+);
+
+// Supply positions table
+export const supplyPositions = pgTable(
+  'supply_positions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id),
+    marketId: uuid('market_id')
+      .notNull()
+      .references(() => markets.id),
+    status: supplyPositionStatusEnum('status').notNull().default('ACTIVE'),
+    supplyAmount: numeric('supply_amount', { precision: 20, scale: 8 }).notNull().default('0'),
+    yieldIndex: numeric('yield_index', { precision: 20, scale: 18 }).notNull().default('1.0'),
+    lastYieldUpdate: timestamp('last_yield_update', { withTimezone: true }).notNull().defaultNow(),
+    suppliedAt: timestamp('supplied_at', { withTimezone: true }).notNull().defaultNow(),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    supplyPositionsUserMarketUnique: unique('supply_positions_user_market_unique').on(
+      table.userId,
+      table.marketId
+    ),
+    idxSupplyPositionsMarketStatus: index('idx_supply_positions_market_status').on(
+      table.marketId,
+      table.status
+    ),
+    idxSupplyPositionsUserStatus: index('idx_supply_positions_user_status').on(table.userId, table.status),
+  })
+);
+
+// Positions table
+export const positions = pgTable(
+  'positions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id),
+    marketId: uuid('market_id')
+      .notNull()
+      .references(() => markets.id),
+    status: positionStatusEnum('status').notNull().default('ACTIVE'),
+    collateralAmount: numeric('collateral_amount', { precision: 20, scale: 8 }).notNull().default('0'),
+    loanPrincipal: numeric('loan_principal', { precision: 20, scale: 8 }).notNull().default('0'),
+    interestAccrued: numeric('interest_accrued', { precision: 20, scale: 8 }).notNull().default('0'),
+    lastInterestUpdate: timestamp('last_interest_update', { withTimezone: true }).notNull().defaultNow(),
+    interestRateAtOpen: numeric('interest_rate_at_open', { precision: 10, scale: 6 }).notNull(),
+    openedAt: timestamp('opened_at', { withTimezone: true }).notNull().defaultNow(),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    liquidatedAt: timestamp('liquidated_at', { withTimezone: true }),
+    loanId: text('loan_id'),
+    loanHash: text('loan_hash'),
+    loanTermMonths: integer('loan_term_months').notNull().default(3),
+    loanMaturityDate: timestamp('loan_maturity_date', { withTimezone: true }),
+    loanOpenedAtSlot: integer('loan_opened_at_slot'),
+  },
+  (table) => ({
+    positionsUserMarketUnique: unique('positions_user_market_unique').on(table.userId, table.marketId),
+    idxPositionsUserMarket: index('idx_positions_user_market').on(table.userId, table.marketId),
+    idxPositionsStatus: index('idx_positions_status').on(table.status),
+    idxPositionsMarketStatus: index('idx_positions_market_status').on(table.marketId, table.status),
+  })
+);
+
+// On-chain transactions table
+export const onchainTransactions = pgTable(
+  'onchain_transactions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    txId: text('tx_id').notNull().unique(),
+    slot: integer('slot'),
+    validated: boolean('validated').notNull(),
+    txResult: text('tx_result'),
+    txType: text('tx_type').notNull(),
+    sourceAddress: text('source_address'),
+    destinationAddress: text('destination_address'),
+    currency: text('currency'),
+    issuer: text('issuer'),
+    amount: numeric('amount', { precision: 20, scale: 8 }),
+    observedAt: timestamp('observed_at', { withTimezone: true }).notNull().defaultNow(),
+    rawTxJson: jsonb('raw_tx_json').notNull(),
+    rawMetaJson: jsonb('raw_meta_json'),
+  },
+  (table) => ({
+    idxOnchainTxId: index('idx_onchain_tx_id').on(table.txId),
+    idxOnchainTxDestObserved: index('idx_onchain_tx_dest_observed').on(
+      table.destinationAddress,
+      table.observedAt
+    ),
+  })
+);
+
+// App events table
+export const appEvents = pgTable(
+  'app_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    eventType: text('event_type').notNull(),
+    module: eventModuleEnum('module').notNull(),
+    status: eventStatusEnum('status').notNull(),
+    userAddress: text('user_address'),
+    marketId: uuid('market_id').references(() => markets.id),
+    positionId: uuid('position_id').references(() => positions.id),
+    onchainTxId: uuid('onchain_tx_id').references(() => onchainTransactions.id),
+    idempotencyKey: text('idempotency_key').unique(),
+    amount: numeric('amount', { precision: 20, scale: 8 }),
+    currency: text('currency'),
+    errorCode: text('error_code'),
+    errorMessage: text('error_message'),
+    payload: jsonb('payload').notNull().default({}),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    idxAppEventsModuleCreated: index('idx_app_events_module_created').on(table.module, table.createdAt),
+    idxAppEventsUserAddressCreated: index('idx_app_events_user_address_created').on(
+      table.userAddress,
+      table.createdAt
+    ),
+    idxAppEventsPositionCreated: index('idx_app_events_position_created').on(
+      table.positionId,
+      table.createdAt
+    ),
+    idxAppEventsIdempotency: index('idx_app_events_idempotency').on(table.idempotencyKey),
+  })
+);
+
+export const purchaseOrders = pgTable(
+  'purchase_orders',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    idempotencyKey: text('idempotency_key').notNull().unique(),
+    status: purchaseOrderStatusEnum('status').notNull().default('CREATED'),
+    userAddress: text('user_address').notNull(),
+    hotelId: text('hotel_id').notNull(),
+    unitId: text('unit_id').notNull(),
+    rwaSymbol: text('rwa_symbol').notNull(),
+    rwaCurrency: text('rwa_currency').notNull(),
+    rwaIssuer: text('rwa_issuer').notNull(),
+    paymentCurrency: text('payment_currency').notNull(),
+    paymentIssuer: text('payment_issuer').notNull(),
+    tokenAmount: numeric('token_amount', { precision: 20, scale: 8 }).notNull(),
+    pricePerTokenUsd: numeric('price_per_token_usd', { precision: 20, scale: 8 }).notNull(),
+    totalPaymentAmount: numeric('total_payment_amount', { precision: 20, scale: 8 }).notNull(),
+    paymentTxHash: text('payment_tx_hash'),
+    tokenTxHash: text('token_tx_hash'),
+    errorCode: text('error_code'),
+    errorMessage: text('error_message'),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    idxPurchaseOrdersUserCreated: index('idx_purchase_orders_user_created').on(
+      table.userAddress,
+      table.createdAt
+    ),
+    idxPurchaseOrdersStatusCreated: index('idx_purchase_orders_status_created').on(
+      table.status,
+      table.createdAt
+    ),
+    idxPurchaseOrdersHotelUnit: index('idx_purchase_orders_hotel_unit').on(table.hotelId, table.unitId),
+  })
+);
+
+// Price oracle table
+export const priceOracle = pgTable(
+  'price_oracle',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    marketId: uuid('market_id')
+      .notNull()
+      .references(() => markets.id),
+    assetSide: assetSideEnum('asset_side').notNull(),
+    priceUsd: numeric('price_usd', { precision: 20, scale: 8 }).notNull(),
+    source: text('source').notNull().default('MOCK'),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    priceOracleMarketSideUnique: unique('price_oracle_market_side_unique').on(
+      table.marketId,
+      table.assetSide
+    ),
+    idxPriceOracleMarketSide: index('idx_price_oracle_market_side').on(table.marketId, table.assetSide),
+  })
+);
+
+// Type exports for use in application code
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+
+export type Market = typeof markets.$inferSelect;
+export type NewMarket = typeof markets.$inferInsert;
+
+export type Position = typeof positions.$inferSelect;
+export type NewPosition = typeof positions.$inferInsert;
+
+export type SupplyPosition = typeof supplyPositions.$inferSelect;
+export type NewSupplyPosition = typeof supplyPositions.$inferInsert;
+
+export type OnchainTransaction = typeof onchainTransactions.$inferSelect;
+export type NewOnchainTransaction = typeof onchainTransactions.$inferInsert;
+
+export type AppEvent = typeof appEvents.$inferSelect;
+export type NewAppEvent = typeof appEvents.$inferInsert;
+
+export type PurchaseOrder = typeof purchaseOrders.$inferSelect;
+export type NewPurchaseOrder = typeof purchaseOrders.$inferInsert;
+
+export type PriceOracleRow = typeof priceOracle.$inferSelect;
+export type NewPriceOracleRow = typeof priceOracle.$inferInsert;
