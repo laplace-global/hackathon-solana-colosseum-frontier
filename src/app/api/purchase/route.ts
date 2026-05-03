@@ -128,11 +128,11 @@ export async function POST(request: NextRequest) {
     const assetDefinitions = buildAssetDefinitions(markets);
     const treasuryAccount = getTreasuryAccount();
     const treasuryAddress = getTreasuryAddress();
-    const paymentAsset = getAssetBySymbol(assetDefinitions, 'RLUSD');
+    const paymentAsset = getAssetBySymbol(assetDefinitions, 'USDC');
     const rwaAsset = getAssetBySymbol(assetDefinitions, rwaSymbol);
 
     if (!paymentAsset || paymentAsset.kind !== 'token' || !paymentAsset.assetId) {
-      return toErrorResponse('MISSING_PAYMENT_ASSET', 'RLUSD asset is not configured', 500);
+      return toErrorResponse('MISSING_PAYMENT_ASSET', 'USDC asset is not configured', 500);
     }
     if (!rwaAsset || rwaAsset.kind !== 'token' || !rwaAsset.assetId) {
       return toErrorResponse('MISSING_RWA_ASSET', `${rwaSymbol} asset is not configured`, 500);

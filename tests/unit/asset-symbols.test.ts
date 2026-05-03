@@ -11,17 +11,23 @@ import {
 describe('asset-symbols', () => {
   it('resolves supported symbols case-insensitively', () => {
     assert.equal(getAssetId('sail'), ASSET_ID_BY_SYMBOL.SAIL);
-    assert.equal(getAssetId('RLUSD'), ASSET_ID_BY_SYMBOL.RLUSD);
+    assert.equal(getAssetId('USDC'), ASSET_ID_BY_SYMBOL.USDC);
   });
 
   it('maps canonical asset ids back to symbols', () => {
     assert.equal(getAssetSymbol(ASSET_ID_BY_SYMBOL.NYRA), 'NYRA');
-    assert.equal(getAssetSymbol('rlusd'), 'RLUSD');
+    assert.equal(getAssetSymbol('usdc'), 'USDC');
   });
 
   it('normalizes symbols to canonical uppercase asset ids', () => {
     assert.equal(normalizeAssetId('sail'), ASSET_ID_BY_SYMBOL.SAIL);
-    assert.equal(normalizeAssetId('RLUSD'), ASSET_ID_BY_SYMBOL.RLUSD);
+    assert.equal(normalizeAssetId('USDC'), ASSET_ID_BY_SYMBOL.USDC);
+  });
+
+  it('maps legacy stablecoin aliases to USDC', () => {
+    assert.equal(getAssetSymbol('RLUSD'), 'USDC');
+    assert.equal(getAssetSymbol('524C555344000000000000000000000000000000'), 'USDC');
+    assert.equal(normalizeAssetId('RLUSD'), ASSET_ID_BY_SYMBOL.USDC);
   });
 
   it('passes through unknown assets while uppercasing them', () => {

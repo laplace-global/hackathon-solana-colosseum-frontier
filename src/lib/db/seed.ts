@@ -12,7 +12,7 @@ import { ASSET_ID_BY_SYMBOL } from '@/lib/assets/asset-symbols';
 interface SeedMarketAssets {
   sailMintAddress: string;
   nyraMintAddress: string;
-  rlusdMintAddress: string;
+  usdcMintAddress: string;
 }
 
 /**
@@ -21,19 +21,19 @@ interface SeedMarketAssets {
 export async function seedMarket(assets: SeedMarketAssets): Promise<string> {
   const defaults = [
     {
-      name: 'SAIL-RLUSD',
+      name: 'SAIL-USDC',
       collateralCurrency: ASSET_ID_BY_SYMBOL.SAIL,
-      debtCurrency: ASSET_ID_BY_SYMBOL.RLUSD,
+      debtCurrency: ASSET_ID_BY_SYMBOL.USDC,
       collateralIssuer: assets.sailMintAddress,
-      debtIssuer: assets.rlusdMintAddress,
+      debtIssuer: assets.usdcMintAddress,
       collateralPriceUsd: '100.0',
     },
     {
-      name: 'NYRA-RLUSD',
+      name: 'NYRA-USDC',
       collateralCurrency: ASSET_ID_BY_SYMBOL.NYRA,
-      debtCurrency: ASSET_ID_BY_SYMBOL.RLUSD,
+      debtCurrency: ASSET_ID_BY_SYMBOL.USDC,
       collateralIssuer: assets.nyraMintAddress,
-      debtIssuer: assets.rlusdMintAddress,
+      debtIssuer: assets.usdcMintAddress,
       collateralPriceUsd: '100.0',
     },
   ];

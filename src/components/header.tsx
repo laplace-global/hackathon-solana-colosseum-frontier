@@ -4,110 +4,127 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { LoginDialog } from '@/components/login-dialog';
 import { UserMenu } from '@/components/user-menu';
-import { useAuth } from '@/contexts/auth-context';
+import { BrandMark } from '@/components/brand-mark';
 import { Menu, X } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
 
 const navLinks = [
+  { href: '/', label: 'Home' },
   { href: '/discover', label: 'Properties' },
   { href: '/portfolio', label: 'Portfolio' },
-  { href: '/borrow', label: 'Borrow' },
+  { href: '/borrow', label: 'Finance' },
   { href: '/lend', label: 'Lend' },
-  { href: '/about', label: 'About' },
 ];
 
 export function Header() {
-  const [solid, setSolid] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isSolid, setIsSolid] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
-    const onScroll = () => setSolid(window.scrollY > 40);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const handleScroll = () => setIsSolid(window.scrollY > 40);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <>
-      <header
-        className={`fixed inset-x-0 top-0 z-50 transition-all duration-700 ease-[cubic-bezier(.16,1,.3,1)] ${
-          solid
-            ? 'border-b border-white/5 bg-background/90 px-6 py-[18px] backdrop-blur-2xl md:px-16'
-            : 'border-b border-transparent px-6 py-9 md:px-16'
-        }`}
-      >
-        <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="text-[12px] text-primary">✦</span>
-            <span className="text-uilink font-light tracking-[0.45em]">LAPLACE</span>
-          </Link>
+    <header
+      className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-700 ease-[cubic-bezier(.16,1,.3,1)] ${
+        isSolid
+          ? 'border-border bg-background/95 px-6 py-[18px] backdrop-blur-2xl md:px-16'
+          : 'border-transparent px-6 py-9 md:px-16'
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <Link href="/" className="flex items-center">
+          <BrandMark />
+        </Link>
 
-          <nav className="hidden items-center gap-12 md:flex">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-uilink text-foreground/40 transition-colors duration-300 hover:text-foreground"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+        <nav className="hidden items-center gap-12 md:flex">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-[8px] font-light uppercase tracking-[0.34em] text-foreground/35 transition-colors duration-300 hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
 
-          <div className="hidden items-center gap-6 md:flex">
-            {user ? (
-              <UserMenu />
-            ) : (
-              <button
-                type="button"
-                onClick={() => setLoginOpen(true)}
-                className="text-uibtn border border-foreground/20 px-7 py-3 text-foreground/70 transition-colors duration-300 hover:border-foreground/50 hover:text-foreground"
-              >
-                Connect Wallet
-              </button>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            className="md:hidden"
-            aria-label="Toggle menu"
+        <div className="hidden items-center gap-5 md:flex">
+          <Link
+            href="#founding"
+            className="text-[8px] font-light uppercase tracking-[0.28em] text-foreground/35 transition-colors hover:text-foreground"
           >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+            Get Notified
+          </Link>
+          {user ? (
+            <UserMenu />
+          ) : (
+            <button
+              type="button"
+              className="inline-flex items-center gap-3 border border-foreground/20 px-6 py-3 text-[8px] font-light uppercase tracking-[0.24em] text-foreground/70 transition-colors duration-300 hover:border-foreground/50 hover:text-foreground"
+              onClick={() => setIsLoginOpen(true)}
+            >
+              <span className="relative size-3.5 rounded-[3px] bg-[var(--lp-solana)]">
+                <span className="absolute left-[3px] top-[3px] h-[8px] w-[8px] rounded-[2px] border border-white/85" />
+              </span>
+              Connect Wallet
+            </button>
+          )}
         </div>
 
-        {menuOpen && (
-          <nav className="mt-6 flex flex-col gap-4 border-t border-white/5 pt-6 md:hidden">
+        <div className="flex items-center gap-2 md:hidden">
+          {user ? (
+            <UserMenu />
+          ) : (
+            <button
+              type="button"
+              className="text-uibtn border border-foreground/20 px-4 py-2 text-foreground/70"
+              onClick={() => setIsLoginOpen(true)}
+            >
+              Connect
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+            className="text-foreground/70"
+          >
+            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+      </div>
+
+      {isMenuOpen && (
+        <div className="mt-6 border-t border-border bg-background/95 pt-6 md:hidden">
+          <nav className="flex flex-col gap-4">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                onClick={() => setMenuOpen(false)}
                 className="text-uilink text-foreground/60 hover:text-foreground"
+                onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}
               </Link>
             ))}
-            {!user && (
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  setLoginOpen(true);
-                }}
-                className="text-uibtn mt-2 border border-foreground/20 px-7 py-3 text-foreground/70"
-              >
-                Connect Wallet
-              </button>
-            )}
+            <Link
+              href="/admin"
+              className="text-uilink text-foreground/35 hover:text-foreground"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Admin
+            </Link>
           </nav>
-        )}
-      </header>
+        </div>
+      )}
 
-      <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
-    </>
+      <LoginDialog open={isLoginOpen} onOpenChange={setIsLoginOpen} />
+    </header>
   );
 }

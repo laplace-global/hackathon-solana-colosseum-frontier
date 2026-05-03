@@ -105,7 +105,7 @@ export function OfframpDialog({
       return;
     }
     if (amount > availableBalance) {
-      setErrorMessage('Insufficient RLUSD balance.');
+      setErrorMessage('Insufficient USDC balance.');
       return;
     }
 
@@ -116,7 +116,7 @@ export function OfframpDialog({
   const handleConfirm = async () => {
     if (!selectedMethod) return;
     if (amount < selectedMethod.minAmount) {
-      setErrorMessage(`Minimum for ${selectedMethod.name} is ${selectedMethod.minAmount} RLUSD.`);
+      setErrorMessage(`Minimum for ${selectedMethod.name} is ${selectedMethod.minAmount} USDC.`);
       return;
     }
 
@@ -148,7 +148,7 @@ export function OfframpDialog({
       setStep('success');
       onSuccess?.(amount);
       toast.success('Withdrawal submitted', {
-        description: `${amount.toFixed(2)} RLUSD sent for off-ramp settlement.`,
+        description: `${amount.toFixed(2)} USDC sent for off-ramp settlement.`,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to submit withdrawal.';
@@ -166,14 +166,14 @@ export function OfframpDialog({
         {step === 'amount' && (
           <>
             <DialogHeader>
-              <DialogTitle>Withdraw RLUSD</DialogTitle>
-              <DialogDescription>Send RLUSD from your wallet to the treasury account for off-ramp settlement.</DialogDescription>
+              <DialogTitle>Withdraw USDC</DialogTitle>
+              <DialogDescription>Send USDC from your wallet to the treasury account for off-ramp settlement.</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
               <Card className="rounded-none border-border bg-card">
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground">Available RLUSD</p>
+                  <p className="text-sm text-muted-foreground">Available USDC</p>
                   <p className="text-2xl font-bold">{availableBalance.toFixed(2)}</p>
                 </CardContent>
               </Card>
@@ -189,7 +189,7 @@ export function OfframpDialog({
                   onChange={(event) => setAmount(Number.parseFloat(event.target.value) || 0)}
                   className="w-full border border-border bg-background px-4 py-3 text-lg font-semibold text-foreground"
                 />
-                <p className="text-xs text-muted-foreground">Max: {availableBalance.toFixed(2)} RLUSD</p>
+                <p className="text-xs text-muted-foreground">Max: {availableBalance.toFixed(2)} USDC</p>
               </div>
 
               {errorMessage ? (
@@ -239,7 +239,7 @@ export function OfframpDialog({
                         <div>
                           <p className="font-medium">{method.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            Min {method.minAmount} RLUSD • Fee {method.fee} • {method.processingTime}
+                            Min {method.minAmount} USDC • Fee {method.fee} • {method.processingTime}
                           </p>
                         </div>
                       </div>
@@ -253,11 +253,11 @@ export function OfframpDialog({
                 <CardContent className="space-y-2 p-4 text-sm">
                   <div className="flex items-center justify-between">
                     <span>Withdrawal amount</span>
-                    <span>{amount.toFixed(2)} RLUSD</span>
+                    <span>{amount.toFixed(2)} USDC</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Fee</span>
-                    <span>{fee.toFixed(2)} RLUSD</span>
+                    <span>{fee.toFixed(2)} USDC</span>
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span>Estimated fiat settlement</span>
@@ -289,7 +289,7 @@ export function OfframpDialog({
           <>
             <DialogHeader>
               <DialogTitle>Processing Withdrawal</DialogTitle>
-              <DialogDescription>Signing and submitting your RLUSD transfer.</DialogDescription>
+              <DialogDescription>Signing and submitting your USDC transfer.</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
@@ -327,7 +327,7 @@ export function OfframpDialog({
                 <CardContent className="space-y-2 p-4 text-sm">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Sent</span>
-                    <span className="font-semibold">{amount.toFixed(2)} RLUSD</span>
+                    <span className="font-semibold">{amount.toFixed(2)} USDC</span>
                   </div>
                   {txHash ? (
                     <div className="flex items-center justify-between">

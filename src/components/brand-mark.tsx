@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils';
-import { Building2 } from 'lucide-react';
 
 interface BrandMarkProps {
   className?: string;
@@ -8,9 +7,14 @@ interface BrandMarkProps {
 
 export function BrandMark({ className, textClassName }: BrandMarkProps) {
   return (
-    <div className={cn('flex items-center gap-3', className)}>
-      <Building2 aria-hidden="true" className="h-7 w-7" strokeWidth={1} />
-      <span className={cn('font-extralight font-lg uppercase tracking-[0.45em]', textClassName)}>LAPLACE</span>
+    <div
+      className={cn(
+        'inline-flex h-7 items-center gap-1.5 bg-black px-4 text-[13px] font-light normal-case tracking-normal text-white',
+        className
+      )}
+    >
+      <span className={cn('font-serif leading-none', textClassName)}>Laplace</span>
+      <span aria-hidden="true" className="mt-[-7px] h-1 w-1 bg-primary" />
     </div>
   );
 }

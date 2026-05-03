@@ -7,7 +7,7 @@
  * - DATABASE_URL
  * - SAIL_MINT_ADDRESS
  * - NYRA_MINT_ADDRESS
- * - RLUSD_MINT_ADDRESS
+ * - USDC_MINT_ADDRESS
  *
  * Run with: npx tsx scripts/init-db.ts
  */
@@ -43,13 +43,13 @@ async function main() {
     const marketId = await seedMarket({
       sailMintAddress: requireEnv('SAIL_MINT_ADDRESS'),
       nyraMintAddress: requireEnv('NYRA_MINT_ADDRESS'),
-      rlusdMintAddress: requireEnv('RLUSD_MINT_ADDRESS'),
+      usdcMintAddress: requireEnv('USDC_MINT_ADDRESS'),
     });
 
     console.log(`Primary market ID: ${marketId}`);
     console.log();
 
-    for (const name of ['SAIL-RLUSD', 'NYRA-RLUSD']) {
+    for (const name of ['SAIL-USDC', 'NYRA-USDC']) {
       const market = await getMarketByName(name);
       if (!market) {
         throw new Error(`Market ${name} was not created successfully`);

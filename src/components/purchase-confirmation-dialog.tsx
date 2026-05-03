@@ -32,11 +32,11 @@ interface PurchaseConfirmationDialogProps {
   tokenPrice: number;
   totalPrice: number;
   roiPercentage: number;
-  rlusdBalance: number;
+  usdcBalance: number;
   userAddress: string | null;
   accountSecret: string | null;
-  hasRlusdAsset: boolean;
-  refreshBalances: () => Promise<{ rlusdBalance: number; hasRlusdAsset: boolean } | null>;
+  hasUsdcAsset: boolean;
+  refreshBalances: () => Promise<{ usdcBalance: number; hasUsdcAsset: boolean } | null>;
   onOnrampRequest: (amount: number, onComplete: () => void) => void;
   onConfirm: () => void;
   onSuccess?: () => void;
@@ -44,7 +44,7 @@ interface PurchaseConfirmationDialogProps {
 
 const walletProcessingSteps = [
   'Checking wallet and balance...',
-  'Submitting RLUSD payment...',
+  'Submitting USDC payment...',
   'Confirming transaction...',
   'Finalizing purchase...',
 ];
@@ -70,10 +70,10 @@ export function PurchaseConfirmationDialog({
   tokenPrice,
   totalPrice,
   roiPercentage,
-  rlusdBalance,
+  usdcBalance,
   userAddress,
   accountSecret,
-  hasRlusdAsset,
+  hasUsdcAsset,
   refreshBalances,
   onOnrampRequest,
   onConfirm,
@@ -87,8 +87,8 @@ export function PurchaseConfirmationDialog({
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('wallet');
 
   const annualReturn = useMemo(() => (totalPrice * roiPercentage) / 100, [roiPercentage, totalPrice]);
-  const deficit = Math.max(0, totalPrice - rlusdBalance);
-  const canPayFromWallet = rlusdBalance >= totalPrice;
+  const deficit = Math.max(0, totalPrice - usdcBalance);
+  const canPayFromWallet = usdcBalance >= totalPrice;
   const activeProcessingSteps = selectedPaymentMethod === 'wallet' ? walletProcessingSteps : directProcessingSteps;
 
   const resetState = () => {
@@ -124,9 +124,9 @@ export function PurchaseConfirmationDialog({
       return;
     }
 
-    if (!hasRlusdAsset) {
+    if (!hasUsdcAsset) {
       setStatus('error');
-      setErrorMessage('RLUSD is not ready in this wallet. Top up or refresh your wallet state before purchasing.');
+      setErrorMessage('USDC is not ready in this wallet. Top up or refresh your wallet state before purchasing.');
       return;
     }
 
@@ -137,14 +137,14 @@ export function PurchaseConfirmationDialog({
     try {
       setProcessingStep(1);
       const snapshot = await refreshBalances();
-      const latestBalance = snapshot?.rlusdBalance ?? rlusdBalance;
-      const assetReady = snapshot?.hasRlusdAsset ?? hasRlusdAsset;
+      const latestBalance = snapshot?.usdcBalance ?? usdcBalance;
+      const assetReady = snapshot?.hasUsdcAsset ?? hasUsdcAsset;
       if (!assetReady) {
-        throw new Error('RLUSD is not ready in this wallet at execution time.');
+        throw new Error('USDC is not ready in this wallet at execution time.');
       }
       if (latestBalance < totalPrice) {
         const shortfall = totalPrice - latestBalance;
-        throw new Error(`Insufficient RLUSD at execution time. Need ${shortfall.toFixed(2)} more RLUSD.`);
+        throw new Error(`Insufficient USDC at execution time. Need ${shortfall.toFixed(2)} more USDC.`);
       }
 
       setProcessingStep(2);
@@ -232,7 +232,7 @@ export function PurchaseConfirmationDialog({
   };
 
   const handleTopUp = () => {
-    const shortfall = Math.max(0, totalPrice - rlusdBalance);
+    const shortfall = Math.max(0, totalPrice - usdcBalance);
     const buffer = Math.max(10, shortfall * 0.1);
     const topUpAmount = shortfall + buffer;
 
@@ -343,16 +343,16 @@ export function PurchaseConfirmationDialog({
                     <div>
                       <p className="font-medium">From Wallet</p>
                       <p className="text-sm text-muted-foreground">
-                        Balance: {rlusdBalance.toFixed(2)} RLUSD
+                        Balance: {usdcBalance.toFixed(2)} USDC
                       </p>
-                      {!hasRlusdAsset ? (
+                      {!hasUsdcAsset ? (
                         <p className="text-sm text-muted-foreground">
-                          RLUSD not ready in wallet
+                          USDC not ready in wallet
                         </p>
                       ) : null}
                       {!canPayFromWallet ? (
                         <p className="text-sm text-destructive">
-                          Shortfall: {deficit.toFixed(2)} RLUSD
+                          Shortfall: {deficit.toFixed(2)} USDC
                         </p>
                       ) : null}
                     </div>
@@ -405,14 +405,14 @@ export function PurchaseConfirmationDialog({
                   canPayFromWallet ? (
                     <Button
                       onClick={() => void handleWalletPayment()}
-                      disabled={!hasRlusdAsset || tokenAmount < 1 || tokenAmount > maxTokenAmount}
+                      disabled={!hasUsdcAsset || tokenAmount < 1 || tokenAmount > maxTokenAmount}
                       data-testid="purchase-pay-wallet"
                     >
                       <Wallet className="mr-1 h-4 w-4" />
                       Pay from Wallet
                     </Button>
                   ) : (
-                    <Button onClick={handleTopUp} disabled={!hasRlusdAsset} data-testid="purchase-topup-pay">
+                    <Button onClick={handleTopUp} disabled={!hasUsdcAsset} data-testid="purchase-topup-pay">
                       <Wallet className="mr-1 h-4 w-4" />
                       Top up and Pay
                     </Button>
@@ -506,7 +506,7 @@ export function PurchaseConfirmationDialog({
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Paid</span>
-                    <span className="font-medium">{totalPrice.toFixed(2)} RLUSD</span>
+                    <span className="font-medium">{totalPrice.toFixed(2)} USDC</span>
                   </div>
                   {txHash ? (
                     <div className="flex items-center justify-between">

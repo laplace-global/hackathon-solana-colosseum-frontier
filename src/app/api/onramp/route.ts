@@ -34,10 +34,10 @@ export async function POST(request: NextRequest) {
 
     const markets = await getAllActiveMarkets();
     const assetDefinitions = buildAssetDefinitions(markets);
-    const paymentAsset = getAssetBySymbol(assetDefinitions, 'RLUSD');
+    const paymentAsset = getAssetBySymbol(assetDefinitions, 'USDC');
     if (!paymentAsset || paymentAsset.kind !== 'token' || !paymentAsset.assetId) {
       return NextResponse.json(
-        { success: false, error: 'RLUSD asset is not configured for the active market set' },
+        { success: false, error: 'USDC asset is not configured for the active market set' },
         { status: 500 }
       );
     }
