@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  devIndicators: false,
   // Enable Turbopack (default in Next.js 16)
   turbopack: {},
 };

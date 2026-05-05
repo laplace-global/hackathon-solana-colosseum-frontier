@@ -1,31 +1,30 @@
 ---
-version: alpha
+version: alpha-v6
 name: Laplace Luxury Ledger
-source: /Users/rindo/Desktop/laplace-app (5).html
-description: A cinematic luxury real-estate ledger for tokenized property ownership on Solana.
+source: /Users/rindo/Desktop/laplace-app-v6.html
+description: A cinematic Solana real-estate protocol for 1-click property ownership, collateralized borrowing, and reinvested liquidity.
 colors:
-  ink: "#0A0906"
-  ink-raised: "#141310"
-  fog: "#1C1B18"
-  line: "#252420"
-  paper: "#F0EAE0"
-  paper-muted: "#A8A090"
-  teal: "#2ABFBF"
-  teal-dim: "#0E2A28"
-  solana: "#9945FF"
-  danger: "#FF5050"
-  warning: "#FFAA00"
+  hero-ink: "#0C0B09"
+  page-ink: "#FAFAF8"
+  page-raised: "#F4F3EF"
+  text-ink: "#1A1916"
+  text-muted: "#3D3B35"
+  line: "rgba(0,0,0,.08)"
+  tiffany: "#81D8D0"
+  solana-live: "#14F195"
+  solana-purple: "#9945FF"
+  gold: "#C8A96E"
 typography:
   display-xl:
     fontFamily: Cormorant Garamond
-    fontSize: 84px
-    fontWeight: 300
-    lineHeight: 1.04
+    fontSize: 116px
+    fontWeight: 200
+    lineHeight: 0.98
     letterSpacing: 0
   headline-lg:
     fontFamily: Cormorant Garamond
     fontSize: 54px
-    fontWeight: 300
+    fontWeight: 200
     lineHeight: 1.1
     letterSpacing: 0
   headline-md:
@@ -35,33 +34,33 @@ typography:
     lineHeight: 1.2
     letterSpacing: 0
   body-editorial:
-    fontFamily: Inter
+    fontFamily: DM Sans
     fontSize: 12px
     fontWeight: 300
     lineHeight: 1.9
-    letterSpacing: 0.08em
+    letterSpacing: 0.04em
   body-md:
-    fontFamily: Inter
+    fontFamily: DM Sans
     fontSize: 14px
     fontWeight: 300
     lineHeight: 1.8
     letterSpacing: 0.04em
   label-caps:
-    fontFamily: Inter
-    fontSize: 8px
+    fontFamily: DM Sans
+    fontSize: 7.5px
     fontWeight: 400
     lineHeight: 1.2
-    letterSpacing: 0.34em
+    letterSpacing: 0.32em
   label-action:
-    fontFamily: Inter
-    fontSize: 9px
-    fontWeight: 400
+    fontFamily: DM Sans
+    fontSize: 8px
+    fontWeight: 500
     lineHeight: 1
-    letterSpacing: 0.26em
+    letterSpacing: 0.24em
 spacing:
   page-desktop: 64px
-  page-mobile: 24px
-  section: 140px
+  page-mobile: 20px
+  section: 100px
   panel: 24px
   dense-row: 16px
 radii:
@@ -72,89 +71,103 @@ motion:
   page-reveal: 900ms cubic-bezier(.16, 1, .3, 1)
   hero-fade: 2400ms cubic-bezier(.6, 0, .4, 1)
   hover-image: 1200ms cubic-bezier(.16, 1, .3, 1)
+  hero-canvas: continuous low-amplitude light drift
 ---
 
 ## Overview
 
-Laplace should feel like an invitation-only property ledger: quiet, cinematic, precise, and expensive. The interface borrows from luxury real-estate editorial sites rather than a generic crypto dashboard. Large photography carries the first impression. Thin rules, restrained typography, and small technical labels make the product feel institutional without becoming sterile.
+Laplace should feel like a private protocol for owning the world's penthouses from a Solana wallet. Version 6 moves the first impression away from pure property photography and into a cinematic brand scene: dark horizon light, architectural grid, slow canvas streaks, and a precise waitlist layer. The tone is still luxury real estate, but now with a stronger "live protocol" signal.
 
-The emotional target is calm confidence. Users should understand that this is a financial product, but the first visual signal is ownership of rare physical assets. Solana is present as infrastructure, not as a decorative crypto theme.
+The emotional target is quiet urgency. Users should immediately read "1 SOL, 1 click" and understand that ownership, borrowing, and reinvestment are one connected flow. Solana should appear as active infrastructure through small live badges, not as broad crypto decoration.
 
 ## Source HTML Translation
 
-The reference HTML defines the visual grammar through five recurring motifs:
+The reference HTML defines the visual grammar through these motifs:
 
-- Full-bleed property photography with a dark vertical veil.
-- Cormorant Garamond for hero, property names, and financial values.
-- Inter for navigation, controls, tables, and dense labels.
-- One-pixel dividers, square components, and almost no shadow.
-- Teal as the active action/yield signal, with Solana purple reserved for chain status.
-
-The Next app should use these motifs across marketing, catalog, wallet, portfolio, borrow, lend, and admin surfaces. Dense operational screens can be more tabular, but they should still use the same dark surfaces, serif numeric hierarchy, compact uppercase labels, and hairline borders.
+- Full-viewport hero built from canvas light, radial glow, a faint architectural grid, and film grain.
+- A small founding-member access block in the upper-left of the hero.
+- A large serif one-liner at the bottom: "The world's penthouses. 1 SOL. 1 click."
+- A right-bottom live demo badge with Solana Devnet status and compact metrics.
+- Light editorial sections after the hero: pale page surfaces, dark text, thin rules, and image-led property cards.
+- Three protocol cards: Invest, Collateral & Borrow, and Reinvest.
+- A final founding-member waitlist band with benefit cells and a compact email capture.
 
 ## Colors
 
-- **Ink (#0A0906):** Page background, hero overlays, and immersive full-bleed sections.
-- **Ink Raised (#141310):** Cards, nav solid state, dialogs, popovers, and repeated tool surfaces.
-- **Fog (#1C1B18):** Secondary panels, empty states, tab backgrounds, and quiet hover states.
-- **Line (#252420):** One-pixel borders, table dividers, progress tracks, and separators.
-- **Paper (#F0EAE0):** Headings, primary values, and important labels.
-- **Paper Muted (#A8A090):** Body copy, metadata, captions, and helper text.
-- **Teal (#2ABFBF):** Primary action, yield, active progress, focus ring, and selected states.
-- **Teal Dim (#0E2A28):** Subtle selected surfaces and low-emphasis active backgrounds.
-- **Solana (#9945FF):** Chain badge, explorer status, and infrastructure affordances only.
+- **Hero Ink (#0C0B09):** Hero, footer, protocol cards, dark CTA surfaces.
+- **Page Ink (#FAFAF8):** Main editorial page background after the hero.
+- **Page Raised (#F4F3EF):** Stats, secondary editorial sections, and light raised panels.
+- **Text Ink (#1A1916):** Primary text on light sections.
+- **Text Muted (#3D3B35):** Secondary copy on light sections and low-emphasis metadata.
+- **Line (rgba(0,0,0,.08)):** Hairline separators on light surfaces.
+- **Tiffany (#81D8D0):** Founding-member action, active progress, thin hero rules, and premium interaction cues.
+- **Solana Live (#14F195):** Devnet/live status only.
+- **Solana Purple (#9945FF):** Solana logo gradients and chain affordances only.
+- **Gold (#C8A96E):** Soft luxury accent for editorial rules and occasional values.
 
-Avoid beige page backgrounds, high-saturation gradients, slate dashboards, and multi-color icon palettes. The product should read as dark editorial luxury, not web3 neon.
+Avoid broad purple gradients, beige-heavy lifestyle palettes, rounded SaaS cards, and bright multi-color icon sets. The interface should feel like a luxury editorial system with a live on-chain layer.
 
 ## Typography
 
-Headlines, property names, hero subheads, and financial values use **Cormorant Garamond** at light weight. Its job is to make real estate feel physical, rare, and editorial.
+Headlines, property names, hero one-liners, and financial values use **Cormorant Garamond** at light weights. The hero should be large, airy, and bottom-anchored.
 
-Body, navigation, tables, controls, and form labels use **Inter** in light or regular weights. Labels are tiny, uppercase, and widely tracked. Heavy sans-serif headings should be avoided unless a dense admin table needs local emphasis.
+Navigation, controls, dense labels, tables, forms, and body text use **DM Sans**. Labels are tiny, uppercase, and widely tracked. Avoid heavy sans-serif display headings.
 
-Use hero-scale type only on hero sections. Cards, dialogs, nav, tabs, and financial panels should stay compact and precise.
+Hero-scale type belongs only to full-viewport brand moments. Cards, stats, dialogs, nav, tabs, and operational panels stay compact and precise.
 
 ## Layout
 
-The layout is a dark, full-bleed editorial grid. Primary pages should use full-width sections, large image bands, and one-pixel dividers instead of floating marketing cards. Use 64px desktop side spacing and 24px mobile side spacing as the default rhythm.
+The home page starts with a full-viewport dark hero. Content is split vertically: founding access at the top, product one-liner at the bottom, and live protocol metrics in the lower-right on desktop. Mobile hides the right-side live badge and stacks the waitlist form.
 
-Marketing and catalog pages can breathe with 120-140px vertical sections. Portfolio, wallet, borrow, lend, and admin pages may be denser, but should keep aligned columns, table-first structures, compact controls, and stable row heights.
+After the hero, the page shifts to pale editorial surfaces. Stats use a four-column divider grid. Property cards remain image-led and use dark veils. The protocol section returns to deep ink so the "three things" flow reads as a working protocol rather than generic marketing.
 
-Property cards should keep a stable image aspect ratio, preferably 3:4 for catalog cards and 16:11 for compact summaries. Hover states may scale the image subtly, but text and metrics should not shift layout.
+Use 64px desktop side spacing and 20-24px mobile spacing. Keep components square, aligned to grid lines, and stable in size.
 
-## Imagery
+## Imagery And Motion
 
-Photography is the primary luxury signal. Use real property, city, hospitality, or interior imagery instead of abstract graphics. Text over images must always sit on a dark veil. The overlay should feel cinematic, not like a generic black scrim.
+Home hero uses breakpoint-specific background videos: `/videos/hero_pc.mp4` for desktop and `/videos/hero_sp.mp4` for smartphone layouts. Keep both muted, looped, inline, and covered by the existing dark veil so the founding form, hero headline, and live badge stay legible. The canvas light scene remains a fallback layer behind both videos.
 
-Hero images may use slow Ken Burns motion. Catalog cards should use a bottom veil, location/type tags, a teal yield chip, and a progress hairline.
+Property imagery remains important in cards and detail pages. Use real property, city, hospitality, or interior imagery. Text over images must always sit on a dark veil.
+
+Motion should be slow and architectural: light drift, horizon glow, subtle image scale on hover, staggered hero line reveal, and a marquee for cities. Do not add decorative orbs outside the hero canvas system.
 
 ## Components
 
-Buttons are square, uppercase, and letter-spaced. Primary buttons are teal with ink text. Outline buttons are transparent or ink-backed with a thin paper/line border. Hover states should reveal a teal border, a bottom rule, or a subtle tonal lift.
+Buttons are square, uppercase, and letter-spaced. Primary hero and waitlist buttons may use Tiffany with dark text. Outline buttons use thin paper or ink borders with a bottom-rule hover.
 
-Cards and panels are square, border-first, and shadowless. Use `bg-card` for raised surfaces and `bg-background` for embedded table cells. Do not nest decorative cards inside cards.
+Cards and panels are border-first and shadowless. Repeated property cards may use full image backgrounds and veils. Protocol cards use deep ink, large ghost numbers, and a single Tiffany rule.
 
-Badges are tiny uppercase chips. Solana badges may use purple, but only for chain or explorer context. Yield, active, selected, and success states should use teal.
+Badges are tiny uppercase chips. Solana badges use **Solana Live** green and may include the purple-to-green logo gradient. Yield and active progress use Tiffany, not purple.
 
-Forms and sliders should use thin borders and hairline tracks. Slider thumbs may be circular because they are functional controls.
+Forms are compact, square, and border-first. Waitlist fields in the hero sit on translucent dark glass; fields on light sections should use thin borders and restrained labels.
+
+## Asset Policy
+
+- The HTML reference includes optional commented video sources: `assets/laplace-brand.webm` and `assets/laplace-brand.mp4`. Do not enable these until actual files exist.
+- Home hero videos are tracked at `/videos/hero_pc.mp4` for desktop and `/videos/hero_sp.mp4` for smartphone.
+- Prefer canvas or external remote imagery over broken local placeholders.
+- Local image references must resolve under `public/`. If an image is not present, use an existing thumbnail, a generated real asset, or a deliberate non-image fallback.
+- Do not leave UI paths that assume missing files such as `/images/*-unit-1.jpg`.
 
 ## Page Guidance
 
-Home should open with the reference HTML composition: black boxed Laplace mark, HOME / PROPERTIES / PORTFOLIO / FINANCE / LEND navigation, a small founding-member signup block in the upper-left, and the exact hero message "Buy real estate, 1-click, from 1 SOL." over full-bleed city photography. The first viewport should feel like a high-end editorial invitation, not a SaaS landing page.
+Home should follow the v6 composition: black navigation with Laplace mark, HOME / PROPERTIES / PORTFOLIO / FINANCE / LEND navigation, upper-left founding-member access, bottom hero one-liner "The world's penthouses. 1 SOL. 1 click.", a Solana Devnet live badge, stats, marquee, property grid, three protocol cards, and a final founding-member waitlist band.
 
-Discover should behave like a curated property ledger. Filters stay compact. Cards should be image-led, with local watchlist and notification actions expressed as small icon controls.
+Discover behaves like a curated property ledger. Filters stay compact. Cards are image-led, with watchlist and notification actions as small controls.
 
-Property detail should keep the hero photographic and the financial summary below it in a thin divider grid. Purchasable properties and catalog-only properties should share the same tone even when behavior differs.
+Property detail keeps the hero photographic and places financial summaries in thin divider grids. Purchasable and catalog-only properties share the same premium tone.
 
-Wallet, portfolio, borrow, lend, and admin should be operational but still premium: table-first, restrained labels, serif totals, square panels, and no bright utility-dashboard palette.
+Wallet, portfolio, borrow, lend, and admin remain operational: table-first, restrained labels, serif totals, square panels, and no bright utility-dashboard palette.
 
 ## Do's And Don'ts
 
-- Do let photography, serif type, and thin borders carry the premium feeling.
-- Do use teal for yield, active progress, and the primary action on a screen.
-- Do use Solana purple only for chain/explorer status.
-- Do keep local-only catalog actions visually compact and non-promotional.
-- Do keep labels short, uppercase, and precise.
-- Don't introduce beige page backgrounds, rounded marketing cards, heavy shadows, or bright crypto gradients.
-- Don't add implementation copy about DB, backend mapping, test fixtures, or reference HTML.
+- Do lead with the 1 SOL / 1 click promise.
+- Do use canvas hero motion as the default brand visual.
+- Do use Tiffany for founding-member action and active progress.
+- Do use Solana Live green only for live/devnet infrastructure status.
+- Do shift home sections between dark protocol moments and pale editorial sections.
+- Do check local image and video references before wiring them into UI.
+- Don't enable optional video sources without files.
+- Don't introduce missing `/images/*.jpg` placeholders.
 - Don't show previous-chain terminology in user-facing UI.
+- Don't add explanatory implementation copy inside the product UI.

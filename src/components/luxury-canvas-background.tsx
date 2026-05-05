@@ -1,28 +1,38 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils';
 
-interface Particle {
+interface Streak {
   x: number;
   y: number;
-  size: number;
-  speedX: number;
-  speedY: number;
-  opacity: number;
-  fadeSpeed: number;
-  type: 'star' | 'light' | 'wave' | 'circle';
-  angle?: number;
-  angleSpeed?: number;
-  radius?: number;
+  w: number;
+  h: number;
+  speed: number;
+  alpha: number;
+  hue: number;
+  phase: number;
 }
 
-export function LuxuryCanvasBackground() {
+interface Orb {
+  x: number;
+  y: number;
+  r: number;
+  alpha: number;
+  hue: number;
+  speed: number;
+  phase: number;
+}
+
+interface LuxuryCanvasBackgroundProps {
+  className?: string;
+}
+
+export function LuxuryCanvasBackground({ className }: LuxuryCanvasBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { theme } = useTheme();
   const animationRef = useRef<number | undefined>(undefined);
-  const particlesRef = useRef<Particle[]>([]);
-  const timeRef = useRef(0);
+  const streaksRef = useRef<Streak[]>([]);
+  const orbsRef = useRef<Orb[]>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -31,221 +41,134 @@ export function LuxuryCanvasBackground() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const setCanvasSize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const createScene = () => {
+      streaksRef.current = Array.from({ length: 7 }, () => ({
+        x: Math.random(),
+        y: Math.random() * 0.58 + 0.12,
+        w: Math.random() * 0.42 + 0.16,
+        h: Math.random() * 0.003 + 0.001,
+        speed: (Math.random() * 0.00008 + 0.00004) * (Math.random() < 0.5 ? 1 : -1),
+        alpha: Math.random() * 0.12 + 0.04,
+        hue: Math.random() < 0.55 ? 38 : 175,
+        phase: Math.random() * Math.PI * 2,
+      }));
+
+      orbsRef.current = [
+        { x: 0.15, y: 0.6, r: 0.2, alpha: 0.08, hue: 38, speed: 0.00006, phase: 0 },
+        { x: 0.75, y: 0.35, r: 0.24, alpha: 0.06, hue: 175, speed: 0.00005, phase: Math.PI * 0.5 },
+        { x: 0.5, y: 0.8, r: 0.14, alpha: 0.05, hue: 38, speed: 0.00007, phase: Math.PI },
+        { x: 0.35, y: 0.2, r: 0.16, alpha: 0.07, hue: 220, speed: 0.00004, phase: Math.PI * 1.5 },
+      ];
     };
 
-    setCanvasSize();
-    window.addEventListener('resize', setCanvasSize);
-
-    // Initialize particles
-    const initParticles = () => {
-      particlesRef.current = [];
-      
-      // Floating golden orbs
-      for (let i = 0; i < 20; i++) {
-        particlesRef.current.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: Math.random() * 4 + 2,
-          speedX: (Math.random() - 0.5) * 0.3,
-          speedY: (Math.random() - 0.5) * 0.3,
-          opacity: Math.random() * 0.5 + 0.3,
-          fadeSpeed: (Math.random() - 0.5) * 0.01,
-          type: 'light'
-        });
-      }
-
-      // Sparkle particles
-      for (let i = 0; i < 60; i++) {
-        particlesRef.current.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: Math.random() * 1.5 + 0.5,
-          speedX: (Math.random() - 0.5) * 0.2,
-          speedY: (Math.random() - 0.5) * 0.2,
-          opacity: Math.random() * 0.8,
-          fadeSpeed: (Math.random() - 0.5) * 0.02,
-          type: 'star'
-        });
-      }
-
-      // Orbiting circles
-      for (let i = 0; i < 5; i++) {
-        const centerX = Math.random() * canvas.width;
-        const centerY = Math.random() * canvas.height;
-        particlesRef.current.push({
-          x: centerX,
-          y: centerY,
-          size: Math.random() * 60 + 40,
-          speedX: 0,
-          speedY: 0,
-          opacity: 0.1,
-          fadeSpeed: 0.005,
-          type: 'circle',
-          angle: Math.random() * Math.PI * 2,
-          angleSpeed: (Math.random() - 0.5) * 0.02,
-          radius: Math.random() * 100 + 50
-        });
-      }
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      createScene();
     };
 
-    initParticles();
+    const draw = (now = 0) => {
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
 
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      timeRef.current += 0.01;
+      ctx.clearRect(0, 0, width, height);
 
-      // Create gradient background
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      if (theme === 'dark') {
-        gradient.addColorStop(0, '#0a0a0a');
-        gradient.addColorStop(0.5, '#111827');
-        gradient.addColorStop(1, '#1e293b');
-      } else {
-        gradient.addColorStop(0, '#dbeafe');
-        gradient.addColorStop(0.5, '#bfdbfe');
-        gradient.addColorStop(1, '#93c5fd');
-      }
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const pulse = Math.sin(now * 0.0004) * 0.5 + 0.5;
+      const base = ctx.createLinearGradient(0, 0, width, height);
+      base.addColorStop(0, `rgba(${8 + pulse * 4},${6 + pulse * 2},4,1)`);
+      base.addColorStop(0.38, `rgba(${12 + pulse * 3},${16 + pulse * 4},${14 + pulse * 3},1)`);
+      base.addColorStop(0.72, `rgba(8,10,${16 + pulse * 5},1)`);
+      base.addColorStop(1, 'rgba(6,4,8,1)');
+      ctx.fillStyle = base;
+      ctx.fillRect(0, 0, width, height);
 
-      // Draw flowing waves pattern
+      orbsRef.current.forEach((orb) => {
+        const ox = (orb.x + Math.sin(now * orb.speed + orb.phase) * 0.06) * width;
+        const oy = (orb.y + Math.cos(now * orb.speed * 0.7 + orb.phase) * 0.04) * height;
+        const radius = orb.r * Math.min(width, height);
+        const glow = ctx.createRadialGradient(ox, oy, 0, ox, oy, radius);
+        const alpha = orb.alpha * (0.7 + Math.sin(now * 0.0003 + orb.phase) * 0.3);
+        glow.addColorStop(0, `hsla(${orb.hue}, 60%, 60%, ${alpha})`);
+        glow.addColorStop(0.5, `hsla(${orb.hue}, 40%, 40%, ${orb.alpha * 0.4})`);
+        glow.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, width, height);
+      });
+
       ctx.save();
-      for (let i = 0; i < 3; i++) {
+      ctx.globalCompositeOperation = 'screen';
+      streaksRef.current.forEach((streak) => {
+        const sy = (streak.y + Math.sin(now * streak.speed * 3 + streak.phase) * 0.015) * height;
+        const sw = streak.w * width;
+        const sx = ((streak.x + now * streak.speed + 1) % 1.4 - 0.2) * width;
+        const sh = streak.h * height;
+        const alpha = streak.alpha * (0.5 + Math.sin(now * 0.0005 + streak.phase) * 0.5);
+        const glow = ctx.createLinearGradient(sx, 0, sx + sw, 0);
+        glow.addColorStop(0, 'transparent');
+        glow.addColorStop(0.3, `hsla(${streak.hue}, 70%, 70%, ${alpha})`);
+        glow.addColorStop(0.5, `hsla(${streak.hue}, 80%, 80%, ${alpha * 1.4})`);
+        glow.addColorStop(0.7, `hsla(${streak.hue}, 70%, 70%, ${alpha})`);
+        glow.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow;
         ctx.beginPath();
-        ctx.strokeStyle = theme === 'dark' 
-          ? `rgba(251, 191, 36, ${0.1 - i * 0.03})` 
-          : `rgba(59, 130, 246, ${0.2 - i * 0.05})`;
-        ctx.lineWidth = 2;
-        
-        for (let x = 0; x <= canvas.width; x += 10) {
-          const y = canvas.height / 2 + 
-                   Math.sin((x * 0.01 + timeRef.current + i * 0.5)) * 50 +
-                   Math.sin((x * 0.02 + timeRef.current * 2)) * 30;
-          if (x === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
+        ctx.ellipse(sx + sw / 2, sy + Math.sin(now * 0.0002 + streak.phase) * sh * 2, sw / 2, sh * 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.restore();
+
+      const horizonY = height * (0.58 + Math.sin(now * 0.00015) * 0.02);
+      const horizon = ctx.createLinearGradient(0, horizonY - height * 0.08, 0, horizonY + height * 0.05);
+      horizon.addColorStop(0, 'transparent');
+      horizon.addColorStop(0.45, `rgba(180,140,60,${0.05 + Math.sin(now * 0.0003) * 0.02})`);
+      horizon.addColorStop(0.62, `rgba(200,160,80,${0.08 + Math.sin(now * 0.0004) * 0.03})`);
+      horizon.addColorStop(1, 'transparent');
+      ctx.fillStyle = horizon;
+      ctx.fillRect(0, horizonY - height * 0.08, width, height * 0.13);
+
+      ctx.save();
+      ctx.globalAlpha = 0.08;
+      ctx.strokeStyle = '#81D8D0';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 8; i += 1) {
+        const y = height * (0.72 + i * 0.035);
+        ctx.beginPath();
+        for (let x = 0; x <= width; x += 18) {
+          const waveY = y + Math.sin(x * 0.012 + now * 0.001 + i) * (2 + i * 0.25);
+          if (x === 0) ctx.moveTo(x, waveY);
+          else ctx.lineTo(x, waveY);
         }
         ctx.stroke();
       }
       ctx.restore();
 
-      // Draw and update particles
-      particlesRef.current.forEach((particle) => {
-        if (particle.type === 'circle') {
-          // Update orbiting circles
-          particle.angle = (particle.angle || 0) + (particle.angleSpeed || 0.01);
-          particle.opacity += particle.fadeSpeed;
-          if (particle.opacity > 0.2 || particle.opacity < 0.05) {
-            particle.fadeSpeed *= -1;
-          }
-        } else {
-          // Update regular particles
-          particle.x += particle.speedX;
-          particle.y += particle.speedY;
+      const vignette = ctx.createLinearGradient(0, height * 0.48, 0, height);
+      vignette.addColorStop(0, 'transparent');
+      vignette.addColorStop(1, 'rgba(0,0,0,.72)');
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, height * 0.48, width, height * 0.52);
 
-          // Update opacity
-          particle.opacity += particle.fadeSpeed;
-          if (particle.opacity > 1 || particle.opacity < 0.1) {
-            particle.fadeSpeed *= -1;
-          }
-
-          // Wrap particles around screen
-          if (particle.x < -10) particle.x = canvas.width + 10;
-          if (particle.x > canvas.width + 10) particle.x = -10;
-          if (particle.y < -10) particle.y = canvas.height + 10;
-          if (particle.y > canvas.height + 10) particle.y = -10;
-        }
-
-        // Draw particle
-        ctx.save();
-        
-        if (particle.type === 'star') {
-          // Draw sparkle
-          ctx.globalAlpha = particle.opacity;
-          const gradient = ctx.createRadialGradient(
-            particle.x, particle.y, 0,
-            particle.x, particle.y, particle.size * 2
-          );
-          gradient.addColorStop(0, theme === 'dark' ? '#fbbf24' : '#3b82f6');
-          gradient.addColorStop(1, 'transparent');
-          ctx.fillStyle = gradient;
-          ctx.fillRect(
-            particle.x - particle.size * 2,
-            particle.y - particle.size * 2,
-            particle.size * 4,
-            particle.size * 4
-          );
-        } else if (particle.type === 'light') {
-          // Draw golden orb
-          ctx.globalAlpha = particle.opacity;
-          const gradient = ctx.createRadialGradient(
-            particle.x, particle.y, 0,
-            particle.x, particle.y, particle.size * 4
-          );
-          gradient.addColorStop(0, 'rgba(251, 191, 36, 0.8)');
-          gradient.addColorStop(0.5, 'rgba(251, 191, 36, 0.3)');
-          gradient.addColorStop(1, 'rgba(251, 191, 36, 0)');
-          ctx.fillStyle = gradient;
-          ctx.beginPath();
-          ctx.arc(particle.x, particle.y, particle.size * 4, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (particle.type === 'circle') {
-          // Draw orbiting circles
-          ctx.globalAlpha = particle.opacity;
-          ctx.strokeStyle = theme === 'dark' ? 'rgba(251, 191, 36, 0.3)' : 'rgba(59, 130, 246, 0.3)';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-          ctx.stroke();
-          
-          // Draw orbiting dot
-          const orbitX = particle.x + Math.cos(particle.angle || 0) * particle.size;
-          const orbitY = particle.y + Math.sin(particle.angle || 0) * particle.size;
-          ctx.fillStyle = theme === 'dark' ? '#fbbf24' : '#3b82f6';
-          ctx.globalAlpha = particle.opacity * 2;
-          ctx.beginPath();
-          ctx.arc(orbitX, orbitY, 3, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        
-        ctx.restore();
-      });
-
-      // Add luxury overlay shimmer effect
-      const shimmerGradient = ctx.createLinearGradient(
-        0, 0, canvas.width, canvas.height
-      );
-      const shimmerOffset = (Date.now() * 0.0001) % 1;
-      shimmerGradient.addColorStop(Math.max(0, shimmerOffset - 0.1), 'transparent');
-      shimmerGradient.addColorStop(shimmerOffset, 'rgba(251, 191, 36, 0.05)');
-      shimmerGradient.addColorStop(Math.min(1, shimmerOffset + 0.1), 'transparent');
-      
-      ctx.fillStyle = shimmerGradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      animationRef.current = requestAnimationFrame(animate);
+      if (!prefersReducedMotion) {
+        animationRef.current = requestAnimationFrame(draw);
+      }
     };
 
-    animate();
+    resize();
+    draw();
+    window.addEventListener('resize', resize);
 
     return () => {
-      window.removeEventListener('resize', setCanvasSize);
+      window.removeEventListener('resize', resize);
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [theme]);
+  }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 h-full w-full"
-      style={{ opacity: 0.6 }}
-    />
-  );
+  return <canvas ref={canvasRef} className={cn('absolute inset-0 h-full w-full', className)} />;
 }

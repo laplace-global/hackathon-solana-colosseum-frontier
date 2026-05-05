@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Geist_Mono, Inter } from "next/font/google";
+import { Cormorant_Garamond, DM_Sans, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
@@ -9,8 +9,8 @@ import { WalletProvider } from "@/contexts/wallet-context";
 import { MarketPricesProvider } from '@/contexts/market-prices-context';
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
   weight: ["200", "300", "400", "500"],
 });
@@ -40,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${cormorant.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${dmSans.variable} ${cormorant.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"
