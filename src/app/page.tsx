@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { LuxuryCanvasBackground } from '@/components/luxury-canvas-background';
 import { catalogProperties, type CatalogProperty } from '@/data/catalog-properties';
@@ -57,6 +58,10 @@ const foundingBenefits = [
   { label: 'Private Deal Flow', body: 'Quarterly briefings and off-market previews.' },
 ];
 
+function lpDelay(delay: string): CSSProperties {
+  return { '--lp-delay': delay } as CSSProperties;
+}
+
 function formatUsd(value: number) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -66,12 +71,43 @@ function formatUsd(value: number) {
 }
 
 export default function HomePage() {
+  useEffect(() => {
+    const revealItems = Array.from(document.querySelectorAll<HTMLElement>('[data-lp-reveal]'));
+
+    if (!revealItems.length) return;
+
+    const reveal = (element: HTMLElement) => element.classList.add('is-visible');
+
+    if (
+      !('IntersectionObserver' in window) ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      revealItems.forEach(reveal);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          reveal(entry.target as HTMLElement);
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: '0px 0px -8% 0px', threshold: 0.14 },
+    );
+
+    revealItems.forEach((item) => observer.observe(item));
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="bg-[#FAFAF8] text-[#1A1916]">
-      <section className="relative min-h-[100svh] overflow-hidden bg-[#0C0B09] text-white">
+    <div className="w-full max-w-full overflow-x-clip bg-[#FAFAF8] text-[#1A1916]">
+      <section className="relative min-h-[100svh] w-full max-w-full overflow-hidden overflow-x-clip bg-[#0C0B09] text-white">
         <LuxuryCanvasBackground className="opacity-35" />
         <video
-          className="absolute inset-0 hidden h-full w-full object-cover opacity-75 md:block"
+          className="absolute inset-0 hidden h-full w-full animate-[lp-kenburns_18s_ease-out_both] object-cover opacity-75 md:block"
           autoPlay
           muted
           loop
@@ -82,7 +118,7 @@ export default function HomePage() {
           <source src="/videos/hero_pc.mp4" type="video/mp4" />
         </video>
         <video
-          className="absolute inset-0 h-full w-full object-cover opacity-75 md:hidden"
+          className="absolute inset-0 h-full w-full animate-[lp-kenburns_18s_ease-out_both] object-cover opacity-75 md:hidden"
           autoPlay
           muted
           loop
@@ -94,15 +130,16 @@ export default function HomePage() {
         </video>
         <div className="absolute inset-0 bg-[linear-gradient(135deg,#0a0806_0%,#12100c_30%,#0d1a18_60%,#080c10_100%)] opacity-45" />
         <div className="lp-architect-grid absolute inset-0 opacity-100" />
-        <div className="absolute right-[-10%] top-[-20%] h-[70%] w-[60%] animate-[lp-light-drift-1_12s_ease-in-out_infinite] bg-[radial-gradient(ellipse,rgba(200,160,80,.18)_0%,transparent_65%)]" />
-        <div className="absolute bottom-[-10%] left-[-5%] h-[60%] w-[50%] animate-[lp-light-drift-2_16s_ease-in-out_infinite] bg-[radial-gradient(ellipse,rgba(20,180,160,.1)_0%,transparent_60%)]" />
+        <div className="absolute right-0 top-[-20%] h-[70%] w-[60%] animate-[lp-light-drift-1_12s_ease-in-out_infinite] bg-[radial-gradient(ellipse,rgba(200,160,80,.18)_0%,transparent_65%)] md:right-[-10%]" />
+        <div className="absolute bottom-[-10%] left-0 h-[60%] w-[50%] animate-[lp-light-drift-2_16s_ease-in-out_infinite] bg-[radial-gradient(ellipse,rgba(20,180,160,.1)_0%,transparent_60%)] md:left-[-5%]" />
         <div className="lp-grain absolute inset-0 opacity-[.18]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,.86)_0%,rgba(0,0,0,.58)_52%,rgba(0,0,0,.18)_100%)]" />
 
-        <div className="relative z-10 flex min-h-[100svh] flex-col justify-between px-5 pb-10 pt-24 md:px-16 md:pb-24 md:pt-44">
+        <div className="relative z-10 flex min-h-[100svh] w-full min-w-0 max-w-full flex-col justify-between px-5 pb-10 pt-24 md:px-16 md:pb-24 md:pt-44">
           <form
             id="founding"
-            className="max-w-[420px]"
+            className="lp-load-reveal w-full max-w-[420px]"
+            style={lpDelay('.75s')}
             onSubmit={(event) => event.preventDefault()}
           >
             <div className="flex items-center gap-3">
@@ -117,8 +154,8 @@ export default function HomePage() {
             <p className="mt-3 max-w-sm text-[10px] leading-6 tracking-[0.05em] text-white/65 md:text-[11px] md:leading-7">
               Priority access · Zero platform fees · Guaranteed spot
             </p>
-            <div className="mt-5 max-w-[420px] border border-white/50 bg-black/55 backdrop-blur-xl md:mt-6">
-              <div className="flex">
+            <div className="mt-5 w-full max-w-[420px] border border-white/50 bg-black/55 backdrop-blur-xl md:mt-6">
+              <div className="flex flex-col sm:flex-row">
                 <label htmlFor="hero-email" className="sr-only">
                   Email
                 </label>
@@ -126,7 +163,7 @@ export default function HomePage() {
                   id="hero-email"
                   type="email"
                   placeholder="your@email.com"
-                  className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-xs tracking-[0.04em] text-white outline-none placeholder:text-white/35 sm:px-5 sm:py-4"
+                  className="min-w-0 flex-1 border-b border-white/15 bg-transparent px-4 py-3.5 text-xs tracking-[0.04em] text-white outline-none placeholder:text-white/35 sm:border-b-0 sm:px-5 sm:py-4"
                 />
                 <button
                   type="submit"
@@ -139,22 +176,32 @@ export default function HomePage() {
             <p className="mt-2 text-[9px] tracking-[0.06em] text-white/35">No spam. Priority window closes soon.</p>
           </form>
 
-          <div className="max-w-[940px]">
-            <div className="mb-7 h-px w-7 bg-primary/70 md:mb-9" />
-            <h1 className="font-serif text-[clamp(38px,11vw,48px)] font-extralight leading-[1.04] tracking-normal text-white md:text-[clamp(44px,8.5vw,116px)] md:leading-[0.98]">
-              <span className="block">The world's penthouses.</span>
-              <span className="block">1 SOL. 1 click.</span>
+          <div className="max-w-[1180px]">
+            <div className="lp-load-rule mb-7 h-px w-7 bg-primary/70 md:mb-9" style={lpDelay('.25s')} />
+            <h1 className="font-serif text-[clamp(34px,9vw,52px)] font-extralight leading-[1.04] tracking-normal text-white md:text-[clamp(58px,8.5vw,116px)] md:leading-[0.98]">
+              <span className="lp-load-title block" style={lpDelay('.32s')}>
+                The world's penthouses.
+              </span>
+              <span className="lp-load-title block" style={lpDelay('.46s')}>
+                1 SOL. 1 click.
+              </span>
             </h1>
-            <p className="mt-4 text-[clamp(11px,3vw,13px)] uppercase tracking-[0.12em] text-white/72 md:mt-6 md:text-[clamp(12px,1.4vw,16px)]">
+            <p
+              className="lp-load-reveal mt-4 text-[clamp(11px,3vw,13px)] uppercase tracking-[0.12em] text-white/72 md:mt-6 md:text-[clamp(12px,1.4vw,16px)]"
+              style={lpDelay('.62s')}
+            >
               Borrow against your holdings - without selling.
             </p>
-            <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-center md:mt-9">
+            <div
+              className="lp-load-reveal mt-6 flex flex-col gap-5 sm:flex-row sm:items-center md:mt-9"
+              style={lpDelay('.82s')}
+            >
               <Link
                 href="/discover"
                 className="group relative flex h-12 w-full items-center justify-center overflow-hidden border border-white/60 bg-[#050505] px-10 text-[8px] font-medium uppercase tracking-[0.24em] text-white transition-colors hover:border-white/80 sm:w-[230px] md:bg-transparent"
               >
                 Explore Properties
-                <span className="absolute bottom-0 left-[-100%] h-px w-full bg-primary transition-[left] duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:left-0" />
+                <span className="absolute bottom-0 left-[-100%] hidden h-px w-full bg-primary transition-[left] duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:left-0 md:block" />
               </Link>
               <Link
                 href="#protocol"
@@ -166,7 +213,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-24 right-16 z-10 hidden flex-col items-end gap-4 lg:flex">
+        <div className="lp-load-reveal absolute bottom-24 right-16 z-10 hidden flex-col items-end gap-4 lg:flex" style={lpDelay('1.15s')}>
           <div className="flex items-center gap-3 border border-[#14F195]/50 bg-black/70 px-5 py-3 shadow-[0_0_32px_rgba(20,241,149,.15)] backdrop-blur-xl">
             <span className="h-[7px] w-[7px] animate-[lp-pulse_1.6s_infinite] rounded-full bg-[#14F195] shadow-[0_0_14px_rgba(20,241,149,.9)]" />
             <span className="text-[8px] font-semibold uppercase tracking-[0.26em] text-[#14F195]">Live Demo</span>
@@ -183,7 +230,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-11 left-5 z-10 hidden items-center gap-4 text-[7px] uppercase tracking-[0.32em] text-white/40 md:left-16 md:flex">
+        <div className="lp-load-reveal absolute bottom-11 left-5 z-10 hidden items-center gap-4 text-[7px] uppercase tracking-[0.32em] text-white/40 md:left-16 md:flex" style={lpDelay('1.3s')}>
           <span className="h-px w-10 bg-primary/70" />
           Scroll
         </div>
@@ -192,8 +239,13 @@ export default function HomePage() {
       <section className="relative border-y border-black/10 bg-[#F4F3EF] px-px py-px">
         <div className="absolute inset-x-16 top-0 h-px bg-[linear-gradient(90deg,transparent,#81D8D0,transparent)] opacity-30" />
         <div className="grid grid-cols-2 gap-px bg-black/10 md:grid-cols-4">
-          {stats.map((stat) => (
-            <div key={stat.label} className="bg-[#F4F3EF] px-6 py-14 text-center md:py-[72px]">
+          {stats.map((stat, index) => (
+            <div
+              key={stat.label}
+              className="lp-scroll-reveal bg-[#F4F3EF] px-6 py-14 text-center md:py-[72px]"
+              data-lp-reveal
+              style={lpDelay(`${index * 80}ms`)}
+            >
               <p className="font-serif text-[clamp(34px,4.8vw,58px)] font-light leading-none text-[#1A1916]">
                 {stat.value}
               </p>
@@ -215,7 +267,7 @@ export default function HomePage() {
       </div>
 
       <section id="portfolio" className="bg-[#FAFAF8] pt-20 md:pt-24">
-        <div className="mb-12 flex flex-col items-start justify-between gap-6 px-5 md:flex-row md:items-end md:px-16">
+        <div className="lp-scroll-reveal mb-12 flex flex-col items-start justify-between gap-6 px-5 md:flex-row md:items-end md:px-16" data-lp-reveal>
           <div>
             <p className="mb-5 text-[7px] uppercase tracking-[0.32em] text-[#3D3B35]/70">Properties</p>
             <h2 className="font-serif text-[clamp(34px,4.6vw,54px)] font-light leading-[1.08] text-[#1A1916]">
@@ -240,7 +292,7 @@ export default function HomePage() {
 
       <section id="protocol" className="bg-[#0C0B09] px-5 py-20 text-white md:px-16 md:py-24">
         <div className="mx-auto max-w-5xl">
-          <div className="mb-16 text-center">
+          <div className="lp-scroll-reveal mb-16 text-center" data-lp-reveal>
             <p className="mb-5 text-[7.5px] uppercase tracking-[0.32em] text-white/40">What you can do</p>
             <h2 className="font-serif text-[clamp(30px,3.8vw,48px)] font-light leading-[1.08] text-white">
               Three things.
@@ -249,11 +301,13 @@ export default function HomePage() {
             </h2>
           </div>
           <div className="grid gap-px bg-white/10 md:grid-cols-3">
-            {protocolCards.map((card) => (
+            {protocolCards.map((card, index) => (
               <Link
                 key={card.number}
                 href={card.href}
-                className="group relative min-h-[310px] overflow-hidden bg-[#141210] p-10 transition-colors hover:bg-[#1C1B18] md:p-12"
+                className="lp-scroll-reveal group relative min-h-[310px] overflow-hidden bg-[#141210] p-10 transition-colors hover:bg-[#1C1B18] md:p-12"
+                data-lp-reveal
+                style={lpDelay(`${index * 90}ms`)}
               >
                 <span className="pointer-events-none absolute right-7 top-5 font-serif text-7xl font-light leading-none tracking-normal text-white/[.06]">
                   {card.number}
@@ -282,14 +336,14 @@ export default function HomePage() {
 
       <section className="relative min-h-[70vh] overflow-hidden bg-[#0C0B09] px-5 py-20 text-center text-white md:px-16 md:py-28">
         <div
-          className="absolute inset-[-10%] bg-cover bg-center opacity-55"
+          className="absolute inset-[-10%] animate-[lp-kenburns_20s_ease-out_both] bg-cover bg-center opacity-55"
           style={{
             backgroundImage:
               "url('https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1920&q=90&auto=format&fit=crop')",
           }}
         />
         <div className="absolute inset-0 bg-black/72" />
-        <div className="relative z-10 mx-auto max-w-[540px]">
+        <div className="lp-scroll-reveal relative z-10 mx-auto max-w-[540px]" data-lp-reveal>
           <div className="mx-auto mb-9 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm text-[#0C0B09]">
             *
           </div>
@@ -338,8 +392,9 @@ export default function HomePage() {
 function PropertyCard({ property, delay }: { property: CatalogProperty; delay: number }) {
   return (
     <article
-      className="group relative aspect-[3/4] overflow-hidden bg-[#0C0B09]"
-      style={{ animation: `lp-fade-up .9s ${delay}ms both` }}
+      className="lp-scroll-reveal group relative aspect-[3/4] overflow-hidden bg-[#0C0B09]"
+      data-lp-reveal
+      style={lpDelay(`${delay}ms`)}
     >
       <Link href={`/hotel/${property.id}`} className="absolute inset-0" aria-label={property.name}>
         <div
@@ -364,7 +419,7 @@ function PropertyCard({ property, delay }: { property: CatalogProperty; delay: n
             From {formatUsd(property.tokenPriceUsd)} · +{property.fiveYearEstimate}% est. 5yr
           </p>
           <div className="mt-5 h-px w-full bg-white/15">
-            <div className="h-px bg-primary" style={{ width: `${property.fundingProgress}%` }} />
+            <div className="lp-progress-fill h-px bg-primary" style={{ width: `${property.fundingProgress}%` }} />
           </div>
         </div>
         <span className="absolute bottom-7 right-6 text-[7.5px] uppercase tracking-[0.18em] text-transparent transition-colors duration-500 group-hover:text-white/45">
@@ -377,7 +432,11 @@ function PropertyCard({ property, delay }: { property: CatalogProperty; delay: n
 
 function FoundingPropertyCard() {
   return (
-    <div className="flex aspect-[3/4] flex-col bg-[#0C0B09] p-8 text-left text-white md:p-10">
+    <div
+      className="lp-scroll-reveal flex aspect-[3/4] flex-col bg-[#0C0B09] p-8 text-left text-white md:p-10"
+      data-lp-reveal
+      style={lpDelay('300ms')}
+    >
       <div className="mb-8 h-px w-full bg-[linear-gradient(90deg,#14F195,#9945FF)] opacity-70" />
       <div className="mb-5 flex items-center gap-3">
         <span className="h-[5px] w-[5px] animate-[lp-pulse_1.8s_infinite] rounded-full bg-[#14F195] shadow-[0_0_8px_rgba(20,241,149,.8)]" />
