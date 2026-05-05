@@ -6,12 +6,6 @@ export const ASSET_ID_BY_SYMBOL = {
 
 export type SupportedAssetSymbol = keyof typeof ASSET_ID_BY_SYMBOL;
 
-const LEGACY_USDC_ALIASES = new Set([
-  'RLUSD',
-  'RUSD',
-  '524C555344000000000000000000000000000000',
-]);
-
 export function getAssetId(symbol: string): string | null {
   const normalized = getAssetSymbol(symbol).toUpperCase() as SupportedAssetSymbol;
   return ASSET_ID_BY_SYMBOL[normalized] ?? null;
@@ -19,10 +13,6 @@ export function getAssetId(symbol: string): string | null {
 
 export function getAssetSymbol(assetIdOrSymbol: string): string {
   const normalized = assetIdOrSymbol.toUpperCase();
-  if (LEGACY_USDC_ALIASES.has(normalized)) {
-    return 'USDC';
-  }
-
   for (const [symbol, assetId] of Object.entries(ASSET_ID_BY_SYMBOL)) {
     if (normalized === assetId || normalized === symbol) {
       return symbol;

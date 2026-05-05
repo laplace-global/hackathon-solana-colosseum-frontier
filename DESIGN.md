@@ -157,4 +157,4 @@ Wallet, portfolio, borrow, lend, and admin should be operational but still premi
 - Do keep labels short, uppercase, and precise.
 - Don't introduce beige page backgrounds, rounded marketing cards, heavy shadows, or bright crypto gradients.
 - Don't add implementation copy about DB, backend mapping, test fixtures, or reference HTML.
-- Don't show XRPL/RUSD/RLUSD terminology in user-facing UI.
+- Don't show previous-chain terminology in user-facing UI.

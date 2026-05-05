@@ -31,7 +31,7 @@ describe('chain config asset definitions', () => {
     ]);
   });
 
-  it('finds an asset definition by symbol or legacy asset id', () => {
+  it('finds an asset definition by supported symbol or asset id', () => {
     const definitions = buildAssetDefinitions([
       {
         collateral_currency: ASSET_ID_BY_SYMBOL.SAIL,
@@ -47,11 +47,6 @@ describe('chain config asset definitions', () => {
       kind: 'token',
     });
     assert.deepEqual(getAssetDefinitionBySymbol(definitions, ASSET_ID_BY_SYMBOL.USDC), {
-      symbol: 'USDC',
-      assetId: '4N8M9UZcvF4qSKHU4jAtQTLGp4iiSnNsYJ1y8P3QvYun',
-      kind: 'token',
-    });
-    assert.deepEqual(getAssetDefinitionBySymbol(definitions, 'RLUSD'), {
       symbol: 'USDC',
       assetId: '4N8M9UZcvF4qSKHU4jAtQTLGp4iiSnNsYJ1y8P3QvYun',
       kind: 'token',

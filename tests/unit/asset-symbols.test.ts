@@ -24,12 +24,6 @@ describe('asset-symbols', () => {
     assert.equal(normalizeAssetId('USDC'), ASSET_ID_BY_SYMBOL.USDC);
   });
 
-  it('maps legacy stablecoin aliases to USDC', () => {
-    assert.equal(getAssetSymbol('RLUSD'), 'USDC');
-    assert.equal(getAssetSymbol('524C555344000000000000000000000000000000'), 'USDC');
-    assert.equal(normalizeAssetId('RLUSD'), ASSET_ID_BY_SYMBOL.USDC);
-  });
-
   it('passes through unknown assets while uppercasing them', () => {
     assert.equal(getAssetSymbol('custom-asset'), 'custom-asset');
     assert.equal(normalizeAssetId('custom-asset'), 'CUSTOM-ASSET');
