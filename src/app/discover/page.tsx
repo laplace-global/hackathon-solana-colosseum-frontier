@@ -1,193 +1,292 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { 
-  ArrowRight, 
-  MapPin, 
-  TrendingUp, 
+import {
+  ArrowRight,
+  Bell,
+  Bookmark,
+  Check,
   Filter,
-  ChevronDown
+  MapPin,
+  TrendingUp,
 } from 'lucide-react';
-import { hotels } from '@/data/hotels';
-import { HotelImage } from '@/components/hotel-image';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useMarketPrices } from '@/contexts/market-prices-context';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import {
+  catalogProperties,
+  purchasableOnlyMessage,
+  type CatalogCountry,
+  type CatalogProperty,
+} from '@/data/catalog-properties';
+
+const countries: CatalogCountry[] = ['All', 'UAE', 'Japan', 'France', 'USA'];
+const watchlistKey = 'laplace:property-watchlist';
+const notifyKey = 'laplace:property-notify';
+
+function readStoredIds(key: string): string[] {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const value = window.localStorage.getItem(key);
+    return value ? (JSON.parse(value) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredIds(key: string, ids: string[]) {
+  window.localStorage.setItem(key, JSON.stringify(ids));
+}
+
+function formatUsd(value: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
 export default function DiscoverPage() {
-  const [selectedROI, setSelectedROI] = useState<string>('all');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const { isLoading, hasPriceForHotel, getTokenPrice } = useMarketPrices();
+  const [country, setCountry] = useState<CatalogCountry>('All');
+  const [watchlist, setWatchlist] = useState<string[]>([]);
+  const [notified, setNotified] = useState<string[]>([]);
 
-  const filteredHotels = hotels.filter(hotel => {
-    if (selectedROI !== 'all') {
-      if (selectedROI === 'high' && hotel.roiPercentage < 8) return false;
-      if (selectedROI === 'medium' && hotel.roiPercentage >= 8) return false;
-    }
-    return true;
-  });
+  useEffect(() => {
+    setWatchlist(readStoredIds(watchlistKey));
+    setNotified(readStoredIds(notifyKey));
+  }, []);
+
+  const featuredProperty = catalogProperties[0];
+  const filteredProperties = useMemo(() => {
+    return catalogProperties.filter((property) => {
+      return country === 'All' || property.country === country;
+    });
+  }, [country]);
+
+  const showPurchaseGate = () => {
+    window.alert(purchasableOnlyMessage);
+  };
+
+  const toggleWatchlist = (id: string) => {
+    setWatchlist((current) => {
+      const next = current.includes(id)
+        ? current.filter((storedId) => storedId !== id)
+        : [...current, id];
+      writeStoredIds(watchlistKey, next);
+      return next;
+    });
+  };
+
+  const saveNotification = (id: string) => {
+    setNotified((current) => {
+      const next = current.includes(id) ? current : [...current, id];
+      writeStoredIds(notifyKey, next);
+      return next;
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-background pt-24">
-      {/* Page Header */}
-      <div className="border-b border-border bg-background">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-          <div className="text-center">
-            <p className="text-eyebrow text-primary mb-4">Featured Investment Properties</p>
-            <h1 className="font-serif text-4xl font-light text-foreground sm:text-5xl md:text-6xl">
-              Investment Properties
+    <div className="min-h-screen bg-background">
+      <section className="relative overflow-hidden border-b border-border">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-80"
+          style={{ backgroundImage: `url(${featuredProperty.imageUrl})` }}
+        />
+        <div className="absolute inset-0 lp-veil" />
+        <div className="relative mx-auto grid min-h-[660px] max-w-7xl items-end gap-10 px-6 py-20 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-16">
+          <div className="pb-4">
+            <Badge variant="outline" className="mb-5 border-primary/50 bg-background/40 text-primary backdrop-blur">
+              Global Tokenized Catalog
+            </Badge>
+            <h1 className="max-w-4xl font-serif text-5xl font-light leading-[1.04] tracking-normal text-foreground sm:text-7xl lg:text-8xl">
+              Explore the world portfolio.
             </h1>
-            <p className="mt-6 text-bodyeditorial text-muted-foreground">
-              Discover premium tokenized hotel opportunities
+            <p className="mt-6 max-w-2xl text-bodyeditorial text-muted-foreground">
+              Curated luxury property exposure with watchlist access, yield signals, and Solana-backed execution where assets are live.
             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Filter Toggle */}
-      <div className="sticky top-16 z-40 border-b border-border bg-background md:hidden">
-        <button
-          onClick={() => setIsFilterOpen(!isFilterOpen)}
-          className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-foreground"
-        >
-          <span className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            Filters
-          </span>
-          <ChevronDown className={`h-4 w-4 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div className={`${isFilterOpen ? 'block' : 'hidden'} border-b border-border bg-background md:block`}>
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <span className="text-eyebrow text-muted-foreground">Filters</span>
-              
-              {/* ROI Filter */}
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant={selectedROI === 'all' ? 'default' : 'outline'}
-                  onClick={() => setSelectedROI('all')}
-                >
-                  All ROI
-                </Button>
-                <Button
-                  size="sm"
-                  variant={selectedROI === 'high' ? 'default' : 'outline'}
-                  onClick={() => setSelectedROI('high')}
-                >
-                  8% ROI
-                </Button>
-                <Button
-                  size="sm"
-                  variant={selectedROI === 'medium' ? 'default' : 'outline'}
-                  onClick={() => setSelectedROI('medium')}
-                >
-                  5-7% ROI
-                </Button>
-              </div>
-            </div>
-
-            <div className="text-sm text-muted-foreground">
-              {filteredHotels.length} properties available
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button data-testid="catalog-featured-invest" size="lg" onClick={showPurchaseGate}>
+                Invest
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button
+                data-testid="catalog-featured-notify"
+                size="lg"
+                variant="outline"
+                onClick={() => saveNotification(featuredProperty.id)}
+              >
+                {notified.includes(featuredProperty.id) ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Notified
+                  </>
+                ) : (
+                  <>
+                    <Bell className="h-4 w-4" />
+                    Get Notified
+                  </>
+                )}
+              </Button>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Hotel Grid */}
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredHotels.map((hotel) => {
-            const soldPercentage = ((hotel.totalUnits - hotel.availableUnits) / hotel.totalUnits) * 100;
-            const displayTokenPrice = getTokenPrice(hotel.id, hotel.tokenPrice);
-            const showTokenPriceSkeleton = isLoading && !hasPriceForHotel(hotel.id);
-            
+          <FeaturedPanel property={featuredProperty} />
+        </div>
+      </section>
+
+      <section className="border-b border-border bg-card">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-5 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-16">
+          <div className="flex items-center gap-2 text-eyebrow text-muted-foreground">
+            <Filter className="h-4 w-4 text-primary" />
+            Region
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {countries.map((item) => (
+              <Button
+                key={item}
+                size="sm"
+                variant={country === item ? 'default' : 'outline'}
+                onClick={() => setCountry(item)}
+              >
+                {item}
+              </Button>
+            ))}
+          </div>
+          <p className="text-bodyeditorial text-muted-foreground">
+            {filteredProperties.length} properties shown
+          </p>
+        </div>
+      </section>
+
+      <section className="px-6 py-16 sm:px-8 sm:py-20 lg:px-16">
+        <div className="grid gap-px bg-border md:grid-cols-2 xl:grid-cols-3">
+          {filteredProperties.map((property) => {
+            const isWatching = watchlist.includes(property.id);
+            const isNotified = notified.includes(property.id);
+
             return (
-              <Card key={hotel.id} className="group overflow-hidden rounded-none transition-colors hover:bg-card">
-                <CardHeader className="p-0">
-                  <div className="relative aspect-[16/10] overflow-hidden">
-                    <HotelImage
-                      src={hotel.thumbnail}
-                      alt={hotel.name}
-                      className="group-hover:scale-105 transition-transform duration-500"
-                      fallbackClassName="h-12 w-12"
-                    />
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  {/* Hotel Info */}
-                  <div className="mb-4">
-                    <div className="flex items-start justify-between">
-                      <h3 className="font-serif text-xl font-light text-foreground">{hotel.name}</h3>
-                      <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary rounded-none">
-                        {hotel.roiGuaranteed}
-                      </Badge>
+              <article
+                key={property.id}
+                data-testid={`catalog-card-${property.id}`}
+                className="group relative aspect-[3/4] overflow-hidden bg-background"
+              >
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-[1200ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-105"
+                  style={{ backgroundImage: `url(${property.imageUrl})` }}
+                  aria-label={property.name}
+                />
+                <div className="absolute inset-0 lp-veil-card" />
+                <span className="absolute left-0 top-0 z-10 h-0 w-px bg-primary transition-[height] duration-700 ease-[cubic-bezier(.16,1,.3,1)] group-hover:h-full" />
+
+                <div className="absolute left-5 top-5 z-10 sm:left-6 sm:top-6">
+                  <Badge variant="outline" className="border-foreground/15 bg-background/55 text-foreground/55 backdrop-blur">
+                    {property.symbol}
+                  </Badge>
+                </div>
+
+                <button
+                  type="button"
+                  data-testid={`catalog-card-${property.id}-watchlist`}
+                  aria-label={isWatching ? 'Remove from watchlist' : 'Add to watchlist'}
+                  className="absolute right-5 top-5 z-20 flex size-10 shrink-0 items-center justify-center border border-foreground/15 bg-background/55 text-foreground/50 backdrop-blur transition-colors hover:border-primary hover:text-primary sm:right-6 sm:top-6"
+                  onClick={() => toggleWatchlist(property.id)}
+                >
+                  {isWatching ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Bookmark className="h-4 w-4" />
+                  )}
+                </button>
+
+                <div className="absolute inset-x-5 bottom-5 z-10 space-y-5 sm:inset-x-6 sm:bottom-6">
+                  <div>
+                    <p className="text-eyebrow mb-3 text-foreground/55">{property.type}</p>
+                    <div className="flex items-start justify-between gap-4">
+                      <h2 className="font-serif text-2xl font-light leading-tight tracking-normal text-foreground">
+                        <Link href={`/hotel/${property.id}`} className="hover:text-primary">
+                          {property.name}
+                        </Link>
+                      </h2>
+                      <div className="shrink-0 text-right text-primary">
+                        <p className="font-serif text-2xl font-light leading-none">{property.annualYield}%</p>
+                        <p className="text-eyebrow mt-1 text-primary/70">p.a.</p>
+                      </div>
                     </div>
-                    <p className="mt-1 flex items-center text-sm text-muted-foreground">
-                      <MapPin className="mr-1 h-3 w-3" />
-                      {hotel.location}, {hotel.country}
+                    <p className="mt-3 flex items-center gap-2 text-sm text-foreground/50">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      {property.location}
                     </p>
                   </div>
 
-                  {/* Key Metrics */}
-                  <div className="mb-4 grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-eyebrow text-muted-foreground">Min. Investment</p>
-                      <p className="mt-1 font-serif text-lg font-light text-foreground">${hotel.minInvestment}</p>
-                    </div>
-                    <div>
-                      <p className="text-eyebrow text-muted-foreground">Token Price</p>
-                      {showTokenPriceSkeleton ? (
-                        <Skeleton className="mt-1 h-3 w-10" />
-                      ) : (
-                        <p className="mt-1 font-serif text-lg font-light text-foreground">${displayTokenPrice}</p>
-                      )}
-                    </div>
+                  <div className="grid grid-cols-3 gap-px border border-foreground/10 bg-border/80 text-sm">
+                    <Metric label="Yield" value={`${property.annualYield}%`} />
+                    <Metric label="Token" value={formatUsd(property.tokenPriceUsd)} />
+                    <Metric label="Raise" value={formatUsd(property.raiseUsd / 1_000_000) + 'M'} />
                   </div>
 
-                  {/* Progress Bar */}
-                  <div className="mb-4">
-                    <div className="mb-2 flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {hotel.availableUnits} units available
-                      </span>
-                      <span className="font-medium text-foreground">{soldPercentage.toFixed(0)}% sold</span>
+                  <div>
+                    <div className="mb-3 flex items-center justify-between text-eyebrow text-foreground/45">
+                      <span>Funding</span>
+                      <span>{property.fundingProgress}%</span>
                     </div>
-                    <Progress value={soldPercentage} className="h-1" />
+                    <Progress value={property.fundingProgress} />
                   </div>
 
-                  {/* Features */}
-                  <div className="mb-6 flex flex-wrap gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      <TrendingUp className="mr-1 h-3 w-3" />
-                      {hotel.buybackPercentage}% buyback
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      Year {hotel.buybackYear}
-                    </Badge>
-                  </div>
-
-                  {/* CTA */}
-                  <Link href={`/hotel/${hotel.id}`}>
-                    <Button className="w-full" variant="default">
-                      View Details
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      data-testid={`catalog-card-${property.id}-invest`}
+                      className="flex-1"
+                      onClick={showPurchaseGate}
+                    >
+                      Invest
                     </Button>
-                  </Link>
-                </CardContent>
-              </Card>
+                    <Button
+                      data-testid={`catalog-card-${property.id}-notify`}
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => saveNotification(property.id)}
+                    >
+                      {isNotified ? 'Notified' : 'Notify'}
+                    </Button>
+                  </div>
+                </div>
+              </article>
             );
           })}
         </div>
+      </section>
+    </div>
+  );
+}
+
+function FeaturedPanel({ property }: { property: CatalogProperty }) {
+  return (
+    <div className="border border-foreground/10 bg-background/60 p-5 backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-border pb-4">
+        <div>
+          <p className="text-eyebrow text-muted-foreground">Featured</p>
+          <h2 className="mt-2 font-serif text-3xl font-light tracking-normal">{property.name}</h2>
+        </div>
+        <TrendingUp className="h-5 w-5 text-primary" />
       </div>
+      <div className="grid grid-cols-2 gap-px bg-border">
+        <Metric label="Annual Yield" value={`${property.annualYield}%`} />
+        <Metric label="5Y Estimate" value={`+${property.fiveYearEstimate}%`} />
+        <Metric label="Token Price" value={formatUsd(property.tokenPriceUsd)} />
+        <Metric label="LTV" value={`${property.ltvRatio}%`} />
+      </div>
+      <p className="mt-5 text-bodyeditorial text-muted-foreground">{property.description}</p>
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-card/90 p-4 backdrop-blur">
+      <p className="text-eyebrow text-muted-foreground">{label}</p>
+      <p className="mt-2 font-serif text-lg font-light text-foreground">{value}</p>
     </div>
   );
 }

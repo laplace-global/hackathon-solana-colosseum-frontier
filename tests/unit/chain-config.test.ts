@@ -13,13 +13,13 @@ describe('chain config asset definitions', () => {
       {
         collateral_currency: ASSET_ID_BY_SYMBOL.SAIL,
         collateral_issuer: 'So11111111111111111111111111111111111111112',
-        debt_currency: ASSET_ID_BY_SYMBOL.RLUSD,
+        debt_currency: ASSET_ID_BY_SYMBOL.USDC,
         debt_issuer: '4N8M9UZcvF4qSKHU4jAtQTLGp4iiSnNsYJ1y8P3QvYun',
       },
       {
         collateral_currency: 'SAIL',
         collateral_issuer: 'So11111111111111111111111111111111111111112',
-        debt_currency: 'RLUSD',
+        debt_currency: 'USDC',
         debt_issuer: '4N8M9UZcvF4qSKHU4jAtQTLGp4iiSnNsYJ1y8P3QvYun',
       },
     ]);
@@ -27,16 +27,16 @@ describe('chain config asset definitions', () => {
     assert.deepEqual(definitions, [
       { symbol: 'SOL', assetId: null, kind: 'native' },
       { symbol: 'SAIL', assetId: 'So11111111111111111111111111111111111111112', kind: 'token' },
-      { symbol: 'RLUSD', assetId: '4N8M9UZcvF4qSKHU4jAtQTLGp4iiSnNsYJ1y8P3QvYun', kind: 'token' },
+      { symbol: 'USDC', assetId: '4N8M9UZcvF4qSKHU4jAtQTLGp4iiSnNsYJ1y8P3QvYun', kind: 'token' },
     ]);
   });
 
-  it('finds an asset definition by symbol or legacy asset id', () => {
+  it('finds an asset definition by supported symbol or asset id', () => {
     const definitions = buildAssetDefinitions([
       {
         collateral_currency: ASSET_ID_BY_SYMBOL.SAIL,
         collateral_issuer: 'So11111111111111111111111111111111111111112',
-        debt_currency: ASSET_ID_BY_SYMBOL.RLUSD,
+        debt_currency: ASSET_ID_BY_SYMBOL.USDC,
         debt_issuer: '4N8M9UZcvF4qSKHU4jAtQTLGp4iiSnNsYJ1y8P3QvYun',
       },
     ]);
@@ -46,8 +46,8 @@ describe('chain config asset definitions', () => {
       assetId: 'So11111111111111111111111111111111111111112',
       kind: 'token',
     });
-    assert.deepEqual(getAssetDefinitionBySymbol(definitions, ASSET_ID_BY_SYMBOL.RLUSD), {
-      symbol: 'RLUSD',
+    assert.deepEqual(getAssetDefinitionBySymbol(definitions, ASSET_ID_BY_SYMBOL.USDC), {
+      symbol: 'USDC',
       assetId: '4N8M9UZcvF4qSKHU4jAtQTLGp4iiSnNsYJ1y8P3QvYun',
       kind: 'token',
     });

@@ -40,7 +40,7 @@ export function WalletToolsGrid({
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Creates a fresh local account, saves the secret in localStorage, requests SOL on devnet, and checks whether SAIL/NYRA/RLUSD can be received.
+            Creates a fresh local account, saves the secret in localStorage, requests SOL on devnet, and checks whether SAIL/NYRA/USDC can be received.
           </p>
           <Button
             onClick={onGenerateWallet}

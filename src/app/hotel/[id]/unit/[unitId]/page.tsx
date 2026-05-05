@@ -46,7 +46,7 @@ export default function UnitDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
-  const { address, rlusdBalance, hasRlusdAsset, refreshBalances } = useWallet();
+  const { address, usdcBalance, hasUsdcAsset, refreshBalances } = useWallet();
   const { isLoading: isPricesLoading, hasPriceForHotel, getTokenPrice } = useMarketPrices();
   const hotel = hotels.find(h => h.id === params.id);
   const unit = hotel?.units.find(u => u.id === params.unitId);
@@ -641,10 +641,10 @@ export default function UnitDetailPage() {
         tokenPrice={tokenPrice}
         totalPrice={purchaseTotal}
         roiPercentage={hotel.roiPercentage}
-        rlusdBalance={rlusdBalance}
+        usdcBalance={usdcBalance}
         userAddress={address}
         accountSecret={accountSecret}
-        hasRlusdAsset={hasRlusdAsset}
+        hasUsdcAsset={hasUsdcAsset}
         refreshBalances={refreshBalances}
         onOnrampRequest={handleOnrampRequest}
         onConfirm={handleConfirmPurchase}

@@ -25,7 +25,7 @@ import {
 import { WalletBalancesCard } from './components/wallet-balances-card';
 import { WalletToolsGrid } from './components/wallet-tools-grid';
 
-const TOKEN_LIST = ['SAIL', 'NYRA', 'RLUSD'] as const;
+const TOKEN_LIST = ['SAIL', 'NYRA', 'USDC'] as const;
 type TokenCode = (typeof TOKEN_LIST)[number];
 
 function formatPriceDraft(value: number | undefined): string {
@@ -64,14 +64,14 @@ export default function AdminPage() {
   const [assetProvisioning, setAssetProvisioning] = useState<Record<TokenCode, boolean>>({
     SAIL: false,
     NYRA: false,
-    RLUSD: false,
+    USDC: false,
   });
 
   const assetIdByToken = useMemo(() => {
     const mapping: Record<TokenCode, string | null> = {
       SAIL: null,
       NYRA: null,
-      RLUSD: null,
+      USDC: null,
     };
 
     for (const market of markets) {
@@ -173,7 +173,7 @@ export default function AdminPage() {
       const nextWallet = createLocalAccount();
       saveLocalAccountSecret(nextWallet.secret);
       setWallet(nextWallet);
-      setAssetProvisioning({ SAIL: true, NYRA: true, RLUSD: true });
+      setAssetProvisioning({ SAIL: true, NYRA: true, USDC: true });
 
       const response = await fetch('/api/admin/sol', {
         method: 'POST',
@@ -189,10 +189,10 @@ export default function AdminPage() {
       }
 
       await connectLocalWallet();
-      setAssetProvisioning({ SAIL: false, NYRA: false, RLUSD: false });
+      setAssetProvisioning({ SAIL: false, NYRA: false, USDC: false });
       toast.success('New local wallet generated and funded with SOL on devnet.');
     } catch (error) {
-      setAssetProvisioning({ SAIL: false, NYRA: false, RLUSD: false });
+      setAssetProvisioning({ SAIL: false, NYRA: false, USDC: false });
       toast.error(error instanceof Error ? error.message : 'Failed to generate wallet');
     } finally {
       setLoading('');
@@ -209,12 +209,12 @@ export default function AdminPage() {
 
       setWallet(null);
       setBalances([]);
-      setAssetProvisioning({ SAIL: false, NYRA: false, RLUSD: false });
+      setAssetProvisioning({ SAIL: false, NYRA: false, USDC: false });
       toast.success('Local wallet and wallet connection state cleared');
     } catch {
       setWallet(null);
       setBalances([]);
-      setAssetProvisioning({ SAIL: false, NYRA: false, RLUSD: false });
+      setAssetProvisioning({ SAIL: false, NYRA: false, USDC: false });
       toast.error('Failed to fully disconnect active session, but local wallet metadata was cleared');
     } finally {
       setLoading('');

@@ -12,14 +12,14 @@ import { getAssetDefinitionBySymbol } from '@/lib/chain/config';
 import type { AssetBalance, AssetDefinition } from '@/lib/chain/types';
 
 export type ConnectionType = 'disconnected' | 'local';
-export type AppToken = 'RLUSD' | 'SAIL' | 'NYRA';
+export type AppToken = 'USDC' | 'SAIL' | 'NYRA';
 type AssetStatus = 'idle' | 'checking' | 'ready' | 'missing' | 'error';
 
-const APP_TOKENS: AppToken[] = ['RLUSD', 'SAIL', 'NYRA'];
+const APP_TOKENS: AppToken[] = ['USDC', 'SAIL', 'NYRA'];
 
 function createDefaultAssetStatus(): Record<AppToken, AssetStatus> {
   return {
-    RLUSD: 'idle',
+    USDC: 'idle',
     SAIL: 'idle',
     NYRA: 'idle',
   };
@@ -27,7 +27,7 @@ function createDefaultAssetStatus(): Record<AppToken, AssetStatus> {
 
 function createDefaultAssetAvailability(): Record<AppToken, boolean> {
   return {
-    RLUSD: false,
+    USDC: false,
     SAIL: false,
     NYRA: false,
   };
@@ -35,7 +35,7 @@ function createDefaultAssetAvailability(): Record<AppToken, boolean> {
 
 function toStatusMap(flags: Record<AppToken, boolean>): Record<AppToken, AssetStatus> {
   return {
-    RLUSD: flags.RLUSD ? 'ready' : 'missing',
+    USDC: flags.USDC ? 'ready' : 'missing',
     SAIL: flags.SAIL ? 'ready' : 'missing',
     NYRA: flags.NYRA ? 'ready' : 'missing',
   };
@@ -45,11 +45,11 @@ interface WalletContextType {
   connectionType: ConnectionType;
   address: string | null;
   balances: AssetBalance[];
-  rlusdBalance: number;
+  usdcBalance: number;
   isConnecting: boolean;
   isRefreshing: boolean;
   assetStatus: AssetStatus;
-  hasRlusdAsset: boolean;
+  hasUsdcAsset: boolean;
   assetStatusByToken: Record<AppToken, AssetStatus>;
   hasAssetByToken: Record<AppToken, boolean>;
   error: string | null;
@@ -63,15 +63,15 @@ interface WalletContextType {
 
 interface WalletRefreshSnapshot {
   balances: AssetBalance[];
-  rlusdBalance: number;
-  hasRlusdAsset: boolean;
+  usdcBalance: number;
+  hasUsdcAsset: boolean;
   hasAssetByToken: Record<AppToken, boolean>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-function parseRlusdBalance(balances: AssetBalance[]): number {
-  const line = balances.find((entry) => entry.symbol === 'RLUSD');
+function parseUsdcBalance(balances: AssetBalance[]): number {
+  const line = balances.find((entry) => entry.symbol === 'USDC');
   if (!line) return 0;
 
   const value = Number(line.displayAmount);
@@ -88,7 +88,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [connectionType, setConnectionType] = useState<ConnectionType>('disconnected');
   const [address, setAddress] = useState<string | null>(null);
   const [balances, setBalances] = useState<AssetBalance[]>([]);
-  const [rlusdBalance, setRlusdBalance] = useState(0);
+  const [usdcBalance, setUsdcBalance] = useState(0);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [assetStatusByToken, setAssetStatusByToken] = useState<Record<AppToken, AssetStatus>>(
@@ -137,7 +137,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       try {
         const availability = await getAssetAvailability(nextAddress, trackedAssets);
         const nextFlags: Record<AppToken, boolean> = {
-          RLUSD: Boolean(availability.RLUSD),
+          USDC: Boolean(availability.USDC),
           SAIL: Boolean(availability.SAIL),
           NYRA: Boolean(availability.NYRA),
         };
@@ -147,7 +147,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       } catch {
         setHasAssetByToken(createDefaultAssetAvailability());
         setAssetStatusByToken({
-          RLUSD: 'error',
+          USDC: 'error',
           SAIL: 'error',
           NYRA: 'error',
         });
@@ -188,7 +188,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
         if (options?.skipAssetRefresh) {
           const normalizedFlags: Record<AppToken, boolean> = {
-            RLUSD: Boolean(assetAvailability.RLUSD),
+            USDC: Boolean(assetAvailability.USDC),
             SAIL: Boolean(assetAvailability.SAIL),
             NYRA: Boolean(assetAvailability.NYRA),
           };
@@ -196,23 +196,23 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
           setAssetStatusByToken(toStatusMap(normalizedFlags));
         }
 
-        const nextRlusdBalance = parseRlusdBalance(nextBalances);
+        const nextUsdcBalance = parseUsdcBalance(nextBalances);
         setBalances(nextBalances);
-        setRlusdBalance(nextRlusdBalance);
+        setUsdcBalance(nextUsdcBalance);
 
         return {
           balances: nextBalances,
-          rlusdBalance: nextRlusdBalance,
-          hasRlusdAsset: assetAvailability.RLUSD,
+          usdcBalance: nextUsdcBalance,
+          hasUsdcAsset: assetAvailability.USDC,
           hasAssetByToken: assetAvailability,
         };
       } catch {
         setError('Failed to refresh wallet balances. Please try again.');
         setBalances([]);
-        setRlusdBalance(0);
+        setUsdcBalance(0);
         setHasAssetByToken(createDefaultAssetAvailability());
         setAssetStatusByToken({
-          RLUSD: 'error',
+          USDC: 'error',
           SAIL: 'error',
           NYRA: 'error',
         });
@@ -228,7 +228,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setConnectionType('disconnected');
     setAddress(null);
     setBalances([]);
-    setRlusdBalance(0);
+    setUsdcBalance(0);
     setHasAssetByToken(createDefaultAssetAvailability());
     setAssetStatusByToken(createDefaultAssetStatus());
     setError(null);
@@ -281,7 +281,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     }
 
     const flags = await refreshAssetAvailabilityForAddress(address);
-    return flags.RLUSD;
+    return flags.USDC;
   }, [address, refreshAssetAvailabilityForAddress]);
 
   const refreshAssetStatuses = useCallback(async (): Promise<Record<AppToken, boolean>> => {
@@ -313,12 +313,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!address) {
-      setRlusdBalance(0);
+      setUsdcBalance(0);
       setHasAssetByToken(createDefaultAssetAvailability());
       setAssetStatusByToken(createDefaultAssetStatus());
       return;
     }
-    setRlusdBalance(parseRlusdBalance(balances));
+    setUsdcBalance(parseUsdcBalance(balances));
   }, [address, balances]);
 
   useEffect(() => {
@@ -372,12 +372,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       connectionType,
       address,
       balances,
-      rlusdBalance,
+      usdcBalance,
       isConnecting,
       isRefreshing,
       error,
-      assetStatus: assetStatusByToken.RLUSD,
-      hasRlusdAsset: hasAssetByToken.RLUSD,
+      assetStatus: assetStatusByToken.USDC,
+      hasUsdcAsset: hasAssetByToken.USDC,
       assetStatusByToken,
       hasAssetByToken,
       isLocalWalletAvailable,
@@ -401,7 +401,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       refreshBalances,
       refreshAssetStatus,
       refreshAssetStatuses,
-      rlusdBalance,
+      usdcBalance,
       assetStatusByToken,
     ]
   );

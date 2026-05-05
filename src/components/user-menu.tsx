@@ -37,7 +37,7 @@ import { toast } from 'sonner';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
-  const { address, connectionType, disconnect, isRefreshing, refreshBalances, rlusdBalance } = useWallet();
+  const { address, connectionType, disconnect, isRefreshing, refreshBalances, usdcBalance } = useWallet();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -177,13 +177,13 @@ export function UserMenu() {
                   <p className="font-mono text-sm">{address ? formatAddress(address) : 'Not connected'}</p>
                   
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">RLUSD Balance</span>
+                    <span className="text-sm text-muted-foreground">USDC Balance</span>
                     <span className="flex items-center gap-1 font-semibold">
                       <DollarSign className="h-4 w-4" />
                       {isRefreshing ? (
                         <Skeleton className="h-4 w-28 bg-card" />
                       ) : (
-                        `${rlusdBalance.toLocaleString()} RLUSD`
+                        `${usdcBalance.toLocaleString()} USDC`
                       )}
                     </span>
                   </div>
@@ -291,13 +291,13 @@ export function UserMenu() {
           </div>
 
           <div className="mt-3 flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">RLUSD Balance</span>
+            <span className="text-sm text-muted-foreground">USDC Balance</span>
             <span className="flex items-center gap-1 font-semibold">
               <DollarSign className="h-4 w-4" />
               {isRefreshing ? (
                 <Skeleton className="h-4 w-24 bg-card" />
               ) : (
-                `${rlusdBalance.toLocaleString()} RLUSD`
+                `${usdcBalance.toLocaleString()} USDC`
               )}
             </span>
           </div>

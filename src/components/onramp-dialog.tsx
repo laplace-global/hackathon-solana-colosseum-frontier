@@ -54,7 +54,7 @@ type Step = 'amount' | 'payment' | 'processing' | 'success';
 
 const processingSteps = [
   'Validating wallet and asset account...',
-  'Submitting RLUSD transfer...',
+  'Submitting USDC transfer...',
   'Confirming on-chain transaction...',
 ];
 
@@ -113,7 +113,7 @@ export function OnrampDialog({
     }
 
     if (parsedAmount < minimumAmount) {
-      setErrorMessage(`Minimum top-up is ${minimumAmount.toFixed(2)} RLUSD.`);
+      setErrorMessage(`Minimum top-up is ${minimumAmount.toFixed(2)} USDC.`);
       return;
     }
 
@@ -154,7 +154,7 @@ export function OnrampDialog({
       setStep('success');
       onSuccess?.(amount);
       toast.success('Top-up completed', {
-        description: `${amount.toFixed(2)} RLUSD added to your wallet.`,
+        description: `${amount.toFixed(2)} USDC added to your wallet.`,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Onramp failed. Please retry.';
@@ -178,13 +178,13 @@ export function OnrampDialog({
         {step === 'amount' && (
           <>
             <DialogHeader>
-              <DialogTitle>Deposit RLUSD</DialogTitle>
-              <DialogDescription>Add RLUSD to your wallet before purchase.</DialogDescription>
+              <DialogTitle>Deposit USDC</DialogTitle>
+              <DialogDescription>Add USDC to your wallet before purchase.</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Top-up Amount (RLUSD)</label>
+                <label className="text-sm font-medium">Top-up Amount (USDC)</label>
                 <input
                   type="number"
                   min={minimumAmount}
@@ -193,7 +193,7 @@ export function OnrampDialog({
                   onChange={(event) => setAmountInput(event.target.value)}
                   className="w-full border border-border bg-background px-4 py-3 text-lg font-semibold text-foreground"
                 />
-                <p className="text-xs text-muted-foreground">Minimum: {minimumAmount.toFixed(2)} RLUSD</p>
+                <p className="text-xs text-muted-foreground">Minimum: {minimumAmount.toFixed(2)} USDC</p>
               </div>
 
               {errorMessage ? (
@@ -252,11 +252,11 @@ export function OnrampDialog({
                 <CardContent className="space-y-2 p-4 text-sm">
                   <div className="flex items-center justify-between">
                     <span>Top-up amount</span>
-                    <span>{amount.toFixed(2)} RLUSD</span>
+                    <span>{amount.toFixed(2)} USDC</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Fee</span>
-                    <span>{fee.toFixed(2)} RLUSD</span>
+                    <span>{fee.toFixed(2)} USDC</span>
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span>Total charge</span>
@@ -287,7 +287,7 @@ export function OnrampDialog({
           <>
             <DialogHeader>
               <DialogTitle>Processing Top-up</DialogTitle>
-              <DialogDescription>Submitting RLUSD transfer. Keep this window open.</DialogDescription>
+              <DialogDescription>Submitting USDC transfer. Keep this window open.</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
@@ -311,7 +311,7 @@ export function OnrampDialog({
           <>
             <DialogHeader>
               <DialogTitle>Top-up Successful</DialogTitle>
-              <DialogDescription>Your RLUSD wallet balance is now updated.</DialogDescription>
+              <DialogDescription>Your USDC wallet balance is now updated.</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
@@ -325,7 +325,7 @@ export function OnrampDialog({
                 <CardContent className="space-y-2 p-4 text-sm">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Transferred</span>
-                    <span className="font-semibold">{amount.toFixed(2)} RLUSD</span>
+                    <span className="font-semibold">{amount.toFixed(2)} USDC</span>
                   </div>
                   {txHash ? (
                     <div className="flex items-center justify-between">

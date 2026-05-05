@@ -10,14 +10,14 @@ const WITHDRAW_AMOUNT = '10';
 const MARKET_ID = 'market-sail';
 const ASSETS = {
   SAIL: 'sail-mint',
-  RLUSD: 'rlusd-mint',
+  USDC: 'usdc-mint',
   NYRA: 'nyra-mint',
 } as const;
 
 interface OperationState {
   address: string | null;
   sol: number;
-  rlusd: number;
+  usdc: number;
   sail: number;
   nyra: number;
   supplied: number;
@@ -30,7 +30,7 @@ function createState(): OperationState {
   return {
     address: null,
     sol: 0,
-    rlusd: 0,
+    usdc: 0,
     sail: 0,
     nyra: 0,
     supplied: 0,
@@ -43,15 +43,15 @@ function createState(): OperationState {
 function market(state: OperationState) {
   return {
     id: MARKET_ID,
-    name: 'SAIL-RLUSD',
+    name: 'SAIL-USDC',
     isActive: true,
     collateralCurrency: 'SAIL',
     collateralIssuer: ASSETS.SAIL,
     collateralAssetId: ASSETS.SAIL,
     collateralLockEnabled: true,
-    debtCurrency: 'RLUSD',
-    debtIssuer: ASSETS.RLUSD,
-    debtAssetId: ASSETS.RLUSD,
+    debtCurrency: 'USDC',
+    debtIssuer: ASSETS.USDC,
+    debtAssetId: ASSETS.USDC,
     liquidityPoolId: null,
     positionTokenAssetId: null,
     liquidityShareScale: 6,
@@ -72,7 +72,7 @@ function market(state: OperationState) {
   };
 }
 
-function balance(symbol: 'SOL' | 'SAIL' | 'RLUSD' | 'NYRA', amount: number) {
+function balance(symbol: 'SOL' | 'SAIL' | 'USDC' | 'NYRA', amount: number) {
   const assetId = symbol === 'SOL' ? null : ASSETS[symbol];
   return {
     symbol,
@@ -89,7 +89,7 @@ function balance(symbol: 'SOL' | 'SAIL' | 'RLUSD' | 'NYRA', amount: number) {
 function balances(state: OperationState) {
   return [
     balance('SOL', state.sol),
-    balance('RLUSD', state.rlusd),
+    balance('USDC', state.usdc),
     balance('SAIL', state.sail),
     balance('NYRA', state.nyra),
   ];
@@ -226,8 +226,8 @@ async function installOperationMocks(page: Page, state: OperationState) {
 
   await page.route('**/api/faucet', async (route) => {
     const body = route.request().postDataJSON() as { token?: keyof typeof ASSETS };
-    const token = body.token ?? 'RLUSD';
-    if (token === 'RLUSD') state.rlusd += 1_000;
+    const token = body.token ?? 'USDC';
+    if (token === 'USDC') state.usdc += 1_000;
     if (token === 'SAIL') state.sail += 1_000;
     if (token === 'NYRA') state.nyra += 1_000;
 
@@ -353,7 +353,7 @@ async function installOperationMocks(page: Page, state: OperationState) {
       const body = route.request().postDataJSON() as { amount?: number };
       const amount = Number(body.amount ?? 0);
       state.supplied += amount;
-      state.rlusd -= amount;
+      state.usdc -= amount;
 
       await route.fulfill({
         json: {
@@ -390,7 +390,7 @@ async function installOperationMocks(page: Page, state: OperationState) {
       const body = route.request().postDataJSON() as { amount?: number };
       const amount = Number(body.amount ?? 0);
       state.loan += amount;
-      state.rlusd += amount;
+      state.usdc += amount;
 
       await route.fulfill({
         json: {
@@ -410,7 +410,7 @@ async function installOperationMocks(page: Page, state: OperationState) {
       const body = route.request().postDataJSON() as { amount?: number };
       const amount = Number(body.amount ?? 0);
       state.loan = Math.max(0, state.loan - amount);
-      state.rlusd = Math.max(0, state.rlusd - amount);
+      state.usdc = Math.max(0, state.usdc - amount);
 
       await route.fulfill({
         json: {
@@ -474,14 +474,22 @@ test('local operation flow reaches purchase, lend, borrow, repay, and withdraw c
   const state = createState();
   await installOperationMocks(page, state);
 
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Buy real estate, 1-click, from 1 SOL.' })).toBeVisible();
+  await page.waitForTimeout(800);
+  await page.getByRole('link', { name: 'Explore Properties' }).click();
+  await expect(page).toHaveURL(/\/discover$/);
+  await expect(page.getByText("One Za'abeel Sky Penthouse").first()).toBeVisible();
+  await page.waitForTimeout(500);
+
   await page.goto('/admin');
   await page.getByTestId('admin-clear-local-wallet').click();
   await page.getByTestId('admin-generate-wallet').click();
   await expect(page.getByTestId('admin-wallet-loaded')).toBeVisible({ timeout: 30_000 });
 
-  await page.getByTestId('admin-faucet-rlusd').click();
-  await waitForToast(page, 'Sent 1000 RLUSD to the local wallet');
-  await expect(page.getByTestId('admin-balance-rlusd')).toContainText('1000.0000');
+  await page.getByTestId('admin-faucet-usdc').click();
+  await waitForToast(page, 'Sent 1000 USDC to the local wallet');
+  await expect(page.getByTestId('admin-balance-usdc')).toContainText('1000.0000');
 
   await page.goto(THE_SAIL_UNIT_URL);
   await page.getByTestId('purchase-token-amount-input').fill(PURCHASE_AMOUNT);
@@ -503,7 +511,7 @@ test('local operation flow reaches purchase, lend, borrow, repay, and withdraw c
   await expect(page.getByTestId('lend-supply-submit')).toBeEnabled({ timeout: 30_000 });
   await page.getByTestId('lend-supply-amount').fill(SUPPLY_AMOUNT);
   await page.getByTestId('lend-supply-submit').click();
-  await waitForToast(page, /Supplied .* RLUSD/);
+  await waitForToast(page, /Supplied .* USDC/);
 
   await page.goto('/borrow');
   await expect(page.getByTestId('borrow-deposit-submit')).toBeEnabled({ timeout: 30_000 });
@@ -517,14 +525,14 @@ test('local operation flow reaches purchase, lend, borrow, repay, and withdraw c
   await page.getByTestId('borrow-amount').fill(BORROW_AMOUNT);
   await page.getByTestId('borrow-submit').click();
   await waitForToast(page, 'Borrow successful');
-  await expect(page.getByTestId('borrow-position-loan')).toContainText('50.00 RLUSD');
+  await expect(page.getByTestId('borrow-position-loan')).toContainText('50.00 USDC');
 
   await page.getByRole('tab', { name: 'Repay' }).click();
   await expect(page.getByTestId('borrow-repay-preset-full')).toBeEnabled({ timeout: 30_000 });
   await page.getByTestId('borrow-repay-preset-full').click();
   await page.getByTestId('borrow-repay-submit').click();
   await waitForToast(page, 'Repayment successful');
-  await expect(page.getByTestId('borrow-position-loan')).toContainText('0.00 RLUSD');
+  await expect(page.getByTestId('borrow-position-loan')).toContainText('0.00 USDC');
 
   await page.getByRole('tab', { name: 'Withdraw' }).click();
   await page.getByTestId('borrow-withdraw-amount').fill(WITHDRAW_AMOUNT);

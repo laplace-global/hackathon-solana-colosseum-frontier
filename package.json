@@ -12,10 +12,13 @@
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit push",
+    "db:seed": "tsx scripts/init-db.ts",
+    "db:reset": "tsx scripts/reset-db.ts",
+    "db:reset:yes": "tsx scripts/reset-db.ts --yes",
+    "db:up": "pnpm db:migrate && pnpm db:seed",
+    "db:push": "pnpm db:migrate",
     "db:studio": "drizzle-kit studio",
-    "setup:db": "npx tsx scripts/init-db.ts",
-    "setup:all": "npm run setup:db",
     "dev-tools": "npx tsx scripts/dev-tools.ts"
   },
   "dependencies": {

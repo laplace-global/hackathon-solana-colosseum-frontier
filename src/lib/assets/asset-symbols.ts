@@ -1,13 +1,13 @@
 export const ASSET_ID_BY_SYMBOL = {
   SAIL: '5341494C00000000000000000000000000000000',
   NYRA: '4E59524100000000000000000000000000000000',
-  RLUSD: '524C555344000000000000000000000000000000',
+  USDC: '5553444300000000000000000000000000000000',
 } as const;
 
 export type SupportedAssetSymbol = keyof typeof ASSET_ID_BY_SYMBOL;
 
 export function getAssetId(symbol: string): string | null {
-  const normalized = symbol.toUpperCase() as SupportedAssetSymbol;
+  const normalized = getAssetSymbol(symbol).toUpperCase() as SupportedAssetSymbol;
   return ASSET_ID_BY_SYMBOL[normalized] ?? null;
 }
 

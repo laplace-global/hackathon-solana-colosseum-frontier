@@ -48,7 +48,7 @@ export default function WalletPage() {
     error,
     isRefreshing,
     refreshBalances,
-    rlusdBalance,
+    usdcBalance,
   } = useWallet();
   const [showOnramp, setShowOnramp] = useState(false);
   const [showOfframp, setShowOfframp] = useState(false);
@@ -58,7 +58,7 @@ export default function WalletPage() {
   const [accountSecret, setAccountSecret] = useState<string>('');
 
   const orderedBalances = [...balances].sort((left, right) => {
-    const order = ['SOL', 'RLUSD', 'SAIL', 'NYRA'];
+    const order = ['SOL', 'USDC', 'SAIL', 'NYRA'];
     const leftIndex = order.indexOf(left.symbol);
     const rightIndex = order.indexOf(right.symbol);
     return (leftIndex === -1 ? Number.MAX_SAFE_INTEGER : leftIndex)
@@ -74,7 +74,7 @@ export default function WalletPage() {
         id: '1',
         type: 'dividend',
         amount: 100,
-        currency: 'RLUSD',
+        currency: 'USDC',
         status: 'completed',
         description: 'Q3 2024 Dividend - THE SAIL Hotel',
         date: new Date('2024-09-30'),
@@ -84,7 +84,7 @@ export default function WalletPage() {
         id: '2',
         type: 'purchase',
         amount: -5000,
-        currency: 'RLUSD',
+        currency: 'USDC',
         status: 'completed',
         description: 'Token Purchase - Studio Deluxe (50 tokens)',
         date: new Date('2024-01-15'),
@@ -94,9 +94,9 @@ export default function WalletPage() {
         id: '3',
         type: 'deposit',
         amount: 10000,
-        currency: 'RLUSD',
+        currency: 'USDC',
         status: 'completed',
-        description: 'RLUSD Treasury Top-up',
+        description: 'USDC Treasury Top-up',
         date: new Date('2024-01-10'),
         txHash: '3Lm8...Qv2R',
       },
@@ -104,7 +104,7 @@ export default function WalletPage() {
         id: '4',
         type: 'dividend',
         amount: 100,
-        currency: 'RLUSD',
+        currency: 'USDC',
         status: 'completed',
         description: 'Q2 2024 Dividend - THE SAIL Hotel',
         date: new Date('2024-06-30'),
@@ -114,9 +114,9 @@ export default function WalletPage() {
         id: '5',
         type: 'withdrawal',
         amount: -2500,
-        currency: 'RLUSD',
+        currency: 'USDC',
         status: 'pending',
-        description: 'RLUSD Offramp Request',
+        description: 'USDC Offramp Request',
         date: new Date('2024-11-25'),
         txHash: '2Nz7...Mv4X',
       },
@@ -191,9 +191,9 @@ export default function WalletPage() {
       id: Date.now().toString(),
       type: 'deposit',
       amount: amount,
-      currency: 'RLUSD',
+      currency: 'USDC',
       status: 'completed',
-      description: 'RLUSD Onramp',
+      description: 'USDC Onramp',
       date: new Date(),
       txHash: `5${Math.random().toString(36).slice(2, 10)}...${Math.random().toString(36).slice(2, 6)}`,
     };
@@ -206,9 +206,9 @@ export default function WalletPage() {
       id: Date.now().toString(),
       type: 'withdrawal',
       amount: -amount,
-      currency: 'RLUSD',
+      currency: 'USDC',
       status: 'pending',
-      description: 'RLUSD Offramp',
+      description: 'USDC Offramp',
       date: new Date(),
       txHash: `7${Math.random().toString(36).slice(2, 10)}...${Math.random().toString(36).slice(2, 6)}`,
     };
@@ -226,7 +226,7 @@ export default function WalletPage() {
                 <p className="text-eyebrow text-primary mb-3">Treasury</p>
                 <h1 className="font-serif text-4xl font-light text-foreground md:text-5xl">My Wallet</h1>
                 <p className="mt-3 text-muted-foreground">
-                  Manage your RLUSD balance and transactions
+                  Manage your USDC balance and transactions
                 </p>
               </div>
               
@@ -269,7 +269,7 @@ export default function WalletPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-eyebrow text-muted-foreground">
-                    RLUSD Balance
+                    USDC Balance
                   </CardTitle>
                   <Button
                     variant="ghost"
@@ -283,13 +283,13 @@ export default function WalletPage() {
               <CardContent>
                 <div className="flex items-baseline gap-3">
                   <span className="font-serif text-5xl font-light text-foreground">
-                    {showBalance ? `${rlusdBalance.toFixed(2)}` : '•••••••'}
+                    {showBalance ? `${usdcBalance.toFixed(2)}` : '•••••••'}
                   </span>
-                  <span className="text-eyebrow text-muted-foreground">RLUSD</span>
+                  <span className="text-eyebrow text-muted-foreground">USDC</span>
                 </div>
                 {showBalance && (
                   <p className="mt-2 text-sm text-muted-foreground">
-                    ≈ ${rlusdBalance.toFixed(2)} USD
+                    ≈ ${usdcBalance.toFixed(2)} USD
                   </p>
                 )}
                 
@@ -496,7 +496,7 @@ export default function WalletPage() {
         <OfframpDialog 
           open={showOfframp} 
           onOpenChange={setShowOfframp}
-          availableBalance={rlusdBalance}
+          availableBalance={usdcBalance}
           userAddress={address ?? ''}
           accountSecret={accountSecret}
           onSuccess={handleOfframpSuccess}

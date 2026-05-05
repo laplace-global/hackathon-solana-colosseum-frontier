@@ -9,9 +9,14 @@
   --font-sans: var(--font-inter);
   --font-serif: var(--font-cormorant);
   --font-mono: var(--font-geist-mono);
-  --color-lp-primary-dim: var(--lp-primary-dim);
-  --color-lp-text-subtle: var(--lp-text-subtle);
-  --color-lp-hairline: var(--lp-hairline);
+  --color-lp-ink: var(--lp-ink);
+  --color-lp-ink-raised: var(--lp-ink-raised);
+  --color-lp-fog: var(--lp-fog);
+  --color-lp-line: var(--lp-line);
+  --color-lp-paper: var(--lp-paper);
+  --color-lp-paper-muted: var(--lp-paper-muted);
+  --color-lp-teal-dim: var(--lp-teal-dim);
+  --color-lp-solana: var(--lp-solana);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,75 +53,80 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.006 285.885);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.21 0.006 285.885);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.705 0.015 286.067);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.21 0.006 285.885);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.705 0.015 286.067);
+  --radius: 4px;
+  --lp-ink: #0A0906;
+  --lp-ink-raised: #141310;
+  --lp-fog: #1C1B18;
+  --lp-line: #252420;
+  --lp-paper: #F0EAE0;
+  --lp-paper-muted: #A8A090;
+  --lp-teal-dim: #0E2A28;
+  --lp-solana: #9945FF;
+  --background: var(--lp-ink);
+  --foreground: var(--lp-paper);
+  --card: var(--lp-ink-raised);
+  --card-foreground: var(--lp-paper);
+  --popover: var(--lp-ink-raised);
+  --popover-foreground: var(--lp-paper);
+  --primary: #2ABFBF;
+  --primary-foreground: var(--lp-ink);
+  --secondary: var(--lp-fog);
+  --secondary-foreground: var(--lp-paper);
+  --muted: var(--lp-fog);
+  --muted-foreground: var(--lp-paper-muted);
+  --accent: var(--lp-teal-dim);
+  --accent-foreground: var(--lp-paper);
+  --destructive: #FF5050;
+  --border: var(--lp-line);
+  --input: var(--lp-line);
+  --ring: #2ABFBF;
+  --chart-1: #2ABFBF;
+  --chart-2: var(--lp-solana);
+  --chart-3: var(--lp-paper-muted);
+  --chart-4: #FFAA00;
+  --chart-5: var(--lp-teal-dim);
+  --sidebar: var(--lp-ink-raised);
+  --sidebar-foreground: var(--lp-paper);
+  --sidebar-primary: #2ABFBF;
+  --sidebar-primary-foreground: var(--lp-ink);
+  --sidebar-accent: var(--lp-fog);
+  --sidebar-accent-foreground: var(--lp-paper);
+  --sidebar-border: var(--lp-line);
+  --sidebar-ring: #2ABFBF;
 }
 
 .dark {
-  --background: #0A0A08;
-  --foreground: #F2EDE4;
-  --card: #111110;
-  --card-foreground: #F2EDE4;
-  --popover: #111110;
-  --popover-foreground: #F2EDE4;
+  --background: var(--lp-ink);
+  --foreground: var(--lp-paper);
+  --card: var(--lp-ink-raised);
+  --card-foreground: var(--lp-paper);
+  --popover: var(--lp-ink-raised);
+  --popover-foreground: var(--lp-paper);
   --primary: #2ABFBF;
-  --primary-foreground: #0A0A08;
-  --secondary: #1E1E1C;
-  --secondary-foreground: #F2EDE4;
-  --muted: #111110;
-  --muted-foreground: #6B6560;
-  --accent: #2ABFBF;
-  --accent-foreground: #0A0A08;
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: #1E1E1C;
-  --input: #1E1E1C;
+  --primary-foreground: var(--lp-ink);
+  --secondary: var(--lp-fog);
+  --secondary-foreground: var(--lp-paper);
+  --muted: var(--lp-fog);
+  --muted-foreground: var(--lp-paper-muted);
+  --accent: var(--lp-teal-dim);
+  --accent-foreground: var(--lp-paper);
+  --destructive: #FF5050;
+  --border: var(--lp-line);
+  --input: var(--lp-line);
   --ring: #2ABFBF;
   --chart-1: #2ABFBF;
-  --chart-2: #F2EDE4;
-  --chart-3: #6B6560;
-  --chart-4: #72706B;
-  --chart-5: #0E1B1B;
-  --sidebar: #111110;
-  --sidebar-foreground: #F2EDE4;
+  --chart-2: var(--lp-solana);
+  --chart-3: var(--lp-paper-muted);
+  --chart-4: #FFAA00;
+  --chart-5: var(--lp-teal-dim);
+  --sidebar: var(--lp-ink-raised);
+  --sidebar-foreground: var(--lp-paper);
   --sidebar-primary: #2ABFBF;
-  --sidebar-primary-foreground: #0A0A08;
-  --sidebar-accent: #1E1E1C;
-  --sidebar-accent-foreground: #F2EDE4;
-  --sidebar-border: #1E1E1C;
+  --sidebar-primary-foreground: var(--lp-ink);
+  --sidebar-accent: var(--lp-fog);
+  --sidebar-accent-foreground: var(--lp-paper);
+  --sidebar-border: var(--lp-line);
   --sidebar-ring: #2ABFBF;
-  --lp-primary-dim: #0E1B1B;
-  --lp-text-subtle: #72706B;
-  --lp-hairline: #1E1E1C;
 }
 
 @layer base {
@@ -125,7 +135,22 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-weight: 300;
+    overflow-x: hidden;
     font-feature-settings: "ss01", "cv01";
+  }
+
+  ::selection {
+    background: rgb(42 191 191 / 26%);
+    color: var(--lp-paper);
+  }
+
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    @apply outline-ring/40;
   }
 }
 
@@ -133,55 +158,59 @@
   .font-serif {
     font-family: var(--font-cormorant), "Cormorant Garamond", serif;
   }
-  .tracking-eyebrow {
-    letter-spacing: 0.34em;
-  }
-  .tracking-uilink {
-    letter-spacing: 0.24em;
-  }
-  .tracking-uibtn {
-    letter-spacing: 0.26em;
-  }
+
   .text-eyebrow {
     font-size: 8px;
-    letter-spacing: 0.34em;
-    text-transform: uppercase;
     font-weight: 400;
+    letter-spacing: 0.34em;
+    line-height: 1.2;
+    text-transform: uppercase;
   }
+
   .text-uilink {
     font-size: 9px;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
     font-weight: 400;
+    letter-spacing: 0.24em;
+    line-height: 1.2;
+    text-transform: uppercase;
   }
+
   .text-uibtn {
     font-size: 9px;
-    letter-spacing: 0.26em;
-    text-transform: uppercase;
     font-weight: 400;
+    letter-spacing: 0.26em;
+    line-height: 1;
+    text-transform: uppercase;
   }
+
   .text-bodyeditorial {
     font-size: 12px;
-    line-height: 1.9;
-    letter-spacing: 0.08em;
     font-weight: 300;
+    letter-spacing: 0.08em;
+    line-height: 1.9;
   }
+
   .lp-veil {
     background: linear-gradient(
       to top,
-      rgba(10, 10, 8, 0.96) 0%,
-      rgba(10, 10, 8, 0.55) 35%,
-      rgba(10, 10, 8, 0.2) 65%,
-      rgba(10, 10, 8, 0.42) 100%
+      rgb(10 9 6 / 100%) 0%,
+      rgb(10 9 6 / 72%) 28%,
+      rgb(10 9 6 / 24%) 58%,
+      rgb(10 9 6 / 42%) 100%
     );
   }
+
   .lp-veil-card {
     background: linear-gradient(
       to top,
-      rgba(10, 10, 8, 0.92) 0%,
-      rgba(10, 10, 8, 0.4) 60%,
-      rgba(10, 10, 8, 0.1) 100%
+      rgb(10 9 6 / 96%) 0%,
+      rgb(10 9 6 / 35%) 55%,
+      rgb(10 9 6 / 8%) 100%
     );
+  }
+
+  .lp-hairline-glow {
+    background: linear-gradient(90deg, transparent, rgb(42 191 191 / 42%), transparent);
   }
 }
 
@@ -195,21 +224,9 @@
   100% { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes lp-kenburns-1 {
-  0% { transform: scale(1) translate(0, 0); }
-  100% { transform: scale(1.09) translate(-1.5%, 0.5%); }
-}
-@keyframes lp-kenburns-2 {
-  0% { transform: scale(1.06) translate(1%, 0); }
-  100% { transform: scale(1) translate(0, 1%); }
-}
-@keyframes lp-kenburns-3 {
-  0% { transform: scale(1) translate(0, 0.8%); }
-  100% { transform: scale(1.08) translate(-0.5%, 0); }
-}
-@keyframes lp-kenburns-4 {
-  0% { transform: scale(1.07) translate(-1%, 0.5%); }
-  100% { transform: scale(1) translate(0.5%, -0.5%); }
+@keyframes lp-kenburns {
+  0% { transform: scale(1.06) translate(0.6%, 0); }
+  100% { transform: scale(1) translate(0, 0.5%); }
 }
 
 @keyframes lp-marquee {

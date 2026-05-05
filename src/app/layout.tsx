@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Cormorant_Garamond, Geist_Mono } from "next/font/google";
+import { Cormorant_Garamond, Geist_Mono, Inter } from "next/font/google";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
@@ -12,7 +12,7 @@ import "./globals.css";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["200", "300", "400"],
+  weight: ["200", "300", "400", "500"],
 });
 
 const cormorant = Cormorant_Garamond({
@@ -28,8 +28,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LAPLACE - Tokenized Hotel Investment Platform",
-  description: "Invest in premium Malaysian hotels with guaranteed returns up to 8% p.a. Blockchain-powered real estate investment made simple.",
+  title: "Laplace - Tokenized Luxury Real Estate on Solana",
+  description: "A cinematic luxury real-estate ledger for tokenized property ownership on Solana.",
 };
 
 export default function RootLayout({

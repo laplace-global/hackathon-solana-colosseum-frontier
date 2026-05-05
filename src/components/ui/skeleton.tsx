@@ -14,7 +14,7 @@ const toneClasses: Record<SkeletonTone, string> = {
 }
 
 function Skeleton({ className, tone = "dark", ...props }: SkeletonProps) {
-  return <div data-slot="skeleton" className={cn("animate-pulse rounded-md", toneClasses[tone], className)} {...props} />
+  return <div data-slot="skeleton" className={cn("animate-pulse rounded-none", toneClasses[tone], className)} {...props} />
 }
 
 export { Skeleton }

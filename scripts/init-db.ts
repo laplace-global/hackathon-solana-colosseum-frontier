@@ -5,15 +5,18 @@
  *
  * Required env vars:
  * - DATABASE_URL
+ *
+ * Optional env vars:
  * - SAIL_MINT_ADDRESS
  * - NYRA_MINT_ADDRESS
- * - RLUSD_MINT_ADDRESS
+ * - USDC_MINT_ADDRESS
  *
- * Run with: npx tsx scripts/init-db.ts
+ * Run with: pnpm db:seed
  */
 
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import { APP_DEFAULTS } from '../src/lib/config/defaults';
 
 dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
@@ -23,6 +26,11 @@ function requireEnv(name: string): string {
     throw new Error(`${name} is not configured`);
   }
   return value.trim();
+}
+
+function optionalEnv(name: string): string | null {
+  const value = process.env[name];
+  return value && value.trim().length > 0 ? value.trim() : null;
 }
 
 async function main() {
@@ -41,15 +49,15 @@ async function main() {
 
   try {
     const marketId = await seedMarket({
-      sailMintAddress: requireEnv('SAIL_MINT_ADDRESS'),
-      nyraMintAddress: requireEnv('NYRA_MINT_ADDRESS'),
-      rlusdMintAddress: requireEnv('RLUSD_MINT_ADDRESS'),
+      sailMintAddress: optionalEnv('SAIL_MINT_ADDRESS') ?? APP_DEFAULTS.demoMintAddresses.SAIL,
+      nyraMintAddress: optionalEnv('NYRA_MINT_ADDRESS') ?? APP_DEFAULTS.demoMintAddresses.NYRA,
+      usdcMintAddress: optionalEnv('USDC_MINT_ADDRESS') ?? APP_DEFAULTS.demoMintAddresses.USDC,
     });
 
     console.log(`Primary market ID: ${marketId}`);
     console.log();
 
-    for (const name of ['SAIL-RLUSD', 'NYRA-RLUSD']) {
+    for (const name of ['SAIL-USDC', 'NYRA-USDC']) {
       const market = await getMarketByName(name);
       if (!market) {
         throw new Error(`Market ${name} was not created successfully`);

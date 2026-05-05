@@ -9,7 +9,7 @@
  *   5. Transfer SPL tokens
  *   6. Check balances
  *   7. Generate protocol service accounts
- *   8. Create standard demo mint set (SAIL / NYRA / RLUSD)
+ *   8. Create standard demo mint set (SAIL / NYRA / USDC)
  *   9. Show service accounts / config
  *
  * CLI examples:
@@ -44,6 +44,7 @@ import {
   mintTo,
   transferChecked,
 } from '@solana/spl-token';
+import { APP_DEFAULTS } from '../src/lib/config/defaults';
 
 dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
@@ -64,7 +65,7 @@ interface GeneratedProtocolAccount extends ProtocolAccountConfig {
 }
 
 interface DemoMintConfig {
-  symbol: 'SAIL' | 'NYRA' | 'RLUSD';
+  symbol: 'SAIL' | 'NYRA' | 'USDC';
   envKey: string;
   treasuryBootstrapAmount: string;
   faucetBootstrapAmount: string;
@@ -78,10 +79,12 @@ interface DemoMintResult {
   faucetAmount: string | null;
 }
 
-const RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
-const COMMITMENT = (process.env.NEXT_PUBLIC_SOLANA_COMMITMENT as CommitmentLevel) || 'confirmed';
-const EXPLORER_BASE = process.env.NEXT_PUBLIC_SOLANA_EXPLORER_URL || 'https://explorer.solana.com';
-const CLUSTER = process.env.NEXT_PUBLIC_SOLANA_CLUSTER || 'devnet';
+const RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || APP_DEFAULTS.solana.rpcUrl;
+const COMMITMENT =
+  (process.env.NEXT_PUBLIC_SOLANA_COMMITMENT as CommitmentLevel | undefined) ||
+  APP_DEFAULTS.solana.commitment;
+const EXPLORER_BASE = process.env.NEXT_PUBLIC_SOLANA_EXPLORER_URL || APP_DEFAULTS.solana.explorerUrl;
+const CLUSTER = process.env.NEXT_PUBLIC_SOLANA_CLUSTER || APP_DEFAULTS.solana.cluster;
 
 const PROTOCOL_ACCOUNT_CONFIGS: ProtocolAccountConfig[] = [
   {
@@ -124,8 +127,8 @@ const DEMO_MINT_CONFIGS: DemoMintConfig[] = [
     faucetBootstrapAmount: '200',
   },
   {
-    symbol: 'RLUSD',
-    envKey: 'RLUSD_MINT_ADDRESS',
+    symbol: 'USDC',
+    envKey: 'USDC_MINT_ADDRESS',
     treasuryBootstrapAmount: '200000',
     faucetBootstrapAmount: '10000',
   },
@@ -635,7 +638,7 @@ function printDemoMintResults(results: DemoMintResult[]) {
 
 async function createDemoMintSet() {
   header('Create Standard Demo Mint Set');
-  console.log('  Creates SAIL / NYRA / RLUSD and optionally bootstraps Treasury / Faucet balances.');
+  console.log('  Creates SAIL / NYRA / USDC and optionally bootstraps Treasury / Faucet balances.');
   console.log();
 
   const payer = await askKeypair('  Payer / mint authority secret key (bs58): ');

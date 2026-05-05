@@ -13,8 +13,8 @@ const TOKENS = {
     symbol: 'NYRA',
     amount: '100',
   },
-  RLUSD: {
-    symbol: 'RLUSD',
+  USDC: {
+    symbol: 'USDC',
     amount: '1000',
   },
 } as const;
@@ -23,7 +23,7 @@ type FaucetToken = keyof typeof TOKENS;
 
 /**
  * @deprecated UI-based token faucets are deprecated.
- * Prefer `/api/onramp` for RLUSD funding and `/api/purchase` for RLUSD->RWA purchase flow.
+ * Prefer `/api/onramp` for USDC funding and `/api/purchase` for USDC->RWA purchase flow.
  * This endpoint is kept for local/dev tooling.
  */
 export async function POST(request: NextRequest) {
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const normalizedToken = typeof token === 'string' ? token.toUpperCase() : 'SAIL';
     if (!(normalizedToken in TOKENS)) {
       return NextResponse.json(
-        { error: 'Unsupported token. Use SAIL, NYRA, or RLUSD.' },
+        { error: 'Unsupported token. Use SAIL, NYRA, or USDC.' },
         { status: 400 }
       );
     }

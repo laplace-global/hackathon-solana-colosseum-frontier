@@ -1,41 +1,36 @@
 import type { Commitment } from '@solana/web3.js';
+import { APP_DEFAULTS } from './defaults';
 
-export type SolanaCluster = 'devnet';
+export type SolanaCluster = typeof APP_DEFAULTS.solana.cluster;
 export type SolanaCommitment = Extract<Commitment, 'confirmed' | 'finalized'>;
-
-const SOLANA_DEVNET_DEFAULTS = {
-  rpcUrl: 'https://api.devnet.solana.com',
-  explorerUrl: 'https://explorer.solana.com',
-  commitment: 'confirmed' as const,
-};
 
 export function getSolanaCluster(): SolanaCluster {
   const rawCluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER;
   if (!rawCluster) {
-    return 'devnet';
+    return APP_DEFAULTS.solana.cluster;
   }
 
-  if (rawCluster !== 'devnet') {
+  if (rawCluster !== APP_DEFAULTS.solana.cluster) {
     throw new Error(
-      `Invalid NEXT_PUBLIC_SOLANA_CLUSTER: "${rawCluster}". Expected "devnet".`
+      `Invalid NEXT_PUBLIC_SOLANA_CLUSTER: "${rawCluster}". Expected "${APP_DEFAULTS.solana.cluster}".`
     );
   }
 
-  return 'devnet';
+  return APP_DEFAULTS.solana.cluster;
 }
 
 export function getSolanaRpcUrl(): string {
-  return process.env.NEXT_PUBLIC_SOLANA_RPC_URL || SOLANA_DEVNET_DEFAULTS.rpcUrl;
+  return process.env.NEXT_PUBLIC_SOLANA_RPC_URL || APP_DEFAULTS.solana.rpcUrl;
 }
 
 export function getSolanaExplorerUrl(): string {
-  return process.env.NEXT_PUBLIC_SOLANA_EXPLORER_URL || SOLANA_DEVNET_DEFAULTS.explorerUrl;
+  return process.env.NEXT_PUBLIC_SOLANA_EXPLORER_URL || APP_DEFAULTS.solana.explorerUrl;
 }
 
 export function getSolanaCommitment(): SolanaCommitment {
   const rawCommitment = process.env.NEXT_PUBLIC_SOLANA_COMMITMENT;
   if (!rawCommitment) {
-    return SOLANA_DEVNET_DEFAULTS.commitment;
+    return APP_DEFAULTS.solana.commitment;
   }
 
   if (rawCommitment !== 'confirmed' && rawCommitment !== 'finalized') {
