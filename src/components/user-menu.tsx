@@ -111,7 +111,7 @@ export function UserMenu() {
         <Button 
           variant="outline" 
           size="sm" 
-          className="gap-2"
+          className="h-8 max-w-[116px] gap-2 overflow-hidden px-3 text-[8px] tracking-[0.18em]"
           onClick={() => setIsOpen(true)}
         >
           <Image 
@@ -119,9 +119,9 @@ export function UserMenu() {
             alt={user.name}
             width={20}
             height={20}
-            className="rounded-full"
+            className="shrink-0 rounded-full"
           />
-          <span>{user.name.split(' ')[0]}</span>
+          <span className="min-w-0 truncate">{user.name.split(' ')[0]}</span>
         </Button>
 
         <Sheet open={isOpen} onOpenChange={setIsOpen}>

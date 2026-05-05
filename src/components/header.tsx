@@ -31,14 +31,14 @@ export function Header() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-700 ease-[cubic-bezier(.16,1,.3,1)] ${
+      className={`fixed inset-x-0 top-0 z-50 overflow-x-clip border-b transition-all duration-700 ease-[cubic-bezier(.16,1,.3,1)] ${
         isSolid
-          ? 'border-border bg-background/95 px-6 py-[18px] backdrop-blur-2xl md:px-16'
-          : 'border-transparent px-6 py-9 md:px-16'
+          ? 'border-border bg-background/95 px-5 py-[18px] backdrop-blur-2xl sm:px-6 md:px-16'
+          : 'border-transparent px-5 py-9 sm:px-6 md:px-16'
       }`}
     >
-      <div className="flex items-center justify-between">
-        <Link href="/" className="flex items-center">
+      <div className="flex min-w-0 items-center justify-between">
+        <Link href="/" className="flex shrink-0 items-center">
           <BrandMark />
         </Link>
 
@@ -77,7 +77,7 @@ export function Header() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex min-w-0 shrink-0 items-center gap-2 md:hidden">
           {user ? (
             <UserMenu />
           ) : (
