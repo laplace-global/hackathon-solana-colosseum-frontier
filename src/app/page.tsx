@@ -68,7 +68,7 @@ function formatUsd(value: number) {
 export default function HomePage() {
   return (
     <div className="bg-[#FAFAF8] text-[#1A1916]">
-      <section className="relative min-h-screen overflow-hidden bg-[#0C0B09] text-white">
+      <section className="relative min-h-[100svh] overflow-hidden bg-[#0C0B09] text-white">
         <LuxuryCanvasBackground className="opacity-35" />
         <video
           className="absolute inset-0 hidden h-full w-full object-cover opacity-75 md:block"
@@ -99,7 +99,7 @@ export default function HomePage() {
         <div className="lp-grain absolute inset-0 opacity-[.18]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,.86)_0%,rgba(0,0,0,.58)_52%,rgba(0,0,0,.18)_100%)]" />
 
-        <div className="relative z-10 flex min-h-screen flex-col justify-between px-5 pb-16 pt-28 md:px-16 md:pb-24 md:pt-44">
+        <div className="relative z-10 flex min-h-[100svh] flex-col justify-between px-5 pb-10 pt-24 md:px-16 md:pb-24 md:pt-44">
           <form
             id="founding"
             className="max-w-[420px]"
@@ -111,14 +111,14 @@ export default function HomePage() {
                 Founding Member Access
               </p>
             </div>
-            <h2 className="mt-5 font-serif text-[clamp(24px,2.8vw,32px)] font-light leading-[1.12] tracking-normal text-white">
+            <h2 className="mt-4 font-serif text-[clamp(22px,6vw,28px)] font-light leading-[1.12] tracking-normal text-white md:mt-5 md:text-[clamp(24px,2.8vw,32px)]">
               The first to move. <em className="font-light">Own the most.</em>
             </h2>
-            <p className="mt-3 max-w-sm text-[11px] leading-7 tracking-[0.05em] text-white/65">
+            <p className="mt-3 max-w-sm text-[10px] leading-6 tracking-[0.05em] text-white/65 md:text-[11px] md:leading-7">
               Priority access · Zero platform fees · Guaranteed spot
             </p>
-            <div className="mt-6 max-w-[420px] border border-white/50 bg-black/55 backdrop-blur-xl">
-              <div className="flex flex-col sm:flex-row">
+            <div className="mt-5 max-w-[420px] border border-white/50 bg-black/55 backdrop-blur-xl md:mt-6">
+              <div className="flex">
                 <label htmlFor="hero-email" className="sr-only">
                   Email
                 </label>
@@ -126,11 +126,11 @@ export default function HomePage() {
                   id="hero-email"
                   type="email"
                   placeholder="your@email.com"
-                  className="min-w-0 flex-1 bg-transparent px-5 py-4 text-xs tracking-[0.04em] text-white outline-none placeholder:text-white/35"
+                  className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-xs tracking-[0.04em] text-white outline-none placeholder:text-white/35 sm:px-5 sm:py-4"
                 />
                 <button
                   type="submit"
-                  className="bg-primary px-6 py-4 text-[8px] font-bold uppercase tracking-[0.22em] text-[#0C0B09] transition-opacity hover:opacity-85"
+                  className="shrink-0 bg-primary px-4 py-3.5 text-[7px] font-bold uppercase tracking-[0.18em] text-[#0C0B09] transition-opacity hover:opacity-85 sm:px-6 sm:py-4 sm:text-[8px] sm:tracking-[0.22em]"
                 >
                   Join Waitlist
                 </button>
@@ -140,18 +140,18 @@ export default function HomePage() {
           </form>
 
           <div className="max-w-[940px]">
-            <div className="mb-9 h-px w-7 bg-primary/70" />
-            <h1 className="font-serif text-[clamp(44px,8.5vw,116px)] font-extralight leading-[1.04] tracking-normal text-white md:leading-[0.98]">
+            <div className="mb-7 h-px w-7 bg-primary/70 md:mb-9" />
+            <h1 className="font-serif text-[clamp(38px,11vw,48px)] font-extralight leading-[1.04] tracking-normal text-white md:text-[clamp(44px,8.5vw,116px)] md:leading-[0.98]">
               <span className="block">The world's penthouses.</span>
               <span className="block">1 SOL. 1 click.</span>
             </h1>
-            <p className="mt-6 text-[clamp(12px,1.4vw,16px)] uppercase tracking-[0.12em] text-white/72">
+            <p className="mt-4 text-[clamp(11px,3vw,13px)] uppercase tracking-[0.12em] text-white/72 md:mt-6 md:text-[clamp(12px,1.4vw,16px)]">
               Borrow against your holdings - without selling.
             </p>
-            <div className="mt-9 flex flex-col gap-5 sm:flex-row sm:items-center">
+            <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-center md:mt-9">
               <Link
                 href="/discover"
-                className="group relative flex h-12 w-full items-center justify-center overflow-hidden border border-white/60 px-10 text-[8px] font-medium uppercase tracking-[0.24em] text-white transition-colors hover:border-white/80 sm:w-[230px]"
+                className="group relative flex h-12 w-full items-center justify-center overflow-hidden border border-white/60 bg-[#050505] px-10 text-[8px] font-medium uppercase tracking-[0.24em] text-white transition-colors hover:border-white/80 sm:w-[230px] md:bg-transparent"
               >
                 Explore Properties
                 <span className="absolute bottom-0 left-[-100%] h-px w-full bg-primary transition-[left] duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:left-0" />
@@ -183,7 +183,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-11 left-5 z-10 flex items-center gap-4 text-[7px] uppercase tracking-[0.32em] text-white/40 md:left-16">
+        <div className="absolute bottom-11 left-5 z-10 hidden items-center gap-4 text-[7px] uppercase tracking-[0.32em] text-white/40 md:left-16 md:flex">
           <span className="h-px w-10 bg-primary/70" />
           Scroll
         </div>
