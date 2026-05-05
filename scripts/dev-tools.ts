@@ -44,6 +44,7 @@ import {
   mintTo,
   transferChecked,
 } from '@solana/spl-token';
+import { APP_DEFAULTS } from '../src/lib/config/defaults';
 
 dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
@@ -78,10 +79,12 @@ interface DemoMintResult {
   faucetAmount: string | null;
 }
 
-const RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
-const COMMITMENT = (process.env.NEXT_PUBLIC_SOLANA_COMMITMENT as CommitmentLevel) || 'confirmed';
-const EXPLORER_BASE = process.env.NEXT_PUBLIC_SOLANA_EXPLORER_URL || 'https://explorer.solana.com';
-const CLUSTER = process.env.NEXT_PUBLIC_SOLANA_CLUSTER || 'devnet';
+const RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || APP_DEFAULTS.solana.rpcUrl;
+const COMMITMENT =
+  (process.env.NEXT_PUBLIC_SOLANA_COMMITMENT as CommitmentLevel | undefined) ||
+  APP_DEFAULTS.solana.commitment;
+const EXPLORER_BASE = process.env.NEXT_PUBLIC_SOLANA_EXPLORER_URL || APP_DEFAULTS.solana.explorerUrl;
+const CLUSTER = process.env.NEXT_PUBLIC_SOLANA_CLUSTER || APP_DEFAULTS.solana.cluster;
 
 const PROTOCOL_ACCOUNT_CONFIGS: ProtocolAccountConfig[] = [
   {
