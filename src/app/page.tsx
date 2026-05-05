@@ -69,7 +69,7 @@ export default function HomePage() {
   return (
     <div className="bg-[#FAFAF8] text-[#1A1916]">
       <section className="relative min-h-screen overflow-hidden bg-[#0C0B09] text-white">
-        <LuxuryCanvasBackground className="opacity-90 md:opacity-35" />
+        <LuxuryCanvasBackground className="opacity-35" />
         <video
           className="absolute inset-0 hidden h-full w-full object-cover opacity-75 md:block"
           autoPlay
@@ -80,6 +80,17 @@ export default function HomePage() {
           aria-hidden="true"
         >
           <source src="/videos/hero_pc.mp4" type="video/mp4" />
+        </video>
+        <video
+          className="absolute inset-0 h-full w-full object-cover opacity-75 md:hidden"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+        >
+          <source src="/videos/hero_sp.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-[linear-gradient(135deg,#0a0806_0%,#12100c_30%,#0d1a18_60%,#080c10_100%)] opacity-45" />
         <div className="lp-architect-grid absolute inset-0 opacity-100" />

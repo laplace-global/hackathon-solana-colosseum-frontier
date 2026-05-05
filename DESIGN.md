@@ -125,7 +125,7 @@ Use 64px desktop side spacing and 20-24px mobile spacing. Keep components square
 
 ## Imagery And Motion
 
-Home hero uses `/videos/hero_pc.mp4` as the desktop background video. Keep it muted, looped, inline, and covered by the existing dark veil so the founding form, hero headline, and live badge stay legible. Mobile keeps the canvas light scene as the default hero visual, and the canvas remains a fallback layer behind the desktop video.
+Home hero uses breakpoint-specific background videos: `/videos/hero_pc.mp4` for desktop and `/videos/hero_sp.mp4` for smartphone layouts. Keep both muted, looped, inline, and covered by the existing dark veil so the founding form, hero headline, and live badge stay legible. The canvas light scene remains a fallback layer behind both videos.
 
 Property imagery remains important in cards and detail pages. Use real property, city, hospitality, or interior imagery. Text over images must always sit on a dark veil.
 
@@ -144,7 +144,7 @@ Forms are compact, square, and border-first. Waitlist fields in the hero sit on 
 ## Asset Policy
 
 - The HTML reference includes optional commented video sources: `assets/laplace-brand.webm` and `assets/laplace-brand.mp4`. Do not enable these until actual files exist.
-- Desktop home hero video is tracked at `/videos/hero_pc.mp4`.
+- Home hero videos are tracked at `/videos/hero_pc.mp4` for desktop and `/videos/hero_sp.mp4` for smartphone.
 - Prefer canvas or external remote imagery over broken local placeholders.
 - Local image references must resolve under `public/`. If an image is not present, use an existing thumbnail, a generated real asset, or a deliberate non-image fallback.
 - Do not leave UI paths that assume missing files such as `/images/*-unit-1.jpg`.
