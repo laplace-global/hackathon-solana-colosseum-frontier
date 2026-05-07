@@ -1,4 +1,4 @@
-export type CatalogCountry = 'All' | 'UAE' | 'Japan' | 'France' | 'USA';
+export type CatalogCountry = 'All' | 'Malaysia' | 'UAE' | 'Japan' | 'France' | 'USA';
 
 export interface CatalogProperty {
   id: string;
@@ -24,7 +24,94 @@ export const purchasablePropertyNames = ['THE SAIL Hotel Tower', 'NYRA Oceanview
 export const purchasableOnlyMessage =
   `現在購入できるのは ${purchasablePropertyNames.join(' と ')} のみです。`;
 
+type PurchaseAction = {
+  kind: 'purchase';
+  label: string;
+  href: string;
+};
+
+type DetailAction = {
+  kind: 'detail';
+  label: string;
+  href: string;
+};
+
+export type CatalogPrimaryAction = PurchaseAction | DetailAction;
+
+const livePropertyActions: Record<string, PurchaseAction> = {
+  'the-sail': {
+    kind: 'purchase',
+    label: 'Buy SAIL Tokens',
+    href: '/hotel/the-sail',
+  },
+  nyra: {
+    kind: 'purchase',
+    label: 'Buy NYRA Tokens',
+    href: '/hotel/nyra',
+  },
+};
+
+export function isLiveProperty(id: string) {
+  return id in livePropertyActions;
+}
+
+export function getCatalogPrimaryAction(id: string): CatalogPrimaryAction {
+  return livePropertyActions[id] ?? { kind: 'detail', label: 'View Details', href: `/hotel/${id}` };
+}
+
 export const catalogProperties: CatalogProperty[] = [
+  {
+    id: 'the-sail',
+    name: 'THE SAIL Hotel Tower',
+    location: 'Melaka Waterfront, Malaysia',
+    country: 'Malaysia',
+    type: 'Hotel Tower',
+    annualYield: 8,
+    fiveYearEstimate: 32,
+    tokenPriceUsd: 100,
+    raiseUsd: 52_500_000,
+    fundingProgress: 42,
+    symbol: 'SAIL',
+    ltvRatio: 50,
+    developer: 'Sheng Tai International',
+    imageUrl: '/images/sail-thumb.png',
+    description:
+      'A live MVP property on Solana, giving token holders fractional exposure to an operating luxury hotel tower on the Melaka Waterfront.',
+    amenities: [
+      'Ocean-view hotel rooms',
+      'Professional hospitality management',
+      'Guaranteed annual return model',
+      'Buyback option',
+      'Investor stay benefits',
+      'Solana devnet purchase flow',
+    ],
+  },
+  {
+    id: 'nyra',
+    name: 'NYRA Oceanview Hotel',
+    location: 'Melaka Waterfront, Malaysia',
+    country: 'Malaysia',
+    type: 'Oceanview Hotel',
+    annualYield: 8,
+    fiveYearEstimate: 28,
+    tokenPriceUsd: 100,
+    raiseUsd: 76_000_000,
+    fundingProgress: 29,
+    symbol: 'NYRA',
+    ltvRatio: 50,
+    developer: 'Sheng Tai International',
+    imageUrl: '/images/nyra-thumb.png',
+    description:
+      'A purchase-capable MVP listing for beachfront hospitality exposure, with NYRA tokens usable across the portfolio and lending flows.',
+    amenities: [
+      'Beachfront hospitality exposure',
+      'Sustainable hotel design',
+      'Fixed return model',
+      '9-year buyback path',
+      'Token holder benefits',
+      'Solana devnet purchase flow',
+    ],
+  },
   {
     id: 'zaabel',
     name: "One Za'abeel Sky Penthouse",

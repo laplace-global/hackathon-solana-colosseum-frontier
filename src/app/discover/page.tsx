@@ -16,12 +16,12 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import {
   catalogProperties,
-  purchasableOnlyMessage,
+  getCatalogPrimaryAction,
   type CatalogCountry,
   type CatalogProperty,
 } from '@/data/catalog-properties';
 
-const countries: CatalogCountry[] = ['All', 'UAE', 'Japan', 'France', 'USA'];
+const countries: CatalogCountry[] = ['All', 'Malaysia', 'UAE', 'Japan', 'France', 'USA'];
 const watchlistKey = 'laplace:property-watchlist';
 const notifyKey = 'laplace:property-notify';
 
@@ -59,15 +59,12 @@ export default function DiscoverPage() {
   }, []);
 
   const featuredProperty = catalogProperties[0];
+  const featuredAction = getCatalogPrimaryAction(featuredProperty.id);
   const filteredProperties = useMemo(() => {
     return catalogProperties.filter((property) => {
       return country === 'All' || property.country === country;
     });
   }, [country]);
-
-  const showPurchaseGate = () => {
-    window.alert(purchasableOnlyMessage);
-  };
 
   const toggleWatchlist = (id: string) => {
     setWatchlist((current) => {
@@ -107,10 +104,21 @@ export default function DiscoverPage() {
               Curated luxury property exposure with watchlist access, yield signals, and Solana-backed execution where assets are live.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button data-testid="catalog-featured-invest" size="lg" onClick={showPurchaseGate}>
-                Invest
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+              {featuredAction.kind === 'purchase' ? (
+                <Button data-testid="catalog-featured-invest" size="lg" asChild>
+                  <Link href={featuredAction.href}>
+                    {featuredAction.label}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              ) : (
+                <Button data-testid="catalog-featured-invest" size="lg" asChild>
+                  <Link href={featuredAction.href}>
+                    {featuredAction.label}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
               <Button
                 data-testid="catalog-featured-notify"
                 size="lg"
@@ -165,6 +173,7 @@ export default function DiscoverPage() {
           {filteredProperties.map((property) => {
             const isWatching = watchlist.includes(property.id);
             const isNotified = notified.includes(property.id);
+            const primaryAction = getCatalogPrimaryAction(property.id);
 
             return (
               <article
@@ -178,6 +187,11 @@ export default function DiscoverPage() {
                   aria-label={property.name}
                 />
                 <div className="absolute inset-0 lp-veil-card" />
+                <Link
+                  href={`/hotel/${property.id}`}
+                  className="absolute inset-0 z-[1]"
+                  aria-label={`${property.name} details`}
+                />
                 <span className="absolute left-0 top-0 z-10 h-0 w-px bg-primary transition-[height] duration-700 ease-[cubic-bezier(.16,1,.3,1)] group-hover:h-full" />
 
                 <div className="absolute left-5 top-5 z-10 sm:left-6 sm:top-6">
@@ -235,13 +249,15 @@ export default function DiscoverPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    <Button
-                      data-testid={`catalog-card-${property.id}-invest`}
-                      className="flex-1"
-                      onClick={showPurchaseGate}
-                    >
-                      Invest
-                    </Button>
+                    {primaryAction.kind === 'purchase' ? (
+                      <Button data-testid={`catalog-card-${property.id}-invest`} className="flex-1" asChild>
+                        <Link href={primaryAction.href}>{primaryAction.label}</Link>
+                      </Button>
+                    ) : (
+                      <Button data-testid={`catalog-card-${property.id}-invest`} className="flex-1" asChild>
+                        <Link href={primaryAction.href}>{primaryAction.label}</Link>
+                      </Button>
+                    )}
                     <Button
                       data-testid={`catalog-card-${property.id}-notify`}
                       variant="outline"

@@ -1,6 +1,8 @@
 import { expect, type Page, test } from '@playwright/test';
 
 const CATALOG_PROPERTY_NAMES = [
+  'THE SAIL Hotel Tower',
+  'NYRA Oceanview Hotel',
   "One Za'abeel Sky Penthouse",
   'Burj Vista Infinity Villa',
   'Aman Tokyo Sky Residence',
@@ -60,29 +62,38 @@ test.beforeEach(async ({ page }) => {
   await clearCatalogStorage(page);
 });
 
-test('home page presents the Solana global catalog entry point', async ({ page }) => {
+test('home page presents live MVP properties in the catalog entry point', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await waitForClientHandlers(page);
 
-  await expect(page.getByRole('heading', { name: 'Buy real estate, 1-click, from 1 SOL.' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: "One Za'abeel Sky Penthouse" }).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: "The world's penthouses. 1 SOL. 1 click." })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'THE SAIL Hotel Tower' }).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'NYRA Oceanview Hotel' }).first()).toBeVisible();
 });
 
-test('discover catalog shows the five HTML properties and keeps investment gated', async ({ page }) => {
+test('discover catalog shows live MVP properties first and keeps catalog-only actions gated', async ({ page }) => {
   await page.goto('/discover', { waitUntil: 'domcontentloaded' });
   await waitForClientHandlers(page);
 
   await expect(page.getByText('Explore the world portfolio.')).toBeVisible();
+  await expect(page.getByText('THE SAIL Hotel Tower').first()).toBeVisible();
+  await expect(page.getByText('NYRA Oceanview Hotel').first()).toBeVisible();
+  await expect(page.getByTestId('catalog-featured-invest')).toContainText('Buy SAIL Tokens');
 
   for (const propertyName of CATALOG_PROPERTY_NAMES) {
     await expect(page.getByText(propertyName, { exact: true }).first()).toBeVisible();
   }
 
-  await expectPurchaseGateAlert(page, () => page.getByTestId('catalog-featured-invest').click());
+  await expect(page.getByTestId('catalog-featured-invest')).toHaveAttribute('href', '/hotel/the-sail');
+  await expect(page.getByTestId('catalog-card-the-sail-invest')).toHaveAttribute('href', '/hotel/the-sail');
+  await expect(page.getByTestId('catalog-card-nyra-invest')).toHaveAttribute('href', '/hotel/nyra');
+
+  await expect(page.getByTestId('catalog-card-zaabel-invest')).toHaveAttribute('href', '/hotel/zaabel');
+  await expect(page.getByTestId('catalog-card-zaabel-invest')).toContainText('View Details');
 
   await page.getByTestId('catalog-featured-notify').click();
   await expect(page.getByTestId('catalog-featured-notify')).toContainText('Notified');
-  await expect.poll(() => readStoredIds(page, 'laplace:property-notify')).toContain('zaabel');
+  await expect.poll(() => readStoredIds(page, 'laplace:property-notify')).toContain('the-sail');
 
   await page.getByTestId('catalog-card-burjv-watchlist').click();
   await expect(page.getByTestId('catalog-card-burjv-watchlist')).toHaveAttribute(
