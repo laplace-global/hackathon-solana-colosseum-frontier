@@ -48,9 +48,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (provider: 'google' | 'twitter' | 'github') => {
     setIsLoading(true);
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
 
     // Mock user data based on provider
     const mockUsers = {
