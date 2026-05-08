@@ -20,6 +20,7 @@ import {
   type CatalogCountry,
   type CatalogProperty,
 } from '@/data/catalog-properties';
+import { buildHotelTabHref } from '@/lib/hotel-tabs';
 
 const countries: CatalogCountry[] = ['All', 'Malaysia', 'UAE', 'Japan', 'France', 'USA'];
 const watchlistKey = 'laplace:property-watchlist';
@@ -188,7 +189,7 @@ export default function DiscoverPage() {
                 />
                 <div className="absolute inset-0 lp-veil-card" />
                 <Link
-                  href={`/hotel/${property.id}`}
+                  href={buildHotelTabHref(property.id, 'units')}
                   className="absolute inset-0 z-[1]"
                   aria-label={`${property.name} details`}
                 />
@@ -219,7 +220,7 @@ export default function DiscoverPage() {
                     <p className="text-eyebrow mb-3 text-foreground/55">{property.type}</p>
                     <div className="flex items-start justify-between gap-4">
                       <h2 className="font-serif text-2xl font-light leading-tight tracking-normal text-foreground">
-                        <Link href={`/hotel/${property.id}`} className="hover:text-primary">
+                        <Link href={buildHotelTabHref(property.id, 'units')} className="hover:text-primary">
                           {property.name}
                         </Link>
                       </h2>

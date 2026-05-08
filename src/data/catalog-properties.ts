@@ -1,4 +1,5 @@
 import { isPurchasableHotelId } from '@/data/property-tokens';
+import { buildHotelTabHref } from '@/lib/hotel-tabs';
 
 export type CatalogCountry = 'All' | 'Malaysia' | 'UAE' | 'Japan' | 'France' | 'USA';
 
@@ -239,7 +240,7 @@ const livePropertyActions = Object.fromEntries(
       {
         kind: 'purchase',
         label: `Buy ${property.symbol} Tokens`,
-        href: `/hotel/${property.id}`,
+        href: buildHotelTabHref(property.id, 'units'),
       },
     ])
 ) as Record<string, PurchaseAction>;

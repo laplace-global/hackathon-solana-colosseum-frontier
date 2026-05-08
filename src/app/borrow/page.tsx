@@ -273,11 +273,10 @@ export default function LendingPage() {
       }
 
       toast.success('Collateral locked');
-      await Promise.all([refreshBalances(), refreshPosition()]);
+      await refreshPosition();
     });
   }, [
     depositAmount,
-    refreshBalances,
     refreshPosition,
     selectedMarket,
     wallet,
@@ -316,9 +315,9 @@ export default function LendingPage() {
       }
 
       toast.success('Borrow successful');
-      await Promise.all([refreshBalances(), refreshPosition()]);
+      await refreshPosition();
     });
-  }, [borrowAmount, metrics, refreshBalances, refreshPosition, selectedMarket, wallet, withAction, withNetworkLoading]);
+  }, [borrowAmount, metrics, refreshPosition, selectedMarket, wallet, withAction, withNetworkLoading]);
 
   const handleRepay = useCallback(async () => {
     if (!wallet || !selectedMarket) return;
@@ -350,10 +349,9 @@ export default function LendingPage() {
       }
 
       toast.success('Repayment successful');
-      await Promise.all([refreshBalances(), refreshPosition()]);
+      await refreshPosition();
     });
   }, [
-    refreshBalances,
     loanRepayment,
     refreshPosition,
     repayAmount,
@@ -409,9 +407,9 @@ export default function LendingPage() {
       }
 
       toast.success('Withdrawal successful');
-      await Promise.all([refreshBalances(), refreshPosition()]);
+      await refreshPosition();
     });
-  }, [refreshBalances, refreshPosition, selectedMarket, wallet, withdrawAmount, withAction, withNetworkLoading]);
+  }, [refreshPosition, selectedMarket, wallet, withdrawAmount, withAction, withNetworkLoading]);
 
   if (configError) {
     return (
