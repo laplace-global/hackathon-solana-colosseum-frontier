@@ -232,7 +232,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     const secret = loadLocalAccountSecret();
     if (!secret) {
-      setError('No local dev wallet found. Generate one from the Admin page first.');
+      setError('No local dev wallet found. Ask the demo operator to provision one first.');
       return;
     }
 

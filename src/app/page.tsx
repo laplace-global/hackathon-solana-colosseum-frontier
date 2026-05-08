@@ -4,6 +4,7 @@ import { useEffect, useState, type CSSProperties, type FormEvent } from 'react';
 import Link from 'next/link';
 import { LuxuryCanvasBackground } from '@/components/luxury-canvas-background';
 import { catalogProperties, type CatalogProperty } from '@/data/catalog-properties';
+import { PUBLIC_HOME_PROTOCOL_CARDS } from '@/lib/navigation/routes';
 
 const stats = [
   { label: 'Tokenized', value: '$2.4B' },
@@ -22,33 +23,6 @@ const cities = [
   'Los Angeles',
   'Tokyo',
   'Kyoto',
-];
-
-const protocolCards = [
-  {
-    number: '01',
-    label: 'Invest',
-    title: 'from 1 SOL',
-    body: '1 click. 1 SOL. Instant ownership.',
-    cta: 'Explore Properties ->',
-    href: '/discover',
-  },
-  {
-    number: '02',
-    label: 'Collateral & Borrow',
-    title: 'Lock & Borrow USDC',
-    body: 'Lock tokens. Borrow USDC. Keep everything.',
-    cta: 'Borrow USDC ->',
-    href: '/borrow',
-  },
-  {
-    number: '03',
-    label: 'Reinvest',
-    title: 'DeFi Yields',
-    body: 'Supply USDC. Earn yield. Always on.',
-    cta: 'Supply USDC ->',
-    href: '/lend',
-  },
 ];
 
 const foundingBenefits = [
@@ -364,7 +338,7 @@ export default function HomePage() {
             </h2>
           </div>
           <div className="grid gap-px bg-white/10 md:grid-cols-3">
-            {protocolCards.map((card, index) => (
+            {PUBLIC_HOME_PROTOCOL_CARDS.map((card, index) => (
               <Link
                 key={card.number}
                 href={card.href}

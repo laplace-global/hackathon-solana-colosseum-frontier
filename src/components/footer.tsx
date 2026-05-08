@@ -1,14 +1,6 @@
 import Link from 'next/link';
 import { BrandMark } from '@/components/brand-mark';
-
-const links = [
-  { href: '/discover', label: 'Properties' },
-  { href: '/portfolio', label: 'Portfolio' },
-  { href: '/wallet', label: 'Wallet' },
-  { href: '/borrow', label: 'Borrow' },
-  { href: '/lend', label: 'Lend' },
-  { href: '/about', label: 'About' },
-];
+import { PUBLIC_FOOTER_LINKS } from '@/lib/navigation/routes';
 
 export function Footer() {
   return (
@@ -18,7 +10,7 @@ export function Footer() {
           <BrandMark />
         </Link>
         <ul className="flex flex-wrap gap-x-10 gap-y-4">
-          {links.map((link) => (
+          {PUBLIC_FOOTER_LINKS.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
