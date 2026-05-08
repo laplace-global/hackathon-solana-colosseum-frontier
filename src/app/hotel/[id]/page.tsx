@@ -1,7 +1,7 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +15,6 @@ import { useAuth } from '@/contexts/auth-context';
 import { useWallet } from '@/contexts/wallet-context';
 import { LoginDialog } from '@/components/login-dialog';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft,
   Bell,
@@ -36,6 +35,7 @@ import {
 } from '@/data/catalog-properties';
 import { HotelUnit } from '@/types/hotel';
 import { loadLocalAccountSecret } from '@/lib/chain/storage';
+import { getHotelTabFromSearch } from '@/lib/hotel-tabs';
 import { useMarketPrices } from '@/contexts/market-prices-context';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -68,6 +68,8 @@ function formatUsd(value: number) {
 export default function HotelPage() {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const { address, usdcBalance, hasUsdcAsset, refreshBalances } = useWallet();
   const { isLoading: isPricesLoading, hasPriceForHotel, getTokenPrice } = useMarketPrices();
@@ -83,6 +85,7 @@ export default function HotelPage() {
   const [onrampAmount, setOnrampAmount] = useState(0);
   const [onOnrampComplete, setOnOnrampComplete] = useState<(() => void) | null>(null);
   const [accountSecret, setAccountSecret] = useState<string | null>(null);
+  const activeTab = getHotelTabFromSearch(searchParams.get('tab'));
 
   useEffect(() => {
     setAccountSecret(loadLocalAccountSecret());
@@ -111,6 +114,13 @@ export default function HotelPage() {
     }
 
     setShowConfirmDialog(true);
+  };
+
+  const handleTabChange = (nextValue: string) => {
+    const nextTab = getHotelTabFromSearch(nextValue);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set('tab', nextTab);
+    router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
   };
 
   const handleConfirmPurchase = () => {
@@ -198,7 +208,7 @@ export default function HotelPage() {
 
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 sm:py-16 lg:px-16">
-        <Tabs defaultValue="overview" className="space-y-8">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-8">
           <TabsList className="grid w-full grid-cols-3 lg:w-[420px]">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="units">Units</TabsTrigger>

@@ -4,6 +4,7 @@ import { useEffect, useState, type CSSProperties, type FormEvent } from 'react';
 import Link from 'next/link';
 import { LuxuryCanvasBackground } from '@/components/luxury-canvas-background';
 import { catalogProperties, type CatalogProperty } from '@/data/catalog-properties';
+import { buildHotelTabHref } from '@/lib/hotel-tabs';
 import { PUBLIC_HOME_PROTOCOL_CARDS } from '@/lib/navigation/routes';
 import { getWaitlistEmailError } from '@/lib/waitlist';
 
@@ -493,7 +494,7 @@ function PropertyCard({ property, delay }: { property: CatalogProperty; delay: n
       data-lp-reveal
       style={lpDelay(`${delay}ms`)}
     >
-      <Link href={`/hotel/${property.id}`} className="absolute inset-0" aria-label={property.name}>
+      <Link href={buildHotelTabHref(property.id, 'units')} className="absolute inset-0" aria-label={property.name}>
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-[1600ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-105"
           style={{ backgroundImage: `url(${property.imageUrl})` }}
