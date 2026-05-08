@@ -35,6 +35,7 @@ const RESET_TABLES = [
   '"supply_positions"',
   '"price_oracle"',
   '"purchase_orders"',
+  '"waitlist_entries"',
   '"onchain_transactions"',
   '"users"',
   '"markets"',

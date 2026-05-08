@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { LuxuryCanvasBackground } from '@/components/luxury-canvas-background';
 import { catalogProperties, type CatalogProperty } from '@/data/catalog-properties';
 import { PUBLIC_HOME_PROTOCOL_CARDS } from '@/lib/navigation/routes';
+import { getWaitlistEmailError } from '@/lib/waitlist';
 
 const stats = [
   { label: 'Tokenized', value: '$2.4B' },
@@ -44,15 +45,13 @@ function formatUsd(value: number) {
   }).format(value);
 }
 
-function isValidWaitlistEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
-
 export default function HomePage() {
   const [heroWaitlistSubmitted, setHeroWaitlistSubmitted] = useState(false);
   const [heroWaitlistError, setHeroWaitlistError] = useState('');
+  const [heroWaitlistPending, setHeroWaitlistPending] = useState(false);
   const [footerWaitlistSubmitted, setFooterWaitlistSubmitted] = useState(false);
   const [footerWaitlistError, setFooterWaitlistError] = useState('');
+  const [footerWaitlistPending, setFooterWaitlistPending] = useState(false);
 
   useEffect(() => {
     const revealItems = Array.from(document.querySelectorAll<HTMLElement>('[data-lp-reveal]'));
@@ -85,30 +84,62 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, []);
 
-  const handleHeroWaitlistSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const email = new FormData(event.currentTarget).get('email');
-
-    if (typeof email !== 'string' || !isValidWaitlistEmail(email)) {
-      setHeroWaitlistError('Enter a valid email address.');
-      return;
+  const submitWaitlistEmail = async (email: FormDataEntryValue | null, source: string) => {
+    const emailError = getWaitlistEmailError(email);
+    if (emailError) {
+      return emailError;
     }
 
-    setHeroWaitlistError('');
-    setHeroWaitlistSubmitted(true);
+    const response = await fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, source }),
+    });
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok || !payload?.success) {
+      return payload?.error?.message ?? 'Failed to join waitlist. Please try again.';
+    }
+
+    return null;
   };
 
-  const handleFooterWaitlistSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleHeroWaitlistSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const email = new FormData(event.currentTarget).get('email');
 
-    if (typeof email !== 'string' || !isValidWaitlistEmail(email)) {
-      setFooterWaitlistError('Enter a valid email address.');
-      return;
-    }
+    setHeroWaitlistPending(true);
+    try {
+      const error = await submitWaitlistEmail(email, 'hero');
+      if (error) {
+        setHeroWaitlistError(error);
+        return;
+      }
 
-    setFooterWaitlistError('');
-    setFooterWaitlistSubmitted(true);
+      setHeroWaitlistError('');
+      setHeroWaitlistSubmitted(true);
+    } finally {
+      setHeroWaitlistPending(false);
+    }
+  };
+
+  const handleFooterWaitlistSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const email = new FormData(event.currentTarget).get('email');
+
+    setFooterWaitlistPending(true);
+    try {
+      const error = await submitWaitlistEmail(email, 'footer');
+      if (error) {
+        setFooterWaitlistError(error);
+        return;
+      }
+
+      setFooterWaitlistError('');
+      setFooterWaitlistSubmitted(true);
+    } finally {
+      setFooterWaitlistPending(false);
+    }
   };
 
   return (
@@ -195,9 +226,10 @@ export default function HomePage() {
                     />
                     <button
                       type="submit"
+                      disabled={heroWaitlistPending}
                       className="shrink-0 bg-primary px-4 py-3.5 text-[7px] font-bold uppercase tracking-[0.18em] text-[#0C0B09] transition-opacity hover:opacity-85 sm:px-6 sm:py-4 sm:text-[8px] sm:tracking-[0.22em]"
                     >
-                      Join Waitlist
+                      {heroWaitlistPending ? 'Joining...' : 'Join Waitlist'}
                     </button>
                   </div>
                 </div>
@@ -432,9 +464,10 @@ export default function HomePage() {
                   />
                   <button
                     type="submit"
+                    disabled={footerWaitlistPending}
                     className="bg-primary px-6 py-4 text-[8px] font-bold uppercase tracking-[0.22em] text-[#0C0B09] transition-opacity hover:opacity-85"
                   >
-                    Join Waitlist
+                    {footerWaitlistPending ? 'Joining...' : 'Join Waitlist'}
                   </button>
                 </div>
               </form>
