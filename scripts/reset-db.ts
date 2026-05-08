@@ -48,6 +48,27 @@ function optionalEnv(name: string): string | null {
   return value && value.trim().length > 0 ? value.trim() : null;
 }
 
+const TOKEN_MINT_ENV_KEYS = {
+  SAIL: 'SAIL_MINT_ADDRESS',
+  NYRA: 'NYRA_MINT_ADDRESS',
+  USDC: 'USDC_MINT_ADDRESS',
+} as const;
+
+function resolveDemoMintAddresses() {
+  const addresses: Record<keyof typeof TOKEN_MINT_ENV_KEYS, string> = {
+    SAIL: APP_DEFAULTS.demoMintAddresses.SAIL,
+    NYRA: APP_DEFAULTS.demoMintAddresses.NYRA,
+    USDC: APP_DEFAULTS.demoMintAddresses.USDC,
+  };
+  for (const [symbol, envKey] of Object.entries(TOKEN_MINT_ENV_KEYS)) {
+    const override = optionalEnv(envKey);
+    if (override) {
+      addresses[symbol as keyof typeof addresses] = override;
+    }
+  }
+  return addresses;
+}
+
 function getDatabaseLabel(databaseUrl: string): string {
   try {
     const parsed = new URL(databaseUrl);
@@ -100,11 +121,7 @@ async function main() {
   await db.execute(sql.raw(`TRUNCATE TABLE ${RESET_TABLES.join(', ')} RESTART IDENTITY CASCADE`));
   console.log('Application data tables truncated.');
 
-  const marketId = await seedMarket({
-    sailMintAddress: optionalEnv('SAIL_MINT_ADDRESS') ?? APP_DEFAULTS.demoMintAddresses.SAIL,
-    nyraMintAddress: optionalEnv('NYRA_MINT_ADDRESS') ?? APP_DEFAULTS.demoMintAddresses.NYRA,
-    usdcMintAddress: optionalEnv('USDC_MINT_ADDRESS') ?? APP_DEFAULTS.demoMintAddresses.USDC,
-  });
+  const marketId = await seedMarket(resolveDemoMintAddresses());
 
   console.log(`Primary market ID: ${marketId}`);
   console.log('Database reset complete.');

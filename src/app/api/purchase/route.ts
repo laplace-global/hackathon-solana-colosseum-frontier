@@ -11,11 +11,8 @@ import {
 } from '@/lib/chain/client';
 import { buildAssetDefinitions } from '@/lib/chain/config';
 import { getTreasuryAccount, getTreasuryAddress } from '@/lib/chain/service-account';
-
-const RWA_SYMBOL_BY_HOTEL_ID: Record<string, 'SAIL' | 'NYRA'> = {
-  'the-sail': 'SAIL',
-  nyra: 'NYRA',
-};
+import { getPropertyTokenSymbol } from '@/data/property-tokens';
+import { withDemoTokenAssetDefinitions } from '@/lib/assets/demo-token-assets';
 
 type PurchaseStatus =
   | 'CREATED'
@@ -119,13 +116,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const rwaSymbol = RWA_SYMBOL_BY_HOTEL_ID[hotelId];
+    const rwaSymbol = getPropertyTokenSymbol(hotelId);
     if (!rwaSymbol) {
       return toErrorResponse('UNSUPPORTED_HOTEL', `Unsupported hotelId: ${hotelId}`, 400);
     }
 
     const markets = await getAllActiveMarkets();
-    const assetDefinitions = buildAssetDefinitions(markets);
+    const assetDefinitions = withDemoTokenAssetDefinitions(buildAssetDefinitions(markets));
     const treasuryAccount = getTreasuryAccount();
     const treasuryAddress = getTreasuryAddress();
     const paymentAsset = getAssetBySymbol(assetDefinitions, 'USDC');

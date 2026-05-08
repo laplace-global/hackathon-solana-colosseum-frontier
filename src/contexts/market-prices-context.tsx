@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { ASSET_ID_BY_SYMBOL } from '@/lib/assets/asset-symbols';
+import { getHotelIdByPropertyToken } from '@/data/property-tokens';
 
 interface MarketPricesContextType {
   pricesByHotelId: Record<string, number>;
@@ -13,11 +13,6 @@ interface MarketPricesContextType {
 }
 
 const MarketPricesContext = createContext<MarketPricesContextType | undefined>(undefined);
-
-const HOTEL_ID_BY_COLLATERAL_CURRENCY: Record<string, string> = {
-  [ASSET_ID_BY_SYMBOL.SAIL.toUpperCase()]: 'the-sail',
-  [ASSET_ID_BY_SYMBOL.NYRA.toUpperCase()]: 'nyra',
-};
 
 type LendingConfigMarket = {
   name?: string;
@@ -53,18 +48,17 @@ export function MarketPricesProvider({ children }: { children: React.ReactNode }
         }
 
         const collateralCurrency = market.collateralCurrency?.toUpperCase() ?? '';
-        const knownHotelId = HOTEL_ID_BY_COLLATERAL_CURRENCY[collateralCurrency];
+        const knownHotelId = getHotelIdByPropertyToken(collateralCurrency);
         if (knownHotelId) {
           nextPrices[knownHotelId] = collateralPriceUsd;
           continue;
         }
 
         const marketName = market.name?.toUpperCase() ?? '';
-        if (marketName.includes('SAIL')) {
-          nextPrices['the-sail'] = collateralPriceUsd;
-        }
-        if (marketName.includes('NYRA')) {
-          nextPrices.nyra = collateralPriceUsd;
+        const marketSymbol = marketName.split('-')[0] ?? '';
+        const hotelId = getHotelIdByPropertyToken(marketSymbol);
+        if (hotelId) {
+          nextPrices[hotelId] = collateralPriceUsd;
         }
       }
 

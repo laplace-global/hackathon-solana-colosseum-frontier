@@ -16,21 +16,22 @@ describe('catalog properties', () => {
   });
 
   it('routes live MVP properties to their purchase-capable detail pages', () => {
-    assert.equal(isLiveProperty('the-sail'), true);
-    assert.equal(isLiveProperty('nyra'), true);
-    assert.deepEqual(getCatalogPrimaryAction('the-sail'), {
-      kind: 'purchase',
-      label: 'Buy SAIL Tokens',
-      href: '/hotel/the-sail',
-    });
+    for (const property of catalogProperties) {
+      assert.equal(isLiveProperty(property.id), true);
+      assert.deepEqual(getCatalogPrimaryAction(property.id), {
+        kind: 'purchase',
+        label: `Buy ${property.symbol} Tokens`,
+        href: `/hotel/${property.id}`,
+      });
+    }
   });
 
-  it('routes catalog-only properties to their detail pages', () => {
-    assert.equal(isLiveProperty('zaabel'), false);
-    assert.deepEqual(getCatalogPrimaryAction('zaabel'), {
+  it('keeps unknown properties as detail-only fallback links', () => {
+    assert.equal(isLiveProperty('unknown'), false);
+    assert.deepEqual(getCatalogPrimaryAction('unknown'), {
       kind: 'detail',
       label: 'View Details',
-      href: '/hotel/zaabel',
+      href: '/hotel/unknown',
     });
   });
 });

@@ -1,3 +1,5 @@
+import { isPurchasableHotelId } from '@/data/property-tokens';
+
 export type CatalogCountry = 'All' | 'Malaysia' | 'UAE' | 'Japan' | 'France' | 'USA';
 
 export interface CatalogProperty {
@@ -19,11 +21,6 @@ export interface CatalogProperty {
   amenities: string[];
 }
 
-export const purchasablePropertyNames = ['THE SAIL Hotel Tower', 'NYRA Oceanview Hotel'] as const;
-
-export const purchasableOnlyMessage =
-  `現在購入できるのは ${purchasablePropertyNames.join(' と ')} のみです。`;
-
 type PurchaseAction = {
   kind: 'purchase';
   label: string;
@@ -37,27 +34,6 @@ type DetailAction = {
 };
 
 export type CatalogPrimaryAction = PurchaseAction | DetailAction;
-
-const livePropertyActions: Record<string, PurchaseAction> = {
-  'the-sail': {
-    kind: 'purchase',
-    label: 'Buy SAIL Tokens',
-    href: '/hotel/the-sail',
-  },
-  nyra: {
-    kind: 'purchase',
-    label: 'Buy NYRA Tokens',
-    href: '/hotel/nyra',
-  },
-};
-
-export function isLiveProperty(id: string) {
-  return id in livePropertyActions;
-}
-
-export function getCatalogPrimaryAction(id: string): CatalogPrimaryAction {
-  return livePropertyActions[id] ?? { kind: 'detail', label: 'View Details', href: `/hotel/${id}` };
-}
 
 export const catalogProperties: CatalogProperty[] = [
   {
@@ -246,4 +222,32 @@ export const catalogProperties: CatalogProperty[] = [
 
 export function getCatalogProperty(id: string): CatalogProperty | undefined {
   return catalogProperties.find((property) => property.id === id);
+}
+
+export const purchasablePropertyNames = catalogProperties
+  .filter((property) => isPurchasableHotelId(property.id))
+  .map((property) => property.name);
+
+export const purchasableOnlyMessage =
+  'この物件はまだ購入フローに対応していません。';
+
+const livePropertyActions = Object.fromEntries(
+  catalogProperties
+    .filter((property) => isPurchasableHotelId(property.id))
+    .map((property) => [
+      property.id,
+      {
+        kind: 'purchase',
+        label: `Buy ${property.symbol} Tokens`,
+        href: `/hotel/${property.id}`,
+      },
+    ])
+) as Record<string, PurchaseAction>;
+
+export function isLiveProperty(id: string) {
+  return id in livePropertyActions;
+}
+
+export function getCatalogPrimaryAction(id: string): CatalogPrimaryAction {
+  return livePropertyActions[id] ?? { kind: 'detail', label: 'View Details', href: `/hotel/${id}` };
 }

@@ -3,16 +3,21 @@ import { getAllActiveMarkets } from '@/lib/db/seed';
 import { getAssetBySymbol, isValidChainAddress, transferAsset } from '@/lib/chain/client';
 import { buildAssetDefinitions } from '@/lib/chain/config';
 import { getTreasuryAccount } from '@/lib/chain/service-account';
+import { PROPERTY_TOKEN_BY_HOTEL_ID } from '@/data/property-tokens';
+import { withDemoTokenAssetDefinitions } from '@/lib/assets/demo-token-assets';
+
+const PROPERTY_FAUCET_TOKENS = Object.fromEntries(
+  Object.values(PROPERTY_TOKEN_BY_HOTEL_ID).map((symbol) => [
+    symbol,
+    {
+      symbol,
+      amount: '100',
+    },
+  ])
+);
 
 const TOKENS = {
-  SAIL: {
-    symbol: 'SAIL',
-    amount: '100',
-  },
-  NYRA: {
-    symbol: 'NYRA',
-    amount: '100',
-  },
+  ...PROPERTY_FAUCET_TOKENS,
   USDC: {
     symbol: 'USDC',
     amount: '1000',
@@ -41,7 +46,7 @@ export async function POST(request: NextRequest) {
     const normalizedToken = typeof token === 'string' ? token.toUpperCase() : 'SAIL';
     if (!(normalizedToken in TOKENS)) {
       return NextResponse.json(
-        { error: 'Unsupported token. Use SAIL, NYRA, or USDC.' },
+        { error: `Unsupported token. Use ${Object.keys(TOKENS).join(', ')}.` },
         { status: 400 }
       );
     }
@@ -56,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     const markets = await getAllActiveMarkets();
-    const assetDefinitions = buildAssetDefinitions(markets);
+    const assetDefinitions = withDemoTokenAssetDefinitions(buildAssetDefinitions(markets));
     const asset = getAssetBySymbol(assetDefinitions, faucetToken.symbol);
     if (!asset || asset.kind !== 'token' || !asset.assetId) {
       return NextResponse.json(

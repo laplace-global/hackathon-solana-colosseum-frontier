@@ -58,7 +58,7 @@ export default function WalletPage() {
   const [accountSecret, setAccountSecret] = useState<string>('');
 
   const orderedBalances = [...balances].sort((left, right) => {
-    const order = ['SOL', 'USDC', 'SAIL', 'NYRA'];
+    const order = ['SOL', 'USDC', 'SAIL', 'NYRA', 'ZAABEL', 'BURJV', 'AMANT', 'LEMARAIS', '432PK'];
     const leftIndex = order.indexOf(left.symbol);
     const rightIndex = order.indexOf(right.symbol);
     return (leftIndex === -1 ? Number.MAX_SAFE_INTEGER : leftIndex)

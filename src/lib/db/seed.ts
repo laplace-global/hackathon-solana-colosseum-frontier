@@ -10,9 +10,9 @@ import { db, users, markets, priceOracle } from './index';
 import { ASSET_ID_BY_SYMBOL } from '@/lib/assets/asset-symbols';
 
 interface SeedMarketAssets {
-  sailMintAddress: string;
-  nyraMintAddress: string;
-  usdcMintAddress: string;
+  SAIL: string;
+  NYRA: string;
+  USDC: string;
 }
 
 /**
@@ -24,16 +24,16 @@ export async function seedMarket(assets: SeedMarketAssets): Promise<string> {
       name: 'SAIL-USDC',
       collateralCurrency: ASSET_ID_BY_SYMBOL.SAIL,
       debtCurrency: ASSET_ID_BY_SYMBOL.USDC,
-      collateralIssuer: assets.sailMintAddress,
-      debtIssuer: assets.usdcMintAddress,
+      collateralIssuer: assets.SAIL,
+      debtIssuer: assets.USDC,
       collateralPriceUsd: '100.0',
     },
     {
       name: 'NYRA-USDC',
       collateralCurrency: ASSET_ID_BY_SYMBOL.NYRA,
       debtCurrency: ASSET_ID_BY_SYMBOL.USDC,
-      collateralIssuer: assets.nyraMintAddress,
-      debtIssuer: assets.usdcMintAddress,
+      collateralIssuer: assets.NYRA,
+      debtIssuer: assets.USDC,
       collateralPriceUsd: '100.0',
     },
   ];
