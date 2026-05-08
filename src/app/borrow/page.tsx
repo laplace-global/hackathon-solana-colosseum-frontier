@@ -68,11 +68,11 @@ export default function LendingPage() {
   const [collateralAssetReady, setCollateralAssetReady] = useState(false);
   const [debtAssetReady, setDebtAssetReady] = useState(false);
 
-  const [depositAmount, setDepositAmount] = useState('100');
+  const [depositAmount, setDepositAmount] = useState('1');
   const [borrowAmount, setBorrowAmount] = useState('50');
   const [repayAmount, setRepayAmount] = useState('0');
   const [repayKind, setRepayKind] = useState<RepayKind>('regular');
-  const [withdrawAmount, setWithdrawAmount] = useState('100');
+  const [withdrawAmount, setWithdrawAmount] = useState('1');
 
   const selectedMarket = useMemo(
     () => config?.markets.find((market) => market.id === selectedMarketId) ?? null,
@@ -205,6 +205,14 @@ export default function LendingPage() {
       refreshPosition();
     }
   }, [refreshBalances, refreshPosition, selectedMarketId, wallet?.address]);
+
+  useEffect(() => {
+    if (!selectedMarket) return;
+
+    setDepositAmount(String(Math.max(1, selectedMarket.minCollateralAmount)));
+    setWithdrawAmount(String(Math.max(1, selectedMarket.minCollateralAmount)));
+    setBorrowAmount(String(Math.max(1, selectedMarket.minBorrowAmount)));
+  }, [selectedMarket]);
 
   useEffect(() => {
     if (!wallet?.address || !selectedMarket) {

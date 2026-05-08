@@ -8,6 +8,8 @@ import { ExternalLink, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { catalogProperties } from '@/data/catalog-properties';
+import { PROPERTY_TOKEN_BY_HOTEL_ID } from '@/data/property-tokens';
 
 interface TokenHolderMockData {
   property: {
@@ -84,52 +86,35 @@ function buildDistributionProjection(estimatedAnnualEarnings: number, distributi
   };
 }
 
-const TOKEN_HOLDER_MOCK_DATA: Record<string, TokenHolderMockData> = {
-  SAIL: {
-    property: {
-      name: 'THE SAIL Hotel Tower',
-      detailUrl: '/hotel/the-sail',
+const DEFAULT_PROPERTY_TOKEN = PROPERTY_TOKEN_BY_HOTEL_ID['the-sail'];
+
+const TOKEN_HOLDER_MOCK_DATA: Record<string, TokenHolderMockData> = Object.fromEntries(
+  catalogProperties.map((property) => [
+    property.symbol,
+    {
+      property: {
+        name: property.name,
+        detailUrl: `/hotel/${property.id}`,
+      },
+      tokenEconomics: {
+        tokenSymbol: property.symbol,
+        totalSupply: Math.round(property.raiseUsd / property.tokenPriceUsd),
+        netAnnualRentalIncome: Math.round(property.raiseUsd * (property.annualYield / 100)),
+        yieldPerToken: property.tokenPriceUsd * (property.annualYield / 100),
+        distributionFrequency: 'Weekly',
+        lastDistributionDate: '2026-02-09',
+        nextDistributionDate: '2026-02-16',
+        distributionStartDate: '2025-06-01',
+      },
+      benefits: {
+        rentalDistribution: true,
+        propertyAppreciation: true,
+        votingRights: true,
+        priorityAccess: true,
+      },
     },
-    tokenEconomics: {
-      tokenSymbol: 'SAIL',
-      totalSupply: 10_000,
-      netAnnualRentalIncome: 80_000,
-      yieldPerToken: 8,
-      distributionFrequency: 'Weekly',
-      lastDistributionDate: '2026-02-09',
-      nextDistributionDate: '2026-02-16',
-      distributionStartDate: '2025-06-01',
-    },
-    benefits: {
-      rentalDistribution: true,
-      propertyAppreciation: true,
-      votingRights: true,
-      priorityAccess: true,
-    },
-  },
-  NYRA: {
-    property: {
-      name: 'NYRA Oceanview Hotel',
-      detailUrl: '/hotel/nyra',
-    },
-    tokenEconomics: {
-      tokenSymbol: 'NYRA',
-      totalSupply: 15_000,
-      netAnnualRentalIncome: 120_000,
-      yieldPerToken: 8,
-      distributionFrequency: 'Weekly',
-      lastDistributionDate: '2026-02-09',
-      nextDistributionDate: '2026-02-16',
-      distributionStartDate: '2025-06-01',
-    },
-    benefits: {
-      rentalDistribution: true,
-      propertyAppreciation: true,
-      votingRights: true,
-      priorityAccess: true,
-    },
-  },
-};
+  ])
+);
 
 interface TokenHolderBenefitsProps {
   selectedMarketName?: string;
@@ -140,9 +125,9 @@ interface TokenHolderBenefitsProps {
 
 export function TokenHolderBenefits({ selectedMarketName, explorerUrl, walletBalance, collateralDeposited }: TokenHolderBenefitsProps) {
   const currentMockData = useMemo(() => {
-    if (!selectedMarketName) return TOKEN_HOLDER_MOCK_DATA.SAIL;
+    if (!selectedMarketName) return TOKEN_HOLDER_MOCK_DATA[DEFAULT_PROPERTY_TOKEN];
     const marketKey = selectedMarketName.split('-')[0] as keyof typeof TOKEN_HOLDER_MOCK_DATA;
-    return TOKEN_HOLDER_MOCK_DATA[marketKey] ?? TOKEN_HOLDER_MOCK_DATA.SAIL;
+    return TOKEN_HOLDER_MOCK_DATA[marketKey] ?? TOKEN_HOLDER_MOCK_DATA[DEFAULT_PROPERTY_TOKEN];
   }, [selectedMarketName]);
 
   const totalTokenHoldings = walletBalance + collateralDeposited;

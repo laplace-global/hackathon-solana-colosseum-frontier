@@ -9,6 +9,11 @@
  * Optional env vars:
  * - SAIL_MINT_ADDRESS
  * - NYRA_MINT_ADDRESS
+ * - ZAABEL_MINT_ADDRESS
+ * - BURJV_MINT_ADDRESS
+ * - AMANT_MINT_ADDRESS
+ * - LEMARAIS_MINT_ADDRESS
+ * - PARK432_MINT_ADDRESS
  * - USDC_MINT_ADDRESS
  *
  * Run with: pnpm db:seed
@@ -16,7 +21,7 @@
 
 import * as dotenv from 'dotenv';
 import * as path from 'path';
-import { APP_DEFAULTS } from '../src/lib/config/defaults';
+import { getDemoTokenMintAddresses } from '../src/lib/assets/demo-token-assets';
 
 dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
@@ -28,36 +33,11 @@ function requireEnv(name: string): string {
   return value.trim();
 }
 
-function optionalEnv(name: string): string | null {
-  const value = process.env[name];
-  return value && value.trim().length > 0 ? value.trim() : null;
-}
-
-const TOKEN_MINT_ENV_KEYS = {
-  SAIL: 'SAIL_MINT_ADDRESS',
-  NYRA: 'NYRA_MINT_ADDRESS',
-  USDC: 'USDC_MINT_ADDRESS',
-} as const;
-
-function resolveDemoMintAddresses() {
-  const addresses: Record<keyof typeof TOKEN_MINT_ENV_KEYS, string> = {
-    SAIL: APP_DEFAULTS.demoMintAddresses.SAIL,
-    NYRA: APP_DEFAULTS.demoMintAddresses.NYRA,
-    USDC: APP_DEFAULTS.demoMintAddresses.USDC,
-  };
-  for (const [symbol, envKey] of Object.entries(TOKEN_MINT_ENV_KEYS)) {
-    const override = optionalEnv(envKey);
-    if (override) {
-      addresses[symbol as keyof typeof addresses] = override;
-    }
-  }
-  return addresses;
-}
-
 async function main() {
   requireEnv('DATABASE_URL');
 
   const {
+    buildDefaultMarketConfigs,
     seedMarket,
     getMarketByName,
     getMarketPrices,
@@ -69,13 +49,14 @@ async function main() {
   console.log();
 
   try {
-    const demoMintAddresses = resolveDemoMintAddresses();
+    const demoMintAddresses = getDemoTokenMintAddresses();
+    const defaultMarkets = buildDefaultMarketConfigs(demoMintAddresses);
     const marketId = await seedMarket(demoMintAddresses);
 
     console.log(`Primary market ID: ${marketId}`);
     console.log();
 
-    for (const name of ['SAIL-USDC', 'NYRA-USDC']) {
+    for (const { name } of defaultMarkets) {
       const market = await getMarketByName(name);
       if (!market) {
         throw new Error(`Market ${name} was not created successfully`);

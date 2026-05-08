@@ -34,6 +34,8 @@ export async function GET() {
           liquidationLtvRatio: market.liquidation_ltv_ratio,
           baseInterestRate: market.base_interest_rate,
           collateralLockEnabled: true,
+          minCollateralAmount: market.min_collateral_amount,
+          minBorrowAmount: market.min_borrow_amount,
           minSupplyAmount: market.min_supply_amount,
           liquidityPoolId: market.liquidity_pool_id,
           liquidityReferenceId: market.liquidity_pool_id,

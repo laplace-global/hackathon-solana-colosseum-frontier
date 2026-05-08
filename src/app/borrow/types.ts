@@ -14,6 +14,8 @@ export interface Market {
   liquidationLtvRatio: number;
   baseInterestRate: number;
   loanTermMonths: number;
+  minCollateralAmount: number;
+  minBorrowAmount: number;
   totalSupplied?: number;
   totalBorrowed?: number;
   prices: {

@@ -6,6 +6,8 @@ import { ExternalLink, Shield } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { catalogProperties } from '@/data/catalog-properties';
+import { PROPERTY_TOKEN_BY_HOTEL_ID } from '@/data/property-tokens';
 import { getChainExplorerLink } from '@/lib/chain/client';
 
 type CollateralState = 'FREE' | 'PLEDGED' | 'FROZEN';
@@ -48,82 +50,68 @@ interface InstitutionalMockData {
   };
 }
 
-const INSTITUTIONAL_MOCK_DATA: Record<string, InstitutionalMockData> = {
-  SAIL: {
-    asset: {
-      name: 'THE SAIL Hotel Tower',
-      jurisdiction: 'Malaysia',
-      spvName: 'Laplace SPV-01',
-      bankruptcyRemote: true,
-      securityRank: '1st Pledge',
-      detailUrl: '/hotel/the-sail',
-    },
-    valuation: {
-      appraisedValue: 1_000_000,
-      loanAmount: 350_000,
-      maxLtv: 0.5,
-    },
-    cashFlow: {
-      netAnnualRentalIncome: 80_000,
-      annualDebtService: 15_750,
-    },
-    onChain: {
-      collateralState: 'PLEDGED',
-      lastVerified: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-      txHash: 'A1B2C3D4E5F6789012345678901234567890ABCDEF1234567890ABCDEF123456',
-      multiSigRequirement: '2-of-3',
-    },
-    enforcement: {
-      defaultTrigger: '30-day payment delay',
-      curePeriod: 30,
-      liquidationJurisdiction: 'Malaysia',
-      estimatedRecoveryTime: '6-9 months',
-      estimatedRecoveryRate: '85-95%',
-    },
-    market: {
-      averageYield: '5-8%',
-      expectedCapitalAppreciation: '10-30%',
-      comparableSalesRange: '$950K-$1.1M',
-    },
-  },
-  NYRA: {
-    asset: {
-      name: 'NYRA Oceanview Hotel',
-      jurisdiction: 'Malaysia',
-      spvName: 'Laplace SPV-02',
-      bankruptcyRemote: true,
-      securityRank: '1st Pledge',
-      detailUrl: '/hotel/nyra',
-    },
-    valuation: {
-      appraisedValue: 1_500_000,
-      loanAmount: 480_000,
-      maxLtv: 0.5,
-    },
-    cashFlow: {
-      netAnnualRentalIncome: 120_000,
-      annualDebtService: 21_600,
-    },
-    onChain: {
-      collateralState: 'PLEDGED',
-      lastVerified: new Date(Date.now() - 1000 * 60 * 8).toISOString(),
-      txHash: 'B2C3D4E5F6789012345678901234567890ABCDEF1234567890ABCDEF1234567',
-      multiSigRequirement: '2-of-3',
-    },
-    enforcement: {
-      defaultTrigger: '30-day payment delay',
-      curePeriod: 30,
-      liquidationJurisdiction: 'Malaysia',
-      estimatedRecoveryTime: '6-9 months',
-      estimatedRecoveryRate: '85-95%',
-    },
-    market: {
-      averageYield: '8%',
-      expectedCapitalAppreciation: '15-35%',
-      comparableSalesRange: '$1.4M-$1.6M',
-    },
-  },
-};
+const DEFAULT_PROPERTY_TOKEN = PROPERTY_TOKEN_BY_HOTEL_ID['the-sail'];
+
+function formatPercentLabel(value: number): string {
+  return `${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}%`;
+}
+
+function formatCompactUsd(value: number): string {
+  if (value >= 1_000_000) {
+    return `$${(value / 1_000_000).toFixed(1)}M`;
+  }
+  return `$${Math.round(value / 1_000)}K`;
+}
+
+const INSTITUTIONAL_MOCK_DATA: Record<string, InstitutionalMockData> = Object.fromEntries(
+  catalogProperties.map((property, index) => {
+    const appraisedValue = property.raiseUsd;
+    const maxLtv = property.ltvRatio / 100;
+    const loanAmount = Math.round(appraisedValue * Math.max(0.3, maxLtv - 0.15));
+    const netAnnualRentalIncome = Math.round(appraisedValue * (property.annualYield / 100));
+
+    return [
+      property.symbol,
+      {
+        asset: {
+          name: property.name,
+          jurisdiction: property.country,
+          spvName: `Laplace SPV-${String(index + 1).padStart(2, '0')}`,
+          bankruptcyRemote: true,
+          securityRank: '1st Pledge',
+          detailUrl: `/hotel/${property.id}`,
+        },
+        valuation: {
+          appraisedValue,
+          loanAmount,
+          maxLtv,
+        },
+        cashFlow: {
+          netAnnualRentalIncome,
+          annualDebtService: Math.round(loanAmount * 0.045),
+        },
+        onChain: {
+          collateralState: 'PLEDGED' as CollateralState,
+          lastVerified: new Date(Date.now() - 1000 * 60 * (8 + index * 3)).toISOString(),
+          txHash: `${property.symbol}COLLATERALLOCK${String(index + 1).padStart(2, '0')}`.padEnd(64, '0'),
+          multiSigRequirement: '2-of-3',
+        },
+        enforcement: {
+          defaultTrigger: '30-day payment delay',
+          curePeriod: 30,
+          liquidationJurisdiction: property.country,
+          estimatedRecoveryTime: '6-9 months',
+          estimatedRecoveryRate: '85-95%',
+        },
+        market: {
+          averageYield: formatPercentLabel(property.annualYield),
+          expectedCapitalAppreciation: `${formatPercentLabel(Math.max(0, property.fiveYearEstimate - 15))}-${formatPercentLabel(property.fiveYearEstimate)}`,
+          comparableSalesRange: `${formatCompactUsd(appraisedValue * 0.95)}-${formatCompactUsd(appraisedValue * 1.05)}`,
+        },
+      },
+    ];
+  })
+);
 
 interface InstitutionalUnderwritingProps {
   selectedMarketName?: string;
@@ -156,9 +144,9 @@ export function InstitutionalUnderwriting({
   const [collateralLocksError, setCollateralLocksError] = useState('');
 
   const currentMockData = useMemo(() => {
-    if (!selectedMarketName) return INSTITUTIONAL_MOCK_DATA.SAIL;
+    if (!selectedMarketName) return INSTITUTIONAL_MOCK_DATA[DEFAULT_PROPERTY_TOKEN];
     const marketKey = selectedMarketName.split('-')[0] as keyof typeof INSTITUTIONAL_MOCK_DATA;
-    return INSTITUTIONAL_MOCK_DATA[marketKey] ?? INSTITUTIONAL_MOCK_DATA.SAIL;
+    return INSTITUTIONAL_MOCK_DATA[marketKey] ?? INSTITUTIONAL_MOCK_DATA[DEFAULT_PROPERTY_TOKEN];
   }, [selectedMarketName]);
 
   const underwritingDerived = useMemo(() => {

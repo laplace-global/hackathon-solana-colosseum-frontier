@@ -7,6 +7,15 @@ import {
 
 export type DemoTokenSymbol = PropertyTokenSymbol | 'USDC';
 
+export const DEMO_PROPERTY_TOKEN_SYMBOLS = Object.values(
+  PROPERTY_TOKEN_BY_HOTEL_ID
+) as PropertyTokenSymbol[];
+
+export const DEMO_TOKEN_SYMBOLS: DemoTokenSymbol[] = [
+  ...DEMO_PROPERTY_TOKEN_SYMBOLS,
+  'USDC',
+];
+
 const TOKEN_MINT_ENV_KEYS = {
   SAIL: 'SAIL_MINT_ADDRESS',
   NYRA: 'NYRA_MINT_ADDRESS',
@@ -34,17 +43,21 @@ export function getDemoTokenMintAddresses(): Record<DemoTokenSymbol, string> {
   return addresses;
 }
 
+export function createDemoTokenRecord<T>(
+  factory: (symbol: DemoTokenSymbol) => T
+): Record<DemoTokenSymbol, T> {
+  return Object.fromEntries(
+    DEMO_TOKEN_SYMBOLS.map((symbol) => [symbol, factory(symbol)])
+  ) as Record<DemoTokenSymbol, T>;
+}
+
 export function withDemoTokenAssetDefinitions(
   assetDefinitions: AssetDefinition[]
 ): AssetDefinition[] {
   const definitions = new Map(assetDefinitions.map((asset) => [asset.symbol, asset]));
   const addresses = getDemoTokenMintAddresses();
-  const symbols: DemoTokenSymbol[] = [
-    ...Object.values(PROPERTY_TOKEN_BY_HOTEL_ID),
-    'USDC',
-  ];
 
-  for (const symbol of symbols) {
+  for (const symbol of DEMO_TOKEN_SYMBOLS) {
     if (definitions.has(symbol)) continue;
 
     definitions.set(symbol, {
