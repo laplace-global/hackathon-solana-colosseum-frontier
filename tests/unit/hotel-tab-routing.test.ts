@@ -20,6 +20,13 @@ describe('hotel detail tab routing', () => {
     assert.match(source, /buildHotelTabHref\(property\.id, 'units'\)/);
   });
 
+  it('routes properties page cards to the units tab', () => {
+    const source = readFileSync('src/app/discover/page.tsx', 'utf8');
+
+    assert.match(source, /buildHotelTabHref\(property\.id, 'units'\)/);
+    assert.doesNotMatch(source, /href=\{`\/hotel\/\$\{property\.id\}`\}/);
+  });
+
   it('keeps hotel detail tabs controlled by the tab query parameter', () => {
     const source = readFileSync('src/app/hotel/[id]/page.tsx', 'utf8');
 

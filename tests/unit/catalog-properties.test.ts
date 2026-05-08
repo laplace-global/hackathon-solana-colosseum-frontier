@@ -21,7 +21,7 @@ describe('catalog properties', () => {
       assert.deepEqual(getCatalogPrimaryAction(property.id), {
         kind: 'purchase',
         label: `Buy ${property.symbol} Tokens`,
-        href: `/hotel/${property.id}`,
+        href: `/hotel/${property.id}?tab=units`,
       });
     }
   });
