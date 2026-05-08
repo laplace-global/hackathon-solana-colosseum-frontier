@@ -109,8 +109,6 @@ export function PurchaseConfirmationDialog({
     }
   }, [open]);
 
-  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
   const handleWalletPayment = async () => {
     if (!userAddress) {
       setStatus('error');
@@ -193,9 +191,7 @@ export function PurchaseConfirmationDialog({
     setProcessingStep(0);
 
     try {
-      await sleep(300);
       setProcessingStep(1);
-      await sleep(300);
       setProcessingStep(2);
 
       const response = await fetch('/api/purchase', {
@@ -221,7 +217,6 @@ export function PurchaseConfirmationDialog({
       setTxHash(typeof payload.data?.paymentTxHash === 'string' ? payload.data.paymentTxHash : null);
       setTokenTxHash(typeof payload.data?.tokenTxHash === 'string' ? payload.data.tokenTxHash : null);
       setProcessingStep(3);
-      await sleep(300);
       await refreshBalances();
       onConfirm();
       setStatus('success');
@@ -253,7 +248,7 @@ export function PurchaseConfirmationDialog({
 
   return (
     <Dialog open={open} onOpenChange={status === 'processing' ? undefined : onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="lp-light-surface border-border bg-background text-foreground sm:max-w-[520px]">
         {status === 'payment-select' && (
           <>
             <DialogHeader>

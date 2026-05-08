@@ -35,6 +35,21 @@ export const purchaseOrderStatusEnum = pgEnum('purchase_order_status', [
   'CANCELLED',
 ]);
 
+export const waitlistEntries = pgTable(
+  'waitlist_entries',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    email: text('email').notNull().unique(),
+    source: text('source'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    idxWaitlistEntriesEmail: index('idx_waitlist_entries_email').on(table.email),
+    idxWaitlistEntriesCreatedAt: index('idx_waitlist_entries_created_at').on(table.createdAt),
+  })
+);
+
 // Users table
 export const users = pgTable(
   'users',
@@ -298,3 +313,6 @@ export type NewPurchaseOrder = typeof purchaseOrders.$inferInsert;
 
 export type PriceOracleRow = typeof priceOracle.$inferSelect;
 export type NewPriceOracleRow = typeof priceOracle.$inferInsert;
+
+export type WaitlistEntry = typeof waitlistEntries.$inferSelect;
+export type NewWaitlistEntry = typeof waitlistEntries.$inferInsert;

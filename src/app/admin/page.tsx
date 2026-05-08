@@ -17,6 +17,11 @@ import {
 import type { AssetBalance, LocalAccount } from '@/lib/chain/types';
 import { useWallet } from '@/contexts/wallet-context';
 import { useMarketPrices } from '@/contexts/market-prices-context';
+import {
+  createDemoTokenRecord,
+  DEMO_TOKEN_SYMBOLS,
+  type DemoTokenSymbol,
+} from '@/lib/assets/demo-token-assets';
 import { LocalWalletCard } from './components/local-wallet-card';
 import {
   MarketLiquidityManagementCard,
@@ -25,8 +30,8 @@ import {
 import { WalletBalancesCard } from './components/wallet-balances-card';
 import { WalletToolsGrid } from './components/wallet-tools-grid';
 
-const TOKEN_LIST = ['SAIL', 'NYRA', 'USDC'] as const;
-type TokenCode = (typeof TOKEN_LIST)[number];
+const TOKEN_LIST = DEMO_TOKEN_SYMBOLS;
+type TokenCode = DemoTokenSymbol;
 
 function formatPriceDraft(value: number | undefined): string {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
@@ -62,17 +67,11 @@ export default function AdminPage() {
   const [manualCollateralPriceUsd, setManualCollateralPriceUsd] = useState('');
   const [manualDebtPriceUsd, setManualDebtPriceUsd] = useState('');
   const [assetProvisioning, setAssetProvisioning] = useState<Record<TokenCode, boolean>>({
-    SAIL: false,
-    NYRA: false,
-    USDC: false,
+    ...createDemoTokenRecord(() => false),
   });
 
   const assetIdByToken = useMemo(() => {
-    const mapping: Record<TokenCode, string | null> = {
-      SAIL: null,
-      NYRA: null,
-      USDC: null,
-    };
+    const mapping = createDemoTokenRecord<string | null>(() => null);
 
     for (const market of markets) {
       const collateralSymbol = getAssetSymbol(market.collateralCurrency) as TokenCode;
@@ -173,7 +172,7 @@ export default function AdminPage() {
       const nextWallet = createLocalAccount();
       saveLocalAccountSecret(nextWallet.secret);
       setWallet(nextWallet);
-      setAssetProvisioning({ SAIL: true, NYRA: true, USDC: true });
+      setAssetProvisioning(createDemoTokenRecord(() => true));
 
       const response = await fetch('/api/admin/sol', {
         method: 'POST',
@@ -189,10 +188,10 @@ export default function AdminPage() {
       }
 
       await connectLocalWallet();
-      setAssetProvisioning({ SAIL: false, NYRA: false, USDC: false });
+      setAssetProvisioning(createDemoTokenRecord(() => false));
       toast.success('New local wallet generated and funded with SOL on devnet.');
     } catch (error) {
-      setAssetProvisioning({ SAIL: false, NYRA: false, USDC: false });
+      setAssetProvisioning(createDemoTokenRecord(() => false));
       toast.error(error instanceof Error ? error.message : 'Failed to generate wallet');
     } finally {
       setLoading('');
@@ -209,12 +208,12 @@ export default function AdminPage() {
 
       setWallet(null);
       setBalances([]);
-      setAssetProvisioning({ SAIL: false, NYRA: false, USDC: false });
+      setAssetProvisioning(createDemoTokenRecord(() => false));
       toast.success('Local wallet and wallet connection state cleared');
     } catch {
       setWallet(null);
       setBalances([]);
-      setAssetProvisioning({ SAIL: false, NYRA: false, USDC: false });
+      setAssetProvisioning(createDemoTokenRecord(() => false));
       toast.error('Failed to fully disconnect active session, but local wallet metadata was cleared');
     } finally {
       setLoading('');

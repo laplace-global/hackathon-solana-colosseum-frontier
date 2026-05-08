@@ -1,6 +1,8 @@
 import { Hotel } from "@/types/hotel";
+import { catalogProperties, type CatalogProperty } from "@/data/catalog-properties";
+import { isPurchasableHotelId } from "@/data/property-tokens";
 
-export const hotels: Hotel[] = [
+const primaryHotels: Hotel[] = [
   {
     id: "the-sail",
     name: "THE SAIL Hotel Tower",
@@ -168,3 +170,126 @@ export const hotels: Hotel[] = [
     ],
   },
 ];
+
+const catalogUnitProfiles: Record<
+  string,
+  {
+    unitName: string;
+    size: number;
+    floor: string;
+    view: string;
+    buybackYear: number;
+    buybackPercentage: number;
+  }
+> = {
+  zaabel: {
+    unitName: "Sky Penthouse Allocation",
+    size: 932,
+    floor: "The Link, top residence",
+    view: "Arabian Gulf and Dubai skyline",
+    buybackYear: 10,
+    buybackPercentage: 138,
+  },
+  burjv: {
+    unitName: "Infinity Villa Allocation",
+    size: 510,
+    floor: "Sky villa level",
+    view: "Burj Khalifa frontal view",
+    buybackYear: 10,
+    buybackPercentage: 142,
+  },
+  amant: {
+    unitName: "Sky Residence Allocation",
+    size: 420,
+    floor: "Otemachi tower residence",
+    view: "Imperial Palace and Tokyo skyline",
+    buybackYear: 9,
+    buybackPercentage: 129,
+  },
+  lemarais: {
+    unitName: "Grand Appartement Allocation",
+    size: 286,
+    floor: "Heritage residence floor",
+    view: "Private courtyard and Paris rooftops",
+    buybackYear: 8,
+    buybackPercentage: 124,
+  },
+  "432pk": {
+    unitName: "Pinnacle Penthouse Allocation",
+    size: 767,
+    floor: "Pinnacle floor",
+    view: "Central Park panorama",
+    buybackYear: 10,
+    buybackPercentage: 151,
+  },
+};
+
+function toHotelLocation(property: CatalogProperty): string {
+  const countrySuffix = `, ${property.country}`;
+  return property.location.endsWith(countrySuffix)
+    ? property.location.slice(0, -countrySuffix.length)
+    : property.location;
+}
+
+function toCatalogHotel(property: CatalogProperty): Hotel {
+  const profile = catalogUnitProfiles[property.id];
+  const totalTokens = Math.round(property.raiseUsd / property.tokenPriceUsd);
+  const availableTokens = Math.max(
+    1,
+    Math.round(totalTokens * ((100 - property.fundingProgress) / 100))
+  );
+  const size = profile.size;
+  const totalPrice = totalTokens * property.tokenPriceUsd;
+
+  return {
+    id: property.id,
+    name: property.name,
+    location: toHotelLocation(property),
+    country: property.country,
+    description: property.description,
+    roiGuaranteed: `${property.annualYield}% p.a.`,
+    roiPercentage: property.annualYield,
+    buybackYear: profile.buybackYear,
+    buybackPercentage: profile.buybackPercentage,
+    thumbnail: property.imageUrl,
+    images: [
+      property.imageUrl,
+      property.imageUrl,
+      property.imageUrl,
+      property.imageUrl,
+    ],
+    totalUnits: 1,
+    availableUnits: availableTokens > 0 ? 1 : 0,
+    minInvestment: property.tokenPriceUsd,
+    tokenPrice: property.tokenPriceUsd,
+    currency: "USD",
+    features: [
+      ...property.amenities.slice(0, 4),
+      "Solana devnet purchase flow",
+      "Token holder portfolio tracking",
+    ],
+    units: [
+      {
+        id: `${property.id}-a`,
+        type: property.symbol,
+        name: profile.unitName,
+        size,
+        sizeUnit: "m²",
+        totalPrice,
+        pricePerSqm: Number((totalPrice / size).toFixed(2)),
+        totalTokens,
+        availableTokens,
+        floor: profile.floor,
+        view: profile.view,
+        features: property.amenities.slice(0, 4),
+      },
+    ],
+  };
+}
+
+const catalogHotels = catalogProperties
+  .filter((property) => isPurchasableHotelId(property.id))
+  .filter((property) => !primaryHotels.some((hotel) => hotel.id === property.id))
+  .map(toCatalogHotel);
+
+export const hotels: Hotel[] = [...primaryHotels, ...catalogHotels];

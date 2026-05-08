@@ -1,26 +1,24 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LoginDialog } from '@/components/login-dialog';
 import { UserMenu } from '@/components/user-menu';
 import { BrandMark } from '@/components/brand-mark';
 import { Menu, X } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/discover', label: 'Properties' },
-  { href: '/portfolio', label: 'Portfolio' },
-  { href: '/borrow', label: 'Finance' },
-  { href: '/lend', label: 'Lend' },
-];
+import { PUBLIC_NAV_LINKS } from '@/lib/navigation/routes';
 
 export function Header() {
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSolid, setIsSolid] = useState(false);
   const { user } = useAuth();
+  const isLightFinancePage =
+    pathname === '/borrow' || pathname === '/lend' || /^\/hotel\/[^/]+\/unit\/[^/]+/.test(pathname);
+  const shouldUseSolidHeader = isSolid || isLightFinancePage;
 
   useEffect(() => {
     const handleScroll = () => setIsSolid(window.scrollY > 40);
@@ -32,7 +30,7 @@ export function Header() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 overflow-x-clip border-b transition-all duration-700 ease-[cubic-bezier(.16,1,.3,1)] ${
-        isSolid
+        shouldUseSolidHeader
           ? 'border-border bg-background/95 px-5 py-[18px] backdrop-blur-2xl sm:px-6 md:px-16'
           : 'border-transparent px-5 py-9 sm:px-6 md:px-16'
       }`}
@@ -43,7 +41,7 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-12 md:flex">
-          {navLinks.map((link) => (
+          {PUBLIC_NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -103,7 +101,7 @@ export function Header() {
       {isMenuOpen && (
         <div className="mt-6 border-t border-border bg-background/95 pt-6 md:hidden">
           <nav className="flex flex-col gap-4">
-            {navLinks.map((link) => (
+            {PUBLIC_NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -113,13 +111,6 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/admin"
-              className="text-uilink text-foreground/35 hover:text-foreground"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Admin
-            </Link>
           </nav>
         </div>
       )}

@@ -9,6 +9,11 @@
  * Optional env vars:
  * - SAIL_MINT_ADDRESS
  * - NYRA_MINT_ADDRESS
+ * - ZAABEL_MINT_ADDRESS
+ * - BURJV_MINT_ADDRESS
+ * - AMANT_MINT_ADDRESS
+ * - LEMARAIS_MINT_ADDRESS
+ * - PARK432_MINT_ADDRESS
  * - USDC_MINT_ADDRESS
  *
  * Run with: pnpm db:seed
@@ -16,7 +21,7 @@
 
 import * as dotenv from 'dotenv';
 import * as path from 'path';
-import { APP_DEFAULTS } from '../src/lib/config/defaults';
+import { getDemoTokenMintAddresses } from '../src/lib/assets/demo-token-assets';
 
 dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
@@ -28,15 +33,11 @@ function requireEnv(name: string): string {
   return value.trim();
 }
 
-function optionalEnv(name: string): string | null {
-  const value = process.env[name];
-  return value && value.trim().length > 0 ? value.trim() : null;
-}
-
 async function main() {
   requireEnv('DATABASE_URL');
 
   const {
+    buildDefaultMarketConfigs,
     seedMarket,
     getMarketByName,
     getMarketPrices,
@@ -48,16 +49,14 @@ async function main() {
   console.log();
 
   try {
-    const marketId = await seedMarket({
-      sailMintAddress: optionalEnv('SAIL_MINT_ADDRESS') ?? APP_DEFAULTS.demoMintAddresses.SAIL,
-      nyraMintAddress: optionalEnv('NYRA_MINT_ADDRESS') ?? APP_DEFAULTS.demoMintAddresses.NYRA,
-      usdcMintAddress: optionalEnv('USDC_MINT_ADDRESS') ?? APP_DEFAULTS.demoMintAddresses.USDC,
-    });
+    const demoMintAddresses = getDemoTokenMintAddresses();
+    const defaultMarkets = buildDefaultMarketConfigs(demoMintAddresses);
+    const marketId = await seedMarket(demoMintAddresses);
 
     console.log(`Primary market ID: ${marketId}`);
     console.log();
 
-    for (const name of ['SAIL-USDC', 'NYRA-USDC']) {
+    for (const { name } of defaultMarkets) {
       const market = await getMarketByName(name);
       if (!market) {
         throw new Error(`Market ${name} was not created successfully`);

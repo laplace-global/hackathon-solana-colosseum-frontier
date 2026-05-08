@@ -1,4 +1,6 @@
-export type CatalogCountry = 'All' | 'UAE' | 'Japan' | 'France' | 'USA';
+import { isPurchasableHotelId } from '@/data/property-tokens';
+
+export type CatalogCountry = 'All' | 'Malaysia' | 'UAE' | 'Japan' | 'France' | 'USA';
 
 export interface CatalogProperty {
   id: string;
@@ -19,12 +21,73 @@ export interface CatalogProperty {
   amenities: string[];
 }
 
-export const purchasablePropertyNames = ['THE SAIL Hotel Tower', 'NYRA Oceanview Hotel'] as const;
+type PurchaseAction = {
+  kind: 'purchase';
+  label: string;
+  href: string;
+};
 
-export const purchasableOnlyMessage =
-  `現在購入できるのは ${purchasablePropertyNames.join(' と ')} のみです。`;
+type DetailAction = {
+  kind: 'detail';
+  label: string;
+  href: string;
+};
+
+export type CatalogPrimaryAction = PurchaseAction | DetailAction;
 
 export const catalogProperties: CatalogProperty[] = [
+  {
+    id: 'the-sail',
+    name: 'THE SAIL Hotel Tower',
+    location: 'Melaka Waterfront, Malaysia',
+    country: 'Malaysia',
+    type: 'Hotel Tower',
+    annualYield: 8,
+    fiveYearEstimate: 32,
+    tokenPriceUsd: 100,
+    raiseUsd: 52_500_000,
+    fundingProgress: 42,
+    symbol: 'SAIL',
+    ltvRatio: 50,
+    developer: 'Sheng Tai International',
+    imageUrl: '/images/sail-thumb.png',
+    description:
+      'A live MVP property on Solana, giving token holders fractional exposure to an operating luxury hotel tower on the Melaka Waterfront.',
+    amenities: [
+      'Ocean-view hotel rooms',
+      'Professional hospitality management',
+      'Guaranteed annual return model',
+      'Buyback option',
+      'Investor stay benefits',
+      'Solana devnet purchase flow',
+    ],
+  },
+  {
+    id: 'nyra',
+    name: 'NYRA Oceanview Hotel',
+    location: 'Melaka Waterfront, Malaysia',
+    country: 'Malaysia',
+    type: 'Oceanview Hotel',
+    annualYield: 8,
+    fiveYearEstimate: 28,
+    tokenPriceUsd: 100,
+    raiseUsd: 76_000_000,
+    fundingProgress: 29,
+    symbol: 'NYRA',
+    ltvRatio: 50,
+    developer: 'Sheng Tai International',
+    imageUrl: '/images/nyra-thumb.png',
+    description:
+      'A purchase-capable MVP listing for beachfront hospitality exposure, with NYRA tokens usable across the portfolio and lending flows.',
+    amenities: [
+      'Beachfront hospitality exposure',
+      'Sustainable hotel design',
+      'Fixed return model',
+      '9-year buyback path',
+      'Token holder benefits',
+      'Solana devnet purchase flow',
+    ],
+  },
   {
     id: 'zaabel',
     name: "One Za'abeel Sky Penthouse",
@@ -159,4 +222,32 @@ export const catalogProperties: CatalogProperty[] = [
 
 export function getCatalogProperty(id: string): CatalogProperty | undefined {
   return catalogProperties.find((property) => property.id === id);
+}
+
+export const purchasablePropertyNames = catalogProperties
+  .filter((property) => isPurchasableHotelId(property.id))
+  .map((property) => property.name);
+
+export const purchasableOnlyMessage =
+  'この物件はまだ購入フローに対応していません。';
+
+const livePropertyActions = Object.fromEntries(
+  catalogProperties
+    .filter((property) => isPurchasableHotelId(property.id))
+    .map((property) => [
+      property.id,
+      {
+        kind: 'purchase',
+        label: `Buy ${property.symbol} Tokens`,
+        href: `/hotel/${property.id}`,
+      },
+    ])
+) as Record<string, PurchaseAction>;
+
+export function isLiveProperty(id: string) {
+  return id in livePropertyActions;
+}
+
+export function getCatalogPrimaryAction(id: string): CatalogPrimaryAction {
+  return livePropertyActions[id] ?? { kind: 'detail', label: 'View Details', href: `/hotel/${id}` };
 }

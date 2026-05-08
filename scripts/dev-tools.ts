@@ -9,7 +9,7 @@
  *   5. Transfer SPL tokens
  *   6. Check balances
  *   7. Generate protocol service accounts
- *   8. Create standard demo mint set (SAIL / NYRA / USDC)
+ *   8. Create standard demo mint set (property tokens / USDC)
  *   9. Show service accounts / config
  *
  * CLI examples:
@@ -17,6 +17,7 @@
  *   npx tsx scripts/dev-tools.ts protocol-accounts --json
  *   npx tsx scripts/dev-tools.ts airdrop --address <wallet> --amount 2
  *   npx tsx scripts/dev-tools.ts demo-mints --payer-secret <bs58>
+ *   npx tsx scripts/dev-tools.ts demo-mints --symbols ZAABEL,BURJV --payer-role treasury --json
  *
  * Run interactive menu with:
  *   npx tsx scripts/dev-tools.ts
@@ -65,7 +66,7 @@ interface GeneratedProtocolAccount extends ProtocolAccountConfig {
 }
 
 interface DemoMintConfig {
-  symbol: 'SAIL' | 'NYRA' | 'USDC';
+  symbol: keyof typeof APP_DEFAULTS.demoMintAddresses;
   envKey: string;
   treasuryBootstrapAmount: string;
   faucetBootstrapAmount: string;
@@ -123,6 +124,36 @@ const DEMO_MINT_CONFIGS: DemoMintConfig[] = [
   {
     symbol: 'NYRA',
     envKey: 'NYRA_MINT_ADDRESS',
+    treasuryBootstrapAmount: '2000',
+    faucetBootstrapAmount: '200',
+  },
+  {
+    symbol: 'ZAABEL',
+    envKey: 'ZAABEL_MINT_ADDRESS',
+    treasuryBootstrapAmount: '2000',
+    faucetBootstrapAmount: '200',
+  },
+  {
+    symbol: 'BURJV',
+    envKey: 'BURJV_MINT_ADDRESS',
+    treasuryBootstrapAmount: '2000',
+    faucetBootstrapAmount: '200',
+  },
+  {
+    symbol: 'AMANT',
+    envKey: 'AMANT_MINT_ADDRESS',
+    treasuryBootstrapAmount: '2000',
+    faucetBootstrapAmount: '200',
+  },
+  {
+    symbol: 'LEMARAIS',
+    envKey: 'LEMARAIS_MINT_ADDRESS',
+    treasuryBootstrapAmount: '2000',
+    faucetBootstrapAmount: '200',
+  },
+  {
+    symbol: '432PK',
+    envKey: 'PARK432_MINT_ADDRESS',
     treasuryBootstrapAmount: '2000',
     faucetBootstrapAmount: '200',
   },
@@ -543,11 +574,12 @@ async function createStandardDemoMintSet(params: {
   treasuryAddress: PublicKey | null;
   faucetAddress: PublicKey | null;
   bootstrapBalances: boolean;
+  configs?: DemoMintConfig[];
 }): Promise<DemoMintResult[]> {
   const conn = getConnection();
   const results: DemoMintResult[] = [];
 
-  for (const config of DEMO_MINT_CONFIGS) {
+  for (const config of params.configs ?? DEMO_MINT_CONFIGS) {
     const mint = await createMint(
       conn,
       params.payer,
@@ -638,7 +670,7 @@ function printDemoMintResults(results: DemoMintResult[]) {
 
 async function createDemoMintSet() {
   header('Create Standard Demo Mint Set');
-  console.log('  Creates SAIL / NYRA / USDC and optionally bootstraps Treasury / Faucet balances.');
+  console.log('  Creates property token / USDC mints and optionally bootstraps Treasury / Faucet balances.');
   console.log();
 
   const payer = await askKeypair('  Payer / mint authority secret key (bs58): ');
@@ -773,6 +805,49 @@ function hasFlag(flags: Map<string, string | boolean>, name: string): boolean {
   return flags.has(name);
 }
 
+function readConfiguredSecret(names: string[]): string | null {
+  for (const name of names) {
+    const value = process.env[name];
+    if (value && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+  return null;
+}
+
+function resolveCliPayerSecret(flags: Map<string, string | boolean>): string {
+  const explicit = optionalStringFlag(flags, 'payer-secret');
+  if (explicit) return explicit;
+
+  const payerRole = optionalStringFlag(flags, 'payer-role')?.toLowerCase() ?? 'operator';
+  const envNames =
+    payerRole === 'treasury'
+      ? ['TREASURY_WALLET_SECRET', 'OPERATOR_WALLET_SECRET']
+      : ['OPERATOR_WALLET_SECRET', 'TREASURY_WALLET_SECRET'];
+  const configured = readConfiguredSecret(envNames);
+  if (configured) return configured;
+
+  throw new Error('Missing --payer-secret or OPERATOR_WALLET_SECRET/TREASURY_WALLET_SECRET');
+}
+
+function selectDemoMintConfigs(rawSymbols: string | null): DemoMintConfig[] {
+  if (!rawSymbols) {
+    return DEMO_MINT_CONFIGS;
+  }
+
+  return rawSymbols
+    .split(',')
+    .map((symbol) => symbol.trim().toUpperCase())
+    .filter(Boolean)
+    .map((symbol) => {
+      const config = DEMO_MINT_CONFIGS.find((item) => item.symbol === symbol);
+      if (!config) {
+        throw new Error(`Unknown demo mint symbol: ${symbol}`);
+      }
+      return config;
+    });
+}
+
 function printCliUsage() {
   console.log(`
 Laplace Dev Tools CLI
@@ -781,6 +856,7 @@ Commands:
   protocol-accounts [--json]
   airdrop --address <wallet> [--amount 2]
   demo-mints --payer-secret <bs58> [--decimals 8] [--treasury-address <wallet>] [--faucet-address <wallet>] [--skip-bootstrap] [--json]
+  demo-mints [--symbols ZAABEL,BURJV] [--payer-role treasury|operator] [--payer-airdrop 1] [--decimals 8] [--treasury-address <wallet>] [--faucet-address <wallet>] [--skip-bootstrap] [--json]
 `);
 }
 
@@ -829,12 +905,21 @@ async function runCliCommand(): Promise<boolean> {
     }
 
     case 'demo-mints': {
-      const payer = parseKeypair(requireStringFlag(flags, 'payer-secret'));
+      const payer = parseKeypair(resolveCliPayerSecret(flags));
       const decimals = Number(optionalStringFlag(flags, 'decimals') ?? '8');
       if (!Number.isFinite(decimals) || decimals < 0 || decimals > 18) {
         throw new Error('Flag --decimals must be between 0 and 18');
       }
 
+      const payerAirdropAmount = Number(optionalStringFlag(flags, 'payer-airdrop') ?? '0');
+      if (!Number.isFinite(payerAirdropAmount) || payerAirdropAmount < 0) {
+        throw new Error('Flag --payer-airdrop must be zero or a positive number');
+      }
+      if (payerAirdropAmount > 0) {
+        await requestSolAirdrop(payer.publicKey, payerAirdropAmount);
+      }
+
+      const configs = selectDemoMintConfigs(optionalStringFlag(flags, 'symbols'));
       const bootstrapBalances = !hasFlag(flags, 'skip-bootstrap');
       const treasuryAddress = optionalStringFlag(flags, 'treasury-address') ?? resolveConfiguredAddress(PROTOCOL_ACCOUNT_CONFIGS[0]);
       const faucetAddress = optionalStringFlag(flags, 'faucet-address') ?? resolveConfiguredAddress(PROTOCOL_ACCOUNT_CONFIGS[2]);
@@ -845,6 +930,7 @@ async function runCliCommand(): Promise<boolean> {
         treasuryAddress: treasuryAddress ? parsePublicKey(treasuryAddress) : null,
         faucetAddress: faucetAddress ? parsePublicKey(faucetAddress) : null,
         bootstrapBalances,
+        configs,
       });
 
       if (hasFlag(flags, 'json')) {

@@ -9,6 +9,11 @@
  * Optional env vars:
  * - SAIL_MINT_ADDRESS
  * - NYRA_MINT_ADDRESS
+ * - ZAABEL_MINT_ADDRESS
+ * - BURJV_MINT_ADDRESS
+ * - AMANT_MINT_ADDRESS
+ * - LEMARAIS_MINT_ADDRESS
+ * - PARK432_MINT_ADDRESS
  * - USDC_MINT_ADDRESS
  *
  * Run with: pnpm db:reset
@@ -20,7 +25,7 @@ import { sql } from 'drizzle-orm';
 import * as path from 'path';
 import { stdin as input, stdout as output } from 'process';
 import { createInterface } from 'readline/promises';
-import { APP_DEFAULTS } from '../src/lib/config/defaults';
+import { getDemoTokenMintAddresses } from '../src/lib/assets/demo-token-assets';
 
 dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
@@ -30,6 +35,7 @@ const RESET_TABLES = [
   '"supply_positions"',
   '"price_oracle"',
   '"purchase_orders"',
+  '"waitlist_entries"',
   '"onchain_transactions"',
   '"users"',
   '"markets"',
@@ -41,11 +47,6 @@ function requireEnv(name: string): string {
     throw new Error(`${name} is not configured`);
   }
   return value.trim();
-}
-
-function optionalEnv(name: string): string | null {
-  const value = process.env[name];
-  return value && value.trim().length > 0 ? value.trim() : null;
 }
 
 function getDatabaseLabel(databaseUrl: string): string {
@@ -100,11 +101,7 @@ async function main() {
   await db.execute(sql.raw(`TRUNCATE TABLE ${RESET_TABLES.join(', ')} RESTART IDENTITY CASCADE`));
   console.log('Application data tables truncated.');
 
-  const marketId = await seedMarket({
-    sailMintAddress: optionalEnv('SAIL_MINT_ADDRESS') ?? APP_DEFAULTS.demoMintAddresses.SAIL,
-    nyraMintAddress: optionalEnv('NYRA_MINT_ADDRESS') ?? APP_DEFAULTS.demoMintAddresses.NYRA,
-    usdcMintAddress: optionalEnv('USDC_MINT_ADDRESS') ?? APP_DEFAULTS.demoMintAddresses.USDC,
-  });
+  const marketId = await seedMarket(getDemoTokenMintAddresses());
 
   console.log(`Primary market ID: ${marketId}`);
   console.log('Database reset complete.');

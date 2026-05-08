@@ -10,35 +10,38 @@ import {
 import { getAssetAvailability, restoreLocalAccount } from '@/lib/chain/client';
 import { getAssetDefinitionBySymbol } from '@/lib/chain/config';
 import type { AssetBalance, AssetDefinition } from '@/lib/chain/types';
+import {
+  createDemoTokenRecord,
+  DEMO_TOKEN_SYMBOLS,
+  type DemoTokenSymbol,
+} from '@/lib/assets/demo-token-assets';
 
 export type ConnectionType = 'disconnected' | 'local';
-export type AppToken = 'USDC' | 'SAIL' | 'NYRA';
+export type AppToken = DemoTokenSymbol;
 type AssetStatus = 'idle' | 'checking' | 'ready' | 'missing' | 'error';
 
-const APP_TOKENS: AppToken[] = ['USDC', 'SAIL', 'NYRA'];
+const APP_TOKENS: AppToken[] = DEMO_TOKEN_SYMBOLS;
 
 function createDefaultAssetStatus(): Record<AppToken, AssetStatus> {
-  return {
-    USDC: 'idle',
-    SAIL: 'idle',
-    NYRA: 'idle',
-  };
+  return createDemoTokenRecord(() => 'idle');
 }
 
 function createDefaultAssetAvailability(): Record<AppToken, boolean> {
-  return {
-    USDC: false,
-    SAIL: false,
-    NYRA: false,
-  };
+  return createDemoTokenRecord(() => false);
+}
+
+function createErrorAssetStatus(): Record<AppToken, AssetStatus> {
+  return createDemoTokenRecord(() => 'error');
+}
+
+function normalizeAssetAvailability(
+  flags: Partial<Record<AppToken, boolean>>
+): Record<AppToken, boolean> {
+  return createDemoTokenRecord((token) => Boolean(flags[token]));
 }
 
 function toStatusMap(flags: Record<AppToken, boolean>): Record<AppToken, AssetStatus> {
-  return {
-    USDC: flags.USDC ? 'ready' : 'missing',
-    SAIL: flags.SAIL ? 'ready' : 'missing',
-    NYRA: flags.NYRA ? 'ready' : 'missing',
-  };
+  return createDemoTokenRecord((token) => flags[token] ? 'ready' : 'missing');
 }
 
 interface WalletContextType {
@@ -136,21 +139,13 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
       try {
         const availability = await getAssetAvailability(nextAddress, trackedAssets);
-        const nextFlags: Record<AppToken, boolean> = {
-          USDC: Boolean(availability.USDC),
-          SAIL: Boolean(availability.SAIL),
-          NYRA: Boolean(availability.NYRA),
-        };
+        const nextFlags = normalizeAssetAvailability(availability);
         setHasAssetByToken(nextFlags);
         setAssetStatusByToken(toStatusMap(nextFlags));
         return nextFlags;
       } catch {
         setHasAssetByToken(createDefaultAssetAvailability());
-        setAssetStatusByToken({
-          USDC: 'error',
-          SAIL: 'error',
-          NYRA: 'error',
-        });
+        setAssetStatusByToken(createErrorAssetStatus());
         return createDefaultAssetAvailability();
       }
     },
@@ -187,11 +182,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         ]);
 
         if (options?.skipAssetRefresh) {
-          const normalizedFlags: Record<AppToken, boolean> = {
-            USDC: Boolean(assetAvailability.USDC),
-            SAIL: Boolean(assetAvailability.SAIL),
-            NYRA: Boolean(assetAvailability.NYRA),
-          };
+          const normalizedFlags = normalizeAssetAvailability(assetAvailability);
           setHasAssetByToken(normalizedFlags);
           setAssetStatusByToken(toStatusMap(normalizedFlags));
         }
@@ -211,11 +202,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         setBalances([]);
         setUsdcBalance(0);
         setHasAssetByToken(createDefaultAssetAvailability());
-        setAssetStatusByToken({
-          USDC: 'error',
-          SAIL: 'error',
-          NYRA: 'error',
-        });
+        setAssetStatusByToken(createErrorAssetStatus());
         return null;
       } finally {
         setIsRefreshing(false);
@@ -245,7 +232,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     const secret = loadLocalAccountSecret();
     if (!secret) {
-      setError('No local dev wallet found. Generate one from the Admin page first.');
+      setError('No local dev wallet found. Ask the demo operator to provision one first.');
       return;
     }
 

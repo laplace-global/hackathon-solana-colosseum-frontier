@@ -7,36 +7,70 @@
 
 import { eq, and, notInArray, sql } from 'drizzle-orm';
 import { db, users, markets, priceOracle } from './index';
+import { catalogProperties } from '@/data/catalog-properties';
+import {
+  PROPERTY_TOKEN_BY_HOTEL_ID,
+  type PropertyTokenSymbol,
+} from '@/data/property-tokens';
 import { ASSET_ID_BY_SYMBOL } from '@/lib/assets/asset-symbols';
+import type { DemoTokenSymbol } from '@/lib/assets/demo-token-assets';
 
-interface SeedMarketAssets {
-  sailMintAddress: string;
-  nyraMintAddress: string;
-  usdcMintAddress: string;
+type SeedMarketAssets = Record<DemoTokenSymbol, string>;
+
+interface DefaultMarketConfig {
+  name: string;
+  collateralCurrency: string;
+  debtCurrency: string;
+  collateralIssuer: string;
+  debtIssuer: string;
+  collateralPriceUsd: string;
+  maxLtvRatio: string;
+  liquidationLtvRatio: string;
+  baseInterestRate: string;
+  liquidationPenalty: string;
+  minCollateralAmount: string;
+  minBorrowAmount: string;
+  minSupplyAmount: string;
+}
+
+const DEFAULT_PROPERTY_TOKEN_SYMBOLS = Object.values(
+  PROPERTY_TOKEN_BY_HOTEL_ID
+) as PropertyTokenSymbol[];
+
+export function buildDefaultMarketConfigs(assets: SeedMarketAssets): DefaultMarketConfig[] {
+  const catalogBySymbol = new Map(
+    catalogProperties.map((property) => [property.symbol, property])
+  );
+
+  return DEFAULT_PROPERTY_TOKEN_SYMBOLS.map((symbol) => {
+    const property = catalogBySymbol.get(symbol);
+    if (!property) {
+      throw new Error(`Missing catalog property for ${symbol}`);
+    }
+
+    return {
+      name: `${symbol}-USDC`,
+      collateralCurrency: ASSET_ID_BY_SYMBOL[symbol],
+      debtCurrency: ASSET_ID_BY_SYMBOL.USDC,
+      collateralIssuer: assets[symbol],
+      debtIssuer: assets.USDC,
+      collateralPriceUsd: property.tokenPriceUsd.toFixed(1),
+      maxLtvRatio: (property.ltvRatio / 100).toFixed(2),
+      liquidationLtvRatio: '0.85',
+      baseInterestRate: '0.04',
+      liquidationPenalty: '0.1',
+      minCollateralAmount: '1',
+      minBorrowAmount: '5',
+      minSupplyAmount: '5',
+    };
+  });
 }
 
 /**
  * Seed default protocol markets if they don't exist
  */
 export async function seedMarket(assets: SeedMarketAssets): Promise<string> {
-  const defaults = [
-    {
-      name: 'SAIL-USDC',
-      collateralCurrency: ASSET_ID_BY_SYMBOL.SAIL,
-      debtCurrency: ASSET_ID_BY_SYMBOL.USDC,
-      collateralIssuer: assets.sailMintAddress,
-      debtIssuer: assets.usdcMintAddress,
-      collateralPriceUsd: '100.0',
-    },
-    {
-      name: 'NYRA-USDC',
-      collateralCurrency: ASSET_ID_BY_SYMBOL.NYRA,
-      debtCurrency: ASSET_ID_BY_SYMBOL.USDC,
-      collateralIssuer: assets.nyraMintAddress,
-      debtIssuer: assets.usdcMintAddress,
-      collateralPriceUsd: '100.0',
-    },
-  ];
+  const defaults = buildDefaultMarketConfigs(assets);
 
   const marketIds: string[] = [];
 
@@ -49,13 +83,13 @@ export async function seedMarket(assets: SeedMarketAssets): Promise<string> {
         collateralIssuer: config.collateralIssuer,
         debtCurrency: config.debtCurrency,
         debtIssuer: config.debtIssuer,
-        maxLtvRatio: '0.50',
-        liquidationLtvRatio: '0.85',
-        baseInterestRate: '0.04',
-        liquidationPenalty: '0.1',
-        minCollateralAmount: '10',
-        minBorrowAmount: '5',
-        minSupplyAmount: '5',
+        maxLtvRatio: config.maxLtvRatio,
+        liquidationLtvRatio: config.liquidationLtvRatio,
+        baseInterestRate: config.baseInterestRate,
+        liquidationPenalty: config.liquidationPenalty,
+        minCollateralAmount: config.minCollateralAmount,
+        minBorrowAmount: config.minBorrowAmount,
+        minSupplyAmount: config.minSupplyAmount,
         liquidityPoolId: null,
         positionTokenAssetId: null,
         liquidityShareScale: 6,
@@ -72,13 +106,13 @@ export async function seedMarket(assets: SeedMarketAssets): Promise<string> {
           collateralIssuer: config.collateralIssuer,
           debtCurrency: config.debtCurrency,
           debtIssuer: config.debtIssuer,
-          maxLtvRatio: '0.50',
-          liquidationLtvRatio: '0.85',
-          baseInterestRate: '0.04',
-          liquidationPenalty: '0.1',
-          minCollateralAmount: '10',
-          minBorrowAmount: '5',
-          minSupplyAmount: '5',
+          maxLtvRatio: config.maxLtvRatio,
+          liquidationLtvRatio: config.liquidationLtvRatio,
+          baseInterestRate: config.baseInterestRate,
+          liquidationPenalty: config.liquidationPenalty,
+          minCollateralAmount: config.minCollateralAmount,
+          minBorrowAmount: config.minBorrowAmount,
+          minSupplyAmount: config.minSupplyAmount,
           liquidityPoolId: null,
           positionTokenAssetId: null,
           liquidityShareScale: 6,
@@ -253,6 +287,8 @@ export async function getAllActiveMarkets() {
     max_ltv_ratio: parseFloat(market.maxLtvRatio),
     liquidation_ltv_ratio: parseFloat(market.liquidationLtvRatio),
     base_interest_rate: parseFloat(market.baseInterestRate),
+    min_collateral_amount: parseFloat(market.minCollateralAmount),
+    min_borrow_amount: parseFloat(market.minBorrowAmount),
     min_supply_amount: parseFloat(market.minSupplyAmount),
     liquidity_pool_id: market.liquidityPoolId,
     position_token_asset_id: market.positionTokenAssetId,

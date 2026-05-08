@@ -11,11 +11,14 @@ import {
 describe('asset-symbols', () => {
   it('resolves supported symbols case-insensitively', () => {
     assert.equal(getAssetId('sail'), ASSET_ID_BY_SYMBOL.SAIL);
+    assert.equal(getAssetId('zaabel'), ASSET_ID_BY_SYMBOL.ZAABEL);
+    assert.equal(getAssetId('432pk'), ASSET_ID_BY_SYMBOL['432PK']);
     assert.equal(getAssetId('USDC'), ASSET_ID_BY_SYMBOL.USDC);
   });
 
   it('maps canonical asset ids back to symbols', () => {
     assert.equal(getAssetSymbol(ASSET_ID_BY_SYMBOL.NYRA), 'NYRA');
+    assert.equal(getAssetSymbol(ASSET_ID_BY_SYMBOL.LEMARAIS), 'LEMARAIS');
     assert.equal(getAssetSymbol('usdc'), 'USDC');
   });
 

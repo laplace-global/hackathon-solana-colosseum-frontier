@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties, type FormEvent } from 'react';
 import Link from 'next/link';
 import { LuxuryCanvasBackground } from '@/components/luxury-canvas-background';
 import { catalogProperties, type CatalogProperty } from '@/data/catalog-properties';
+import { PUBLIC_HOME_PROTOCOL_CARDS } from '@/lib/navigation/routes';
+import { getWaitlistEmailError } from '@/lib/waitlist';
 
 const stats = [
   { label: 'Tokenized', value: '$2.4B' },
@@ -22,33 +24,6 @@ const cities = [
   'Los Angeles',
   'Tokyo',
   'Kyoto',
-];
-
-const protocolCards = [
-  {
-    number: '01',
-    label: 'Invest',
-    title: 'from 1 SOL',
-    body: '1 click. 1 SOL. Instant ownership.',
-    cta: 'Explore Properties ->',
-    href: '/discover',
-  },
-  {
-    number: '02',
-    label: 'Collateral & Borrow',
-    title: 'Lock & Borrow USDC',
-    body: 'Lock tokens. Borrow USDC. Keep everything.',
-    cta: 'Borrow USDC ->',
-    href: '/borrow',
-  },
-  {
-    number: '03',
-    label: 'Reinvest',
-    title: 'DeFi Yields',
-    body: 'Supply USDC. Earn yield. Always on.',
-    cta: 'Supply USDC ->',
-    href: '/lend',
-  },
 ];
 
 const foundingBenefits = [
@@ -71,6 +46,13 @@ function formatUsd(value: number) {
 }
 
 export default function HomePage() {
+  const [heroWaitlistSubmitted, setHeroWaitlistSubmitted] = useState(false);
+  const [heroWaitlistError, setHeroWaitlistError] = useState('');
+  const [heroWaitlistPending, setHeroWaitlistPending] = useState(false);
+  const [footerWaitlistSubmitted, setFooterWaitlistSubmitted] = useState(false);
+  const [footerWaitlistError, setFooterWaitlistError] = useState('');
+  const [footerWaitlistPending, setFooterWaitlistPending] = useState(false);
+
   useEffect(() => {
     const revealItems = Array.from(document.querySelectorAll<HTMLElement>('[data-lp-reveal]'));
 
@@ -101,6 +83,64 @@ export default function HomePage() {
 
     return () => observer.disconnect();
   }, []);
+
+  const submitWaitlistEmail = async (email: FormDataEntryValue | null, source: string) => {
+    const emailError = getWaitlistEmailError(email);
+    if (emailError) {
+      return emailError;
+    }
+
+    const response = await fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, source }),
+    });
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok || !payload?.success) {
+      return payload?.error?.message ?? 'Failed to join waitlist. Please try again.';
+    }
+
+    return null;
+  };
+
+  const handleHeroWaitlistSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const email = new FormData(event.currentTarget).get('email');
+
+    setHeroWaitlistPending(true);
+    try {
+      const error = await submitWaitlistEmail(email, 'hero');
+      if (error) {
+        setHeroWaitlistError(error);
+        return;
+      }
+
+      setHeroWaitlistError('');
+      setHeroWaitlistSubmitted(true);
+    } finally {
+      setHeroWaitlistPending(false);
+    }
+  };
+
+  const handleFooterWaitlistSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const email = new FormData(event.currentTarget).get('email');
+
+    setFooterWaitlistPending(true);
+    try {
+      const error = await submitWaitlistEmail(email, 'footer');
+      if (error) {
+        setFooterWaitlistError(error);
+        return;
+      }
+
+      setFooterWaitlistError('');
+      setFooterWaitlistSubmitted(true);
+    } finally {
+      setFooterWaitlistPending(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-full overflow-x-clip bg-[#FAFAF8] text-[#1A1916]">
@@ -140,7 +180,8 @@ export default function HomePage() {
             id="founding"
             className="lp-load-reveal w-full max-w-[420px]"
             style={lpDelay('.75s')}
-            onSubmit={(event) => event.preventDefault()}
+            onSubmit={handleHeroWaitlistSubmit}
+            noValidate
           >
             <div className="flex items-center gap-3">
               <span className="h-px w-6 bg-primary" />
@@ -154,26 +195,54 @@ export default function HomePage() {
             <p className="mt-3 max-w-sm text-[10px] leading-6 tracking-[0.05em] text-white/65 md:text-[11px] md:leading-7">
               Priority access · Zero platform fees · Guaranteed spot
             </p>
-            <div className="mt-5 w-full max-w-[420px] border border-white/50 bg-black/55 backdrop-blur-xl md:mt-6">
-              <div className="flex flex-col sm:flex-row">
-                <label htmlFor="hero-email" className="sr-only">
-                  Email
-                </label>
-                <input
-                  id="hero-email"
-                  type="email"
-                  placeholder="your@email.com"
-                  className="min-w-0 flex-1 border-b border-white/15 bg-transparent px-4 py-3.5 text-xs tracking-[0.04em] text-white outline-none placeholder:text-white/35 sm:border-b-0 sm:px-5 sm:py-4"
-                />
-                <button
-                  type="submit"
-                  className="shrink-0 bg-primary px-4 py-3.5 text-[7px] font-bold uppercase tracking-[0.18em] text-[#0C0B09] transition-opacity hover:opacity-85 sm:px-6 sm:py-4 sm:text-[8px] sm:tracking-[0.22em]"
-                >
-                  Join Waitlist
-                </button>
+            {heroWaitlistSubmitted ? (
+              <div
+                className="mt-5 w-full max-w-[420px] border border-primary/50 bg-primary/10 px-5 py-4 text-left backdrop-blur-xl md:mt-6"
+                role="status"
+                aria-live="polite"
+              >
+                <p className="text-[8px] font-medium uppercase tracking-[0.2em] text-primary">
+                  You're on the list
+                </p>
+                <p className="mt-2 text-[10.5px] tracking-[0.04em] text-white/60">
+                  We'll reach out before anyone else.
+                </p>
               </div>
-            </div>
-            <p className="mt-2 text-[9px] tracking-[0.06em] text-white/35">No spam. Priority window closes soon.</p>
+            ) : (
+              <div className="mt-5 md:mt-6">
+                <div className="w-full max-w-[420px] border border-white/50 bg-black/55 backdrop-blur-xl">
+                  <div className="flex flex-col sm:flex-row">
+                    <label htmlFor="hero-email" className="sr-only">
+                      Email
+                    </label>
+                    <input
+                      id="hero-email"
+                      name="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      aria-invalid={heroWaitlistError ? 'true' : 'false'}
+                      aria-describedby={heroWaitlistError ? 'hero-waitlist-error' : undefined}
+                      className="min-w-0 flex-1 border-b border-white/15 bg-transparent px-4 py-3.5 text-xs tracking-[0.04em] text-white outline-none placeholder:text-white/35 sm:border-b-0 sm:px-5 sm:py-4"
+                    />
+                    <button
+                      type="submit"
+                      disabled={heroWaitlistPending}
+                      className="shrink-0 bg-primary px-4 py-3.5 text-[7px] font-bold uppercase tracking-[0.18em] text-[#0C0B09] transition-opacity hover:opacity-85 sm:px-6 sm:py-4 sm:text-[8px] sm:tracking-[0.22em]"
+                    >
+                      {heroWaitlistPending ? 'Joining...' : 'Join Waitlist'}
+                    </button>
+                  </div>
+                </div>
+                {heroWaitlistError ? (
+                  <p id="hero-waitlist-error" className="mt-2 text-[9px] tracking-[0.06em] text-red-300">
+                    {heroWaitlistError}
+                  </p>
+                ) : null}
+                <p className="mt-2 text-[9px] tracking-[0.06em] text-white/35">
+                  No spam. Priority window closes soon.
+                </p>
+              </div>
+            )}
           </form>
 
           <div className="max-w-[1180px]">
@@ -301,7 +370,7 @@ export default function HomePage() {
             </h2>
           </div>
           <div className="grid gap-px bg-white/10 md:grid-cols-3">
-            {protocolCards.map((card, index) => (
+            {PUBLIC_HOME_PROTOCOL_CARDS.map((card, index) => (
               <Link
                 key={card.number}
                 href={card.href}
@@ -363,26 +432,54 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <form className="mt-10 border border-white/35 bg-black/45 backdrop-blur-xl" onSubmit={(event) => event.preventDefault()}>
-            <div className="flex flex-col sm:flex-row">
-              <label htmlFor="waitlist-email" className="sr-only">
-                Email
-              </label>
-              <input
-                id="waitlist-email"
-                type="email"
-                placeholder="your@email.com"
-                className="min-w-0 flex-1 bg-transparent px-5 py-4 text-xs tracking-[0.04em] text-white outline-none placeholder:text-white/35"
-              />
-              <button
-                type="submit"
-                className="bg-primary px-6 py-4 text-[8px] font-bold uppercase tracking-[0.22em] text-[#0C0B09] transition-opacity hover:opacity-85"
+          {footerWaitlistSubmitted ? (
+            <div className="mt-10" role="status" aria-live="polite">
+              <p className="font-serif text-[22px] font-light text-white">You're on the list.</p>
+              <Link
+                href="/discover"
+                className="mt-6 inline-flex h-11 items-center justify-center border border-white/60 px-8 text-[8px] font-medium uppercase tracking-[0.24em] text-white transition-colors hover:border-white/80"
               >
-                Join Waitlist
-              </button>
+                Explore Properties
+              </Link>
             </div>
-          </form>
-          <p className="mt-3 text-[8.5px] tracking-[0.06em] text-white/35">No spam. Unsubscribe anytime.</p>
+          ) : (
+            <>
+              <form
+                className="mt-10 border border-white/35 bg-black/45 backdrop-blur-xl"
+                onSubmit={handleFooterWaitlistSubmit}
+                noValidate
+              >
+                <div className="flex flex-col sm:flex-row">
+                  <label htmlFor="waitlist-email" className="sr-only">
+                    Email
+                  </label>
+                  <input
+                    id="waitlist-email"
+                    name="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    aria-invalid={footerWaitlistError ? 'true' : 'false'}
+                    aria-describedby={footerWaitlistError ? 'footer-waitlist-error' : undefined}
+                    className="min-w-0 flex-1 bg-transparent px-5 py-4 text-xs tracking-[0.04em] text-white outline-none placeholder:text-white/35"
+                  />
+                  <button
+                    type="submit"
+                    disabled={footerWaitlistPending}
+                    className="bg-primary px-6 py-4 text-[8px] font-bold uppercase tracking-[0.22em] text-[#0C0B09] transition-opacity hover:opacity-85"
+                  >
+                    {footerWaitlistPending ? 'Joining...' : 'Join Waitlist'}
+                  </button>
+                </div>
+              </form>
+              {footerWaitlistError ? (
+                <p id="footer-waitlist-error" className="mt-3 text-[8.5px] tracking-[0.06em] text-red-300">
+                  {footerWaitlistError}
+                </p>
+              ) : (
+                <p className="mt-3 text-[8.5px] tracking-[0.06em] text-white/35">No spam. Unsubscribe anytime.</p>
+              )}
+            </>
+          )}
         </div>
       </section>
     </div>

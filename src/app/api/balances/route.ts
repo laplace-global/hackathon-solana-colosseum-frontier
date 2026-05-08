@@ -4,6 +4,7 @@ import { buildAssetDefinitions } from '@/lib/chain/config';
 import { getAccountBalances } from '@/lib/chain/client';
 import type { AssetBalance } from '@/lib/chain/types';
 import { getAllActiveMarkets } from '@/lib/db/seed';
+import { withDemoTokenAssetDefinitions } from '@/lib/assets/demo-token-assets';
 
 type LegacyCompatibleBalance = AssetBalance & {
   currency: string;
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
     }
 
     const markets = await getAllActiveMarkets();
-    const assetDefinitions = buildAssetDefinitions(markets);
+    const assetDefinitions = withDemoTokenAssetDefinitions(buildAssetDefinitions(markets));
     const balances = await getAccountBalances(address, assetDefinitions);
 
     return NextResponse.json({

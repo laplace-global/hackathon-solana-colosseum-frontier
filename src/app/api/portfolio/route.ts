@@ -4,6 +4,7 @@ import { db, purchaseOrders } from '@/lib/db';
 import { getAllActiveMarkets, getMarketPrices } from '@/lib/db/seed';
 import { hotels } from '@/data/hotels';
 import { isValidChainAddress } from '@/lib/chain/client';
+import { getHotelIdByPropertyToken } from '@/data/property-tokens';
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,11 +32,10 @@ export async function GET(request: NextRequest) {
     const currentPriceByHotelId: Record<string, number> = {};
     for (const market of marketPriceEntries) {
       if (!market.prices) continue;
-      if (market.name.toUpperCase().includes('SAIL')) {
-        currentPriceByHotelId['the-sail'] = market.prices.collateralPriceUsd;
-      }
-      if (market.name.toUpperCase().includes('NYRA')) {
-        currentPriceByHotelId.nyra = market.prices.collateralPriceUsd;
+      const marketSymbol = market.name.toUpperCase().split('-')[0] ?? '';
+      const hotelId = getHotelIdByPropertyToken(marketSymbol);
+      if (hotelId) {
+        currentPriceByHotelId[hotelId] = market.prices.collateralPriceUsd;
       }
     }
 
