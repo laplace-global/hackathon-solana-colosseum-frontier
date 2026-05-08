@@ -218,6 +218,40 @@
     );
   }
 
+  .lp-light-surface {
+    --background: #f7f5ef;
+    --foreground: #171510;
+    --card: #fffefa;
+    --card-foreground: #171510;
+    --popover: #fffefa;
+    --popover-foreground: #171510;
+    --primary: #171510;
+    --primary-foreground: #fffefa;
+    --secondary: #ede8de;
+    --secondary-foreground: #171510;
+    --muted: #ebe6dc;
+    --muted-foreground: #706a60;
+    --accent: #ede8de;
+    --accent-foreground: #171510;
+    --border: #ddd7cc;
+    --input: #d6d0c4;
+    --ring: #171510;
+    --chart-1: #171510;
+    --chart-2: #81d8d0;
+    --chart-3: #8a8174;
+    --chart-4: #c8a96e;
+    --chart-5: #2b625f;
+  }
+
+  .lp-light-surface .lp-veil {
+    background: linear-gradient(
+      to top,
+      rgb(247 245 239 / 52%) 0%,
+      rgb(247 245 239 / 18%) 46%,
+      rgb(247 245 239 / 8%) 100%
+    );
+  }
+
   .lp-veil-card {
     background: linear-gradient(
       to top,

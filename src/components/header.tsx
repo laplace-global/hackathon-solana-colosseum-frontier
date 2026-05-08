@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LoginDialog } from '@/components/login-dialog';
 import { UserMenu } from '@/components/user-menu';
@@ -17,10 +18,13 @@ const navLinks = [
 ];
 
 export function Header() {
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSolid, setIsSolid] = useState(false);
   const { user } = useAuth();
+  const isLightFinancePage = pathname === '/borrow' || /^\/hotel\/[^/]+\/unit\/[^/]+/.test(pathname);
+  const shouldUseSolidHeader = isSolid || isLightFinancePage;
 
   useEffect(() => {
     const handleScroll = () => setIsSolid(window.scrollY > 40);
@@ -32,7 +36,7 @@ export function Header() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 overflow-x-clip border-b transition-all duration-700 ease-[cubic-bezier(.16,1,.3,1)] ${
-        isSolid
+        shouldUseSolidHeader
           ? 'border-border bg-background/95 px-5 py-[18px] backdrop-blur-2xl sm:px-6 md:px-16'
           : 'border-transparent px-5 py-9 sm:px-6 md:px-16'
       }`}

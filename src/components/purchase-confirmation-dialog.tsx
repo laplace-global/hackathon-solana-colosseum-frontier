@@ -248,7 +248,7 @@ export function PurchaseConfirmationDialog({
 
   return (
     <Dialog open={open} onOpenChange={status === 'processing' ? undefined : onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="lp-light-surface border-border bg-background text-foreground sm:max-w-[520px]">
         {status === 'payment-select' && (
           <>
             <DialogHeader>

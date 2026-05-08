@@ -140,7 +140,7 @@ export default function UnitDetailPage() {
   const purchaseTotal = purchaseAmount * tokenPrice;
 
   return (
-    <div className="min-h-screen bg-background pt-24">
+    <div className="lp-light-surface min-h-screen bg-background pt-24 text-foreground">
       {/* Header */}
       <div className="border-b border-border bg-background">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

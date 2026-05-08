@@ -407,7 +407,7 @@ export default function LendingPage() {
 
   if (configError) {
     return (
-      <div className="min-h-screen bg-background pt-24">
+      <div className="lp-light-surface min-h-screen bg-background pt-24 text-foreground">
         <div className="mx-auto max-w-4xl px-4 py-12">
           <Card className="rounded-none border-destructive/40">
             <CardHeader>
@@ -424,14 +424,14 @@ export default function LendingPage() {
 
   if (!config) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background pt-24">
+      <div className="lp-light-surface flex min-h-screen items-center justify-center bg-background pt-24 text-foreground">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-background pt-24">
+    <div className="lp-light-surface relative min-h-screen bg-background pt-24 text-foreground">
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-0.5 overflow-hidden">
         <div
           className={`h-full bg-primary transition-opacity duration-150 ${showGlobalLoading ? 'animate-pulse opacity-100' : 'opacity-0'}`}
