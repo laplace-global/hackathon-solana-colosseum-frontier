@@ -23,7 +23,8 @@ export function Header() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSolid, setIsSolid] = useState(false);
   const { user } = useAuth();
-  const isLightFinancePage = pathname === '/borrow' || /^\/hotel\/[^/]+\/unit\/[^/]+/.test(pathname);
+  const isLightFinancePage =
+    pathname === '/borrow' || pathname === '/lend' || /^\/hotel\/[^/]+\/unit\/[^/]+/.test(pathname);
   const shouldUseSolidHeader = isSolid || isLightFinancePage;
 
   useEffect(() => {
