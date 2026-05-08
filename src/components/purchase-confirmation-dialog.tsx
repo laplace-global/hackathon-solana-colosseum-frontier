@@ -170,7 +170,6 @@ export function PurchaseConfirmationDialog({
       setTxHash(typeof payload.data?.paymentTxHash === 'string' ? payload.data.paymentTxHash : null);
       setTokenTxHash(typeof payload.data?.tokenTxHash === 'string' ? payload.data.tokenTxHash : null);
       setProcessingStep(3);
-      await refreshBalances();
       onConfirm();
       setStatus('success');
     } catch (error) {
@@ -217,7 +216,6 @@ export function PurchaseConfirmationDialog({
       setTxHash(typeof payload.data?.paymentTxHash === 'string' ? payload.data.paymentTxHash : null);
       setTokenTxHash(typeof payload.data?.tokenTxHash === 'string' ? payload.data.tokenTxHash : null);
       setProcessingStep(3);
-      await refreshBalances();
       onConfirm();
       setStatus('success');
     } catch (error) {

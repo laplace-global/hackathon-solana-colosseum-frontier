@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { getAssetSymbol } from '@/lib/assets/asset-symbols';
@@ -69,6 +69,7 @@ export default function AdminPage() {
   const [assetProvisioning, setAssetProvisioning] = useState<Record<TokenCode, boolean>>({
     ...createDemoTokenRecord(() => false),
   });
+  const hasInitializedRef = useRef(false);
 
   const assetIdByToken = useMemo(() => {
     const mapping = createDemoTokenRecord<string | null>(() => null);
@@ -136,13 +137,15 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+
     async function init() {
       try {
         const secret = loadLocalAccountSecret();
         if (secret) {
           const restored = restoreLocalAccount(secret);
           setWallet(restored);
-          await connectLocalWallet();
         }
 
         await refreshMarkets({ silent: true });
@@ -152,7 +155,7 @@ export default function AdminPage() {
     }
 
     init();
-  }, [connectLocalWallet, refreshMarkets]);
+  }, [refreshMarkets]);
 
   const copyAddress = useCallback(() => {
     if (!wallet) return;

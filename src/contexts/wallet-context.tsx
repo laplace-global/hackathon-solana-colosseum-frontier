@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   clearLocalConnection,
   loadLocalAccountSecret,
@@ -100,6 +100,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [hasAssetByToken, setHasAssetByToken] = useState<Record<AppToken, boolean>>(
     createDefaultAssetAvailability
   );
+  const hasAssetByTokenRef = useRef<Record<AppToken, boolean>>(createDefaultAssetAvailability());
   const [error, setError] = useState<string | null>(null);
   const [isLocalWalletAvailable, setIsLocalWalletAvailable] = useState(false);
   const [assetDefinitions, setAssetDefinitions] = useState<AssetDefinition[]>([]);
@@ -124,9 +125,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     async (nextAddress: string): Promise<Record<AppToken, boolean>> => {
       const trackedAssets = selectTrackedAssets(assetDefinitions);
       if (trackedAssets.length === 0) {
+        const defaultFlags = createDefaultAssetAvailability();
+        hasAssetByTokenRef.current = defaultFlags;
         setAssetStatusByToken(createDefaultAssetStatus());
-        setHasAssetByToken(createDefaultAssetAvailability());
-        return createDefaultAssetAvailability();
+        setHasAssetByToken(defaultFlags);
+        return defaultFlags;
       }
 
       setAssetStatusByToken((prev) => {
@@ -140,13 +143,16 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       try {
         const availability = await getAssetAvailability(nextAddress, trackedAssets);
         const nextFlags = normalizeAssetAvailability(availability);
+        hasAssetByTokenRef.current = nextFlags;
         setHasAssetByToken(nextFlags);
         setAssetStatusByToken(toStatusMap(nextFlags));
         return nextFlags;
       } catch {
-        setHasAssetByToken(createDefaultAssetAvailability());
+        const defaultFlags = createDefaultAssetAvailability();
+        hasAssetByTokenRef.current = defaultFlags;
+        setHasAssetByToken(defaultFlags);
         setAssetStatusByToken(createErrorAssetStatus());
-        return createDefaultAssetAvailability();
+        return defaultFlags;
       }
     },
     [assetDefinitions]
@@ -173,19 +179,13 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
           }
         );
         const assetAvailabilityPromise = options?.skipAssetRefresh
-          ? Promise.resolve(hasAssetByToken)
+          ? Promise.resolve(hasAssetByTokenRef.current)
           : refreshAssetAvailabilityForAddress(nextAddress);
 
         const [nextBalances, assetAvailability] = await Promise.all([
           nextBalancesPromise,
           assetAvailabilityPromise,
         ]);
-
-        if (options?.skipAssetRefresh) {
-          const normalizedFlags = normalizeAssetAvailability(assetAvailability);
-          setHasAssetByToken(normalizedFlags);
-          setAssetStatusByToken(toStatusMap(normalizedFlags));
-        }
 
         const nextUsdcBalance = parseUsdcBalance(nextBalances);
         setBalances(nextBalances);
@@ -201,14 +201,16 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         setError('Failed to refresh wallet balances. Please try again.');
         setBalances([]);
         setUsdcBalance(0);
-        setHasAssetByToken(createDefaultAssetAvailability());
+        const defaultFlags = createDefaultAssetAvailability();
+        hasAssetByTokenRef.current = defaultFlags;
+        setHasAssetByToken(defaultFlags);
         setAssetStatusByToken(createErrorAssetStatus());
         return null;
       } finally {
         setIsRefreshing(false);
       }
     },
-    [hasAssetByToken, refreshAssetAvailabilityForAddress]
+    [refreshAssetAvailabilityForAddress]
   );
 
   const resetDisconnectedState = useCallback(() => {
@@ -216,7 +218,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setAddress(null);
     setBalances([]);
     setUsdcBalance(0);
-    setHasAssetByToken(createDefaultAssetAvailability());
+    const defaultFlags = createDefaultAssetAvailability();
+    hasAssetByTokenRef.current = defaultFlags;
+    setHasAssetByToken(defaultFlags);
     setAssetStatusByToken(createDefaultAssetStatus());
     setError(null);
   }, []);
@@ -262,8 +266,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   const refreshAssetStatus = useCallback(async (): Promise<boolean> => {
     if (!address) {
+      const defaultFlags = createDefaultAssetAvailability();
+      hasAssetByTokenRef.current = defaultFlags;
       setAssetStatusByToken(createDefaultAssetStatus());
-      setHasAssetByToken(createDefaultAssetAvailability());
+      setHasAssetByToken(defaultFlags);
       return false;
     }
 
@@ -273,9 +279,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   const refreshAssetStatuses = useCallback(async (): Promise<Record<AppToken, boolean>> => {
     if (!address) {
+      const defaultFlags = createDefaultAssetAvailability();
+      hasAssetByTokenRef.current = defaultFlags;
       setAssetStatusByToken(createDefaultAssetStatus());
-      setHasAssetByToken(createDefaultAssetAvailability());
-      return createDefaultAssetAvailability();
+      setHasAssetByToken(defaultFlags);
+      return defaultFlags;
     }
 
     return refreshAssetAvailabilityForAddress(address);
@@ -300,8 +308,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!address) {
+      const defaultFlags = createDefaultAssetAvailability();
       setUsdcBalance(0);
-      setHasAssetByToken(createDefaultAssetAvailability());
+      hasAssetByTokenRef.current = defaultFlags;
+      setHasAssetByToken(defaultFlags);
       setAssetStatusByToken(createDefaultAssetStatus());
       return;
     }
