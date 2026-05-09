@@ -24,6 +24,7 @@ interface OperationState {
   collateral: number;
   loan: number;
   purchaseCreated: boolean;
+  onboardingFunded: boolean;
 }
 
 function createState(): OperationState {
@@ -37,6 +38,7 @@ function createState(): OperationState {
     collateral: 0,
     loan: 0,
     purchaseCreated: false,
+    onboardingFunded: false,
   };
 }
 
@@ -211,6 +213,36 @@ async function installOperationMocks(page: Page, state: OperationState) {
       json: {
         success: true,
         txHash: 'sol-fund-tx',
+      },
+    });
+  });
+
+  await page.route('**/api/onboarding/wallet', async (route) => {
+    const body = route.request().postDataJSON() as {
+      userAddress?: string;
+      fundSol?: boolean;
+      fundUsdc?: boolean;
+      assumeEmptyWallet?: boolean;
+    };
+    const solTopUpAmount = body.assumeEmptyWallet ? 1 : Math.max(0, 1 - state.sol);
+    const usdcTopUpAmount = body.assumeEmptyWallet ? 10_000 : Math.max(0, 10_000 - state.usdc);
+
+    state.address = body.userAddress ?? state.address;
+    if (body.fundSol) state.sol += solTopUpAmount;
+    if (body.fundUsdc) state.usdc += usdcTopUpAmount;
+    if (body.fundSol || body.fundUsdc) state.onboardingFunded = true;
+
+    await route.fulfill({
+      json: {
+        success: true,
+        data: {
+          solTarget: '1.0',
+          usdcTarget: '10000',
+          solAmount: body.fundSol ? String(solTopUpAmount) : '0',
+          usdcAmount: body.fundUsdc ? String(usdcTopUpAmount) : '0',
+          solTxHash: body.fundSol ? 'onboarding-sol-tx' : null,
+          usdcTxHash: body.fundUsdc ? 'onboarding-usdc-tx' : null,
+        },
       },
     });
   });
@@ -469,15 +501,54 @@ async function waitForToast(page: Page, message: string | RegExp) {
   await expect(page.getByText(message)).toBeVisible({ timeout: 30_000 });
 }
 
+test('first-time user can create an account, invest, deposit collateral, and borrow without opening admin', async ({ page }) => {
+  test.slow();
+  const state = createState();
+  await installOperationMocks(page, state);
+
+  await page.goto(THE_SAIL_UNIT_URL);
+  await page.getByTestId('purchase-token-amount-input').fill(PURCHASE_AMOUNT);
+  await page.getByTestId('purchase-open-dialog').click();
+  await page.getByTestId('login-google').click();
+  await waitForToast(page, 'Welcome to LAPLACE!');
+
+  expect(state.address).toBeTruthy();
+  expect(state.sol).toBe(1);
+  expect(state.usdc).toBe(10_000);
+  expect(state.onboardingFunded).toBe(true);
+
+  await page.getByTestId('purchase-open-dialog').click();
+  await expect(page.getByText('Confirm Token Purchase')).toBeVisible();
+  await page.getByText('Credit / Debit Card').click();
+  await page.getByRole('button', { name: 'Pay with Card' }).click();
+  await expect(page.getByText('Purchase Successful')).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Done' }).click();
+  await waitForToast(page, 'Purchase successful!');
+
+  await page.goto('/borrow');
+  await expect(page.getByTestId('borrow-deposit-submit')).toBeEnabled({ timeout: 30_000 });
+  await page.getByTestId('borrow-deposit-amount').fill(DEPOSIT_AMOUNT);
+  await page.getByTestId('borrow-deposit-submit').click();
+  await waitForToast(page, 'Collateral locked');
+  await expect(page.getByTestId('borrow-position-collateral')).toContainText('10.00 SAIL');
+
+  await page.getByRole('tab', { name: 'Borrow' }).click();
+  await expect(page.getByTestId('borrow-submit')).toBeEnabled({ timeout: 30_000 });
+  await page.getByTestId('borrow-amount').fill(BORROW_AMOUNT);
+  await page.getByTestId('borrow-submit').click();
+  await waitForToast(page, 'Borrow successful');
+  await expect(page.getByTestId('borrow-position-loan')).toContainText('50.00 USDC');
+});
+
 test('local operation flow reaches purchase, lend, borrow, repay, and withdraw checks', async ({ page }) => {
   test.slow();
   const state = createState();
   await installOperationMocks(page, state);
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Buy real estate, 1-click, from 1 SOL.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "The world's penthouses. 1 SOL. 1 click." })).toBeVisible();
   await page.waitForTimeout(800);
-  await page.getByRole('link', { name: 'Explore Properties' }).click();
+  await page.getByRole('link', { name: 'Explore Properties', exact: true }).click();
   await expect(page).toHaveURL(/\/discover$/);
   await expect(page.getByText("One Za'abeel Sky Penthouse").first()).toBeVisible();
   await page.waitForTimeout(500);
@@ -496,6 +567,8 @@ test('local operation flow reaches purchase, lend, borrow, repay, and withdraw c
   await page.getByTestId('purchase-open-dialog').click();
   await page.getByTestId('login-google').click();
   await waitForToast(page, 'Welcome to LAPLACE!');
+  expect(state.sol).toBe(1);
+  expect(state.usdc).toBe(10_000);
 
   await page.getByTestId('purchase-open-dialog').click();
   await expect(page.getByText('Confirm Token Purchase')).toBeVisible();
