@@ -222,18 +222,24 @@ async function installOperationMocks(page: Page, state: OperationState) {
       userAddress?: string;
       fundSol?: boolean;
       fundUsdc?: boolean;
+      assumeEmptyWallet?: boolean;
     };
+    const solTopUpAmount = body.assumeEmptyWallet ? 1 : Math.max(0, 1 - state.sol);
+    const usdcTopUpAmount = body.assumeEmptyWallet ? 10_000 : Math.max(0, 10_000 - state.usdc);
+
     state.address = body.userAddress ?? state.address;
-    if (body.fundSol) state.sol += 0.25;
-    if (body.fundUsdc) state.usdc += 10_000;
+    if (body.fundSol) state.sol += solTopUpAmount;
+    if (body.fundUsdc) state.usdc += usdcTopUpAmount;
     if (body.fundSol || body.fundUsdc) state.onboardingFunded = true;
 
     await route.fulfill({
       json: {
         success: true,
         data: {
-          solAmount: body.fundSol ? '0.25' : '0',
-          usdcAmount: body.fundUsdc ? '10000' : '0',
+          solTarget: '1.0',
+          usdcTarget: '10000',
+          solAmount: body.fundSol ? String(solTopUpAmount) : '0',
+          usdcAmount: body.fundUsdc ? String(usdcTopUpAmount) : '0',
           solTxHash: body.fundSol ? 'onboarding-sol-tx' : null,
           usdcTxHash: body.fundUsdc ? 'onboarding-usdc-tx' : null,
         },
@@ -507,7 +513,7 @@ test('first-time user can create an account, invest, deposit collateral, and bor
   await waitForToast(page, 'Welcome to LAPLACE!');
 
   expect(state.address).toBeTruthy();
-  expect(state.sol).toBe(0.25);
+  expect(state.sol).toBe(1);
   expect(state.usdc).toBe(10_000);
   expect(state.onboardingFunded).toBe(true);
 
@@ -561,6 +567,8 @@ test('local operation flow reaches purchase, lend, borrow, repay, and withdraw c
   await page.getByTestId('purchase-open-dialog').click();
   await page.getByTestId('login-google').click();
   await waitForToast(page, 'Welcome to LAPLACE!');
+  expect(state.sol).toBe(1);
+  expect(state.usdc).toBe(10_000);
 
   await page.getByTestId('purchase-open-dialog').click();
   await expect(page.getByText('Confirm Token Purchase')).toBeVisible();

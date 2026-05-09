@@ -64,6 +64,7 @@ async function requestOnboardingFunding(params: {
   userAddress: string;
   fundSol: boolean;
   fundUsdc: boolean;
+  assumeEmptyWallet: boolean;
 }): Promise<void> {
   if (!params.fundSol && !params.fundUsdc) return;
 
@@ -74,6 +75,7 @@ async function requestOnboardingFunding(params: {
       userAddress: params.userAddress,
       fundSol: params.fundSol,
       fundUsdc: params.fundUsdc,
+      assumeEmptyWallet: params.assumeEmptyWallet,
     }),
   });
   const payload = (await response.json()) as ProvisionResponse;
@@ -108,6 +110,7 @@ export async function ensureOnboardingLocalWallet(
     userAddress: wallet.address,
     fundSol: shouldFundWallet,
     fundUsdc: shouldFundWallet,
+    assumeEmptyWallet: createdWallet,
   });
 
   if (shouldFundWallet) {

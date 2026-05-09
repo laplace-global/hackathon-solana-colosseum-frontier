@@ -57,6 +57,7 @@ describe('ensureOnboardingLocalWallet', () => {
           userAddress: 'created-address',
           fundSol: true,
           fundUsdc: true,
+          assumeEmptyWallet: true,
         },
       },
     ]);
@@ -96,5 +97,44 @@ describe('ensureOnboardingLocalWallet', () => {
       fundedUsdc: false,
     });
     assert.deepEqual(requests, []);
+  });
+
+  it('asks the server to top up a restored wallet instead of assuming it is empty', async () => {
+    const requests: Array<{ url: string; body: unknown }> = [];
+
+    const result = await ensureOnboardingLocalWallet({
+      connectLocalWallet: async () => {},
+      fetch: async (url, init) => {
+        requests.push({
+          url: String(url),
+          body: init?.body ? JSON.parse(String(init.body)) : null,
+        });
+        return {
+          ok: true,
+          json: async () => ({ success: true }),
+        } as Response;
+      },
+      isWalletFunded: () => false,
+      loadLocalAccountSecret: () => 'saved-secret',
+      restoreLocalAccount: (secret) => account('restored-address', secret),
+    });
+
+    assert.deepEqual(result, {
+      address: 'restored-address',
+      createdWallet: false,
+      fundedSol: true,
+      fundedUsdc: true,
+    });
+    assert.deepEqual(requests, [
+      {
+        url: '/api/onboarding/wallet',
+        body: {
+          userAddress: 'restored-address',
+          fundSol: true,
+          fundUsdc: true,
+          assumeEmptyWallet: false,
+        },
+      },
+    ]);
   });
 });
