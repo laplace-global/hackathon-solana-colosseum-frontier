@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Chrome, Twitter, Github, Shield, Zap, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useWallet } from '@/contexts/wallet-context';
+import { ensureOnboardingLocalWallet } from '@/lib/client/onboarding-wallet';
 import { toast } from 'sonner';
 
 interface LoginDialogProps {
@@ -14,22 +15,24 @@ interface LoginDialogProps {
 }
 
 export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
-  const { login, isLoading } = useAuth();
+  const { login, logout, isLoading } = useAuth();
   const { connectLocalWallet } = useWallet();
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+  const isSubmitting = isLoading || selectedProvider !== null;
 
   const handleLogin = async (provider: 'google' | 'twitter' | 'github') => {
     setSelectedProvider(provider);
     try {
       await login(provider);
-      await connectLocalWallet();
+      await ensureOnboardingLocalWallet({ connectLocalWallet });
       toast.success('Welcome to LAPLACE!', {
-        description: 'Your smart account is connected to the local admin wallet.',
+        description: 'Your local wallet is ready for investing, collateral, and borrowing.',
       });
       onOpenChange(false);
-    } catch {
+    } catch (error) {
+      logout();
       toast.error('Login failed', {
-        description: 'Please make sure a local admin wallet exists, then try again.',
+        description: error instanceof Error ? error.message : 'Please try again in a moment.',
       });
     } finally {
       setSelectedProvider(null);
@@ -69,10 +72,10 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
               variant="outline"
               size="lg"
               onClick={() => handleLogin('google')}
-              disabled={isLoading}
+              disabled={isSubmitting}
               data-testid="login-google"
             >
-              {isLoading && selectedProvider === 'google' ? (
+              {selectedProvider === 'google' ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               ) : (
                 <Chrome className="mr-2 h-5 w-5" />
@@ -85,10 +88,10 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
               variant="outline"
               size="lg"
               onClick={() => handleLogin('twitter')}
-              disabled={isLoading}
+              disabled={isSubmitting}
               data-testid="login-twitter"
             >
-              {isLoading && selectedProvider === 'twitter' ? (
+              {selectedProvider === 'twitter' ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               ) : (
                 <Twitter className="mr-2 h-5 w-5" />
@@ -101,10 +104,10 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
               variant="outline"
               size="lg"
               onClick={() => handleLogin('github')}
-              disabled={isLoading}
+              disabled={isSubmitting}
               data-testid="login-github"
             >
-              {isLoading && selectedProvider === 'github' ? (
+              {selectedProvider === 'github' ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               ) : (
                 <Github className="mr-2 h-5 w-5" />
