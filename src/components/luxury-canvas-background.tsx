@@ -131,22 +131,7 @@ export function LuxuryCanvasBackground({ className }: LuxuryCanvasBackgroundProp
       ctx.fillStyle = horizon;
       ctx.fillRect(0, horizonY - height * 0.08, width, height * 0.13);
 
-      ctx.save();
-      ctx.globalAlpha = 0.00;
-      ctx.strokeStyle = '#81D8D0';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 8; i += 1) {
-        const y = height * (0.72 + i * 0.035);
-        ctx.beginPath();
-        for (let x = 0; x <= width; x += 18) {
-          const waveY = y + Math.sin(x * 0.012 + now * 0.001 + i) * (2 + i * 0.25);
-          if (x === 0) ctx.moveTo(x, waveY);
-          else ctx.lineTo(x, waveY);
-        }
-        ctx.stroke();
-      }
-      ctx.restore();
-
+     
       const vignette = ctx.createLinearGradient(0, height * 0.48, 0, height);
       vignette.addColorStop(0, 'transparent');
       vignette.addColorStop(1, 'rgba(0,0,0,.30)');
