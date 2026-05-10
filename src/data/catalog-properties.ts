@@ -155,11 +155,11 @@ export const catalogProperties: CatalogProperty[] = [
     symbol: 'AMANT',
     ltvRatio: 60,
     developer: 'Tokyo Resorts',
-    imageUrl: 'https://images.unsplash.com/photo-1513407030348-c983a97b98d8?w=1920&q=90',
+    imageUrl: 'https://images.unsplash.com/photo-1513407030348-c983a97b98d8?w=1920&q=90&crop=focalpoint&fp-x=0.3&fp-y=0.6&fit=crop&h=800',
     description:
       'A serene sky residence above Otemachi, combining Japanese material restraint with full-height views across Tokyo and the Imperial Palace gardens.',
     amenities: [
-      'Aman Spa access',
+      'Spa access',
       'Personal chef service',
       'Imperial Palace views',
       'Japanese garden',
