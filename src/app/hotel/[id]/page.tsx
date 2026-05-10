@@ -78,7 +78,7 @@ export default function HotelPage() {
   const catalogProperty = getCatalogProperty(propertyId);
   
   const [selectedUnit, setSelectedUnit] = useState<HotelUnit | null>(null);
-  const [tokenAmount, setTokenAmount] = useState(100);
+  const [tokenAmount, setTokenAmount] = useState(1);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showOnramp, setShowOnramp] = useState(false);
