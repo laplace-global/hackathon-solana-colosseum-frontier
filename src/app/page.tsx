@@ -173,7 +173,7 @@ export default function HomePage() {
         <div className="absolute right-0 top-[-20%] h-[70%] w-[60%] animate-[lp-light-drift-1_12s_ease-in-out_infinite] bg-[radial-gradient(ellipse,rgba(200,160,80,.18)_0%,transparent_65%)] md:right-[-10%]" />
         <div className="absolute bottom-[-10%] left-0 h-[60%] w-[50%] animate-[lp-light-drift-2_16s_ease-in-out_infinite] bg-[radial-gradient(ellipse,rgba(20,180,160,.1)_0%,transparent_60%)] md:left-[-5%]" />
         <div className="lp-grain absolute inset-0 opacity-[.18]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,.86)_0%,rgba(0,0,0,.58)_52%,rgba(0,0,0,.18)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,.60)_0%,rgba(0,0,0,.30)_52%,rgba(0,0,0,.05)_100%)]" />
 
         <div className="relative z-10 flex min-h-[100svh] w-full min-w-0 max-w-full flex-col justify-between px-5 pb-10 pt-24 md:px-16 md:pb-24 md:pt-44">
           <form
