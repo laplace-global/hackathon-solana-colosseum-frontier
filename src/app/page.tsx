@@ -9,10 +9,10 @@ import { PUBLIC_HOME_PROTOCOL_CARDS } from '@/lib/navigation/routes';
 import { getWaitlistEmailError } from '@/lib/waitlist';
 
 const stats = [
-  { label: 'Tokenized', value: '$2.4B' },
+  { label: 'Tokenized', value: '$900M' },
   { label: 'Properties', value: String(catalogProperties.length) },
   { label: 'Avg. Yield', value: '7.8%' },
-  { label: 'Min. Entry', value: '1 SOL' },
+  { label: 'Min. Entry', value: '$100' },
 ];
 
 const cities = [
@@ -170,7 +170,6 @@ export default function HomePage() {
           <source src="/videos/hero_sp.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-[linear-gradient(135deg,#0a0806_0%,#12100c_30%,#0d1a18_60%,#080c10_100%)] opacity-45" />
-        <div className="lp-architect-grid absolute inset-0 opacity-100" />
         <div className="absolute right-0 top-[-20%] h-[70%] w-[60%] animate-[lp-light-drift-1_12s_ease-in-out_infinite] bg-[radial-gradient(ellipse,rgba(200,160,80,.18)_0%,transparent_65%)] md:right-[-10%]" />
         <div className="absolute bottom-[-10%] left-0 h-[60%] w-[50%] animate-[lp-light-drift-2_16s_ease-in-out_infinite] bg-[radial-gradient(ellipse,rgba(20,180,160,.1)_0%,transparent_60%)] md:left-[-5%]" />
         <div className="lp-grain absolute inset-0 opacity-[.18]" />
@@ -250,7 +249,7 @@ export default function HomePage() {
             <div className="lp-load-rule mb-7 h-px w-7 bg-primary/70 md:mb-9" style={lpDelay('.25s')} />
             <h1 className="font-serif text-[clamp(34px,9vw,52px)] font-extralight leading-[1.04] tracking-normal text-white md:text-[clamp(58px,8.5vw,116px)] md:leading-[0.98]">
               <span className="lp-load-title block" style={lpDelay('.32s')}>
-                The world's penthouses.
+                Own the World.
               </span>
               <span className="lp-load-title block" style={lpDelay('.46s')}>
                 1 SOL. 1 click.
