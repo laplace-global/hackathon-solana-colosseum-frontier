@@ -132,7 +132,7 @@ export function LuxuryCanvasBackground({ className }: LuxuryCanvasBackgroundProp
       ctx.fillRect(0, horizonY - height * 0.08, width, height * 0.13);
 
       ctx.save();
-      ctx.globalAlpha = 0.08;
+      ctx.globalAlpha = 0.00;
       ctx.strokeStyle = '#81D8D0';
       ctx.lineWidth = 1;
       for (let i = 0; i < 8; i += 1) {
