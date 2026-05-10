@@ -340,7 +340,7 @@ export default function HomePage() {
           <div>
             <p className="mb-5 text-[7px] uppercase tracking-[0.32em] text-[#3D3B35]/70">Properties</p>
             <h2 className="font-serif text-[clamp(34px,4.6vw,54px)] font-light leading-[1.08] text-[#1A1916]">
-              Own the world.
+              The world's finest properties.
             </h2>
           </div>
           <Link
