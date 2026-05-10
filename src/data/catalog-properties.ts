@@ -143,7 +143,7 @@ export const catalogProperties: CatalogProperty[] = [
   },
   {
     id: 'amant',
-    name: 'Aman Tokyo Sky Residence',
+    name: 'Tokyo Sky Residence',
     location: 'Otemachi, Tokyo, Japan',
     country: 'Japan',
     type: 'Luxury Residence',
@@ -154,8 +154,8 @@ export const catalogProperties: CatalogProperty[] = [
     fundingProgress: 58,
     symbol: 'AMANT',
     ltvRatio: 60,
-    developer: 'Aman Resorts',
-    imageUrl: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1920&q=90',
+    developer: 'Tokyo Resorts',
+    imageUrl: 'https://images.unsplash.com/photo-1513407030348-c983a97b98d8?w=1920&q=90',
     description:
       'A serene sky residence above Otemachi, combining Japanese material restraint with full-height views across Tokyo and the Imperial Palace gardens.',
     amenities: [
