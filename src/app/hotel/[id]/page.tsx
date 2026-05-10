@@ -107,7 +107,7 @@ export default function HotelPage() {
 
   const handleUnitSelect = (unit: HotelUnit) => {
     setSelectedUnit(unit);
-    setTokenAmount(100);
+    setTokenAmount(1);
     if (!user) {
       setShowLoginDialog(true);
       return;
