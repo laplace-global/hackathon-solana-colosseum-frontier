@@ -149,7 +149,7 @@ export function LuxuryCanvasBackground({ className }: LuxuryCanvasBackgroundProp
 
       const vignette = ctx.createLinearGradient(0, height * 0.48, 0, height);
       vignette.addColorStop(0, 'transparent');
-      vignette.addColorStop(1, 'rgba(0,0,0,.72)');
+      vignette.addColorStop(1, 'rgba(0,0,0,.60)');
       ctx.fillStyle = vignette;
       ctx.fillRect(0, height * 0.48, width, height * 0.52);
 
