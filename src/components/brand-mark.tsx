@@ -9,7 +9,7 @@ export function BrandMark({ className }: BrandMarkProps) {
     <img
       src="/Laplace_logo_transparent.png"
       alt="Laplace"
-      className={cn('h-8 w-auto', className)}
+      className={cn('h-12 w-auto', className)}
     />
   );
 }
