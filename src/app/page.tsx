@@ -496,7 +496,7 @@ function PropertyCard({ property, delay }: { property: CatalogProperty; delay: n
       <Link href={buildHotelTabHref(property.id, 'units')} className="absolute inset-0" aria-label={property.name}>
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-[1600ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-105"
-          style={{ backgroundImage: `url(${property.imageUrl})` }}
+          style={{ backgroundImage: `url(${property.imageUrl})`, backgroundPosition: property.id === 'amant' ? 'left center' : 'center' }}
         />
         <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,.92)_0%,rgba(0,0,0,.64)_55%,rgba(0,0,0,.38)_100%)]" />
         <span className="absolute left-0 top-0 z-10 h-0 w-px bg-primary transition-[height] duration-700 ease-[cubic-bezier(.16,1,.3,1)] group-hover:h-full" />
