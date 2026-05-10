@@ -184,7 +184,7 @@ export default function DiscoverPage() {
               >
                 <div
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-[1200ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-105"
-                  style={{ backgroundImage: `url(${property.imageUrl})` }}
+                  style={{ backgroundImage: `url(${property.imageUrl})`, backgroundPosition: property.id === 'amant' ? 'left center' : 'center' }}
                   aria-label={property.name}
                 />
                 <div className="absolute inset-0 lp-veil-card" />
