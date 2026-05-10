@@ -53,18 +53,13 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-5 md:flex">
-          <Link
-            href="#founding"
-            className="text-[8px] font-light uppercase tracking-[0.28em] text-foreground/35 transition-colors hover:text-foreground"
-          >
-            Get Notified
-          </Link>
+       
           {user ? (
             <UserMenu />
           ) : (
             <button
               type="button"
-              className="inline-flex items-center gap-3 border border-foreground/20 px-6 py-3 text-[8px] font-light uppercase tracking-[0.24em] text-foreground/70 transition-colors duration-300 hover:border-foreground/50 hover:text-foreground"
+              className="inline-flex items-center gap-3 border border-foreground/20 px-8 py-4 text-[11px] font-light uppercase tracking-[0.24em] text-foreground/70 transition-colors duration-300 hover:border-foreground/50 hover:text-foreground"
               onClick={() => setIsLoginOpen(true)}
             >
               <span className="relative size-3.5 rounded-[3px] bg-[var(--lp-solana)]">
