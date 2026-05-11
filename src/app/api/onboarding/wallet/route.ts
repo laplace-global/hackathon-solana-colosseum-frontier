@@ -6,15 +6,17 @@ import {
   getAccountBalances,
   getAssetBySymbol,
   isValidChainAddress,
+  requestTestFunds,
   transferAsset,
   transferNativeAsset,
 } from '@/lib/chain/client';
 import { buildAssetDefinitions } from '@/lib/chain/config';
+import { replenishTreasurySolBestEffort } from '@/lib/chain/fee-topup';
 import { getTreasuryAccount } from '@/lib/chain/service-account';
 import { withDemoTokenAssetDefinitions } from '@/lib/assets/demo-token-assets';
 import type { AssetBalance } from '@/lib/chain/types';
 
-const ONBOARDING_SOL_TARGET = '1.0';
+const ONBOARDING_SOL_TARGET = '0.05';
 const ONBOARDING_USDC_TARGET = '10000';
 
 function toBoolean(value: unknown): boolean {
@@ -39,6 +41,28 @@ function getTopUpAmount(params: {
   return missingAmount.toFixed();
 }
 
+async function fundSolTopUp(params: {
+  userAddress: string;
+  amount: string;
+  getTreasurySecret: () => string;
+}): Promise<{ txHash: string }> {
+  const { userAddress, amount, getTreasurySecret } = params;
+
+  try {
+    const airdrop = await requestTestFunds(userAddress, Number(amount));
+    return { txHash: airdrop.signature };
+  } catch (airdropError) {
+    console.warn('Onboarding SOL airdrop failed; falling back to Treasury transfer:', airdropError);
+    await replenishTreasurySolBestEffort();
+    const treasuryTransfer = await transferNativeAsset({
+      sourceSecret: getTreasurySecret(),
+      destinationAddress: userAddress,
+      amount,
+    });
+    return { txHash: treasuryTransfer.txHash };
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -54,7 +78,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const treasuryAccount = getTreasuryAccount();
+    let treasurySecret: string | null = null;
+    const getTreasurySecret = () => {
+      treasurySecret ??= getTreasuryAccount().secret;
+      return treasurySecret;
+    };
     let usdcAsset: NonNullable<ReturnType<typeof getAssetBySymbol>> | null = null;
 
     if (fundUsdc) {
@@ -91,19 +119,22 @@ export async function POST(request: NextRequest) {
 
     const [solTransfer, usdcTransfer] = await Promise.all([
       solTopUpAmount
-        ? transferNativeAsset({
-            sourceSecret: treasuryAccount.secret,
-            destinationAddress: userAddress,
+        ? fundSolTopUp({
+            userAddress,
             amount: solTopUpAmount,
+            getTreasurySecret,
           })
         : Promise.resolve(null),
       usdcTopUpAmount && usdcAsset
-        ? transferAsset({
-            sourceSecret: treasuryAccount.secret,
-            destinationAddress: userAddress,
-            asset: usdcAsset,
-            amount: usdcTopUpAmount,
-          })
+        ? (async () => {
+            await replenishTreasurySolBestEffort();
+            return transferAsset({
+              sourceSecret: getTreasurySecret(),
+              destinationAddress: userAddress,
+              asset: usdcAsset,
+              amount: usdcTopUpAmount,
+            });
+          })()
         : Promise.resolve(null),
     ]);
 

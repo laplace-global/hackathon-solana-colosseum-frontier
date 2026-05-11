@@ -20,7 +20,11 @@ export function getSolanaCluster(): SolanaCluster {
 }
 
 export function getSolanaRpcUrl(): string {
-  return process.env.NEXT_PUBLIC_SOLANA_RPC_URL || APP_DEFAULTS.solana.rpcUrl;
+  return (
+    process.env.SOLANA_RPC_URL ||
+    process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
+    APP_DEFAULTS.solana.rpcUrl
+  );
 }
 
 export function getSolanaExplorerUrl(): string {

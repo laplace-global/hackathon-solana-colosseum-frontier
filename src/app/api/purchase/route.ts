@@ -10,6 +10,10 @@ import {
   transferAsset,
 } from '@/lib/chain/client';
 import { buildAssetDefinitions } from '@/lib/chain/config';
+import {
+  ensureUserHasFeeSolBalance,
+  replenishTreasurySolBestEffort,
+} from '@/lib/chain/fee-topup';
 import { getTreasuryAccount, getTreasuryAddress } from '@/lib/chain/service-account';
 import { getPropertyTokenSymbol } from '@/data/property-tokens';
 import { withDemoTokenAssetDefinitions } from '@/lib/assets/demo-token-assets';
@@ -222,6 +226,8 @@ export async function POST(request: NextRequest) {
       }
 
       try {
+        await ensureUserHasFeeSolBalance({ userAddress });
+
         const paymentTx = await transferAsset({
           sourceSecret: accountSecret,
           destinationAddress: treasuryAddress,
@@ -264,6 +270,8 @@ export async function POST(request: NextRequest) {
 
     let tokenTxHash: string | null = null;
     try {
+      await replenishTreasurySolBestEffort();
+
       const tokenTx = await transferAsset({
         sourceSecret: treasuryAccount.secret,
         destinationAddress: userAddress,

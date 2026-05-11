@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Slider } from '@/components/ui/slider';
 import { HotelImage } from '@/components/hotel-image';
-import { ImageGallery } from '@/components/image-gallery';
 import { 
   ArrowLeft,
   Bed,
@@ -83,14 +82,6 @@ export default function UnitDetailPage() {
   const totalValue = investmentAmount + totalReturns;
   const buybackValue = investmentAmount * (hotel.buybackPercentage / 100);
 
-  // Mock unit images
-  const unitImages = [
-    `/images/${hotel.id}-unit-1.jpg`,
-    `/images/${hotel.id}-unit-2.jpg`,
-    `/images/${hotel.id}-unit-3.jpg`,
-    `/images/${hotel.id}-unit-4.jpg`,
-  ];
-
   const amenities = [
     { icon: Wifi, name: 'High-Speed WiFi' },
     { icon: AirVent, name: 'Air Conditioning' },
@@ -131,10 +122,13 @@ export default function UnitDetailPage() {
   };
 
   const handlePurchaseSuccess = () => {
+    setShowConfirmDialog(false);
     toast.success('Purchase successful!', {
       description: `You've purchased ${purchaseAmount} tokens for ${unit.name}`,
     });
-    router.push(`/borrow?hotelId=${hotel.id}&unitId=${unit.id}&flow=reinvest`);
+    window.setTimeout(() => {
+      router.push(`/borrow?hotelId=${hotel.id}&unitId=${unit.id}&flow=reinvest`);
+    }, 0);
   };
 
   const purchaseTotal = purchaseAmount * tokenPrice;
@@ -165,7 +159,7 @@ export default function UnitDetailPage() {
       {/* Hero Image */}
       <div className="relative h-[40vh] min-h-[300px] overflow-hidden">
         <HotelImage
-          src={unitImages[0]}
+          src={hotel.thumbnail}
           alt={unit.name}
           className=""
           fallbackClassName="bg-card"
@@ -355,9 +349,8 @@ export default function UnitDetailPage() {
         </div>
 
         <Tabs defaultValue="details" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[460px]">
             <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="gallery">Gallery</TabsTrigger>
             <TabsTrigger value="investment">Investment</TabsTrigger>
             <TabsTrigger value="calculator">Calculator</TabsTrigger>
           </TabsList>
@@ -430,17 +423,6 @@ export default function UnitDetailPage() {
                       'Overlook our beautifully landscaped tropical gardens. A peaceful retreat with lush greenery and colorful flora visible from your window.'}
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="gallery" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Unit Gallery</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ImageGallery images={unitImages} hotelName={`${hotel.name} - ${unit.name}`} />
               </CardContent>
             </Card>
           </TabsContent>

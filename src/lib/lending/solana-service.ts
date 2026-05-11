@@ -2,6 +2,10 @@ import Decimal from 'decimal.js';
 import { eq } from 'drizzle-orm';
 
 import { restoreLocalAccount, transferAsset, transferNativeAsset } from '@/lib/chain/client';
+import {
+  ensureUserHasFeeSolBalance,
+  replenishTreasurySolBestEffort,
+} from '@/lib/chain/fee-topup';
 import { getSolBalance } from '@/lib/client/solana';
 import {
   getOperatorAccount,
@@ -84,6 +88,7 @@ async function ensureOperatorHasFeeBalance(operatorAddress: string): Promise<voi
     return;
   }
 
+  await replenishTreasurySolBestEffort();
   await transferNativeAsset({
     sourceSecret: getTreasurySecret(),
     destinationAddress: operatorAddress,
@@ -349,6 +354,7 @@ export async function processDeposit(params: {
 
   try {
     const operatorAccount = getOperatorAccount();
+    await ensureUserHasFeeSolBalance({ userAddress: senderAddress });
     const receipt = await transferAsset({
       sourceSecret: accountSecret,
       destinationAddress: operatorAccount.address,
@@ -449,6 +455,7 @@ export async function processBorrow(params: {
   try {
     await updateGlobalYieldIndex(marketId);
 
+    await replenishTreasurySolBestEffort();
     const receipt = await transferAsset({
       sourceSecret: getTreasurySecret(),
       destinationAddress: userAddress,
@@ -585,6 +592,7 @@ export async function processRepay(params: {
     }
 
     await updateGlobalYieldIndex(marketId);
+    await ensureUserHasFeeSolBalance({ userAddress });
 
     const receipt = await transferAsset({
       sourceSecret: accountSecret,
@@ -831,6 +839,7 @@ export async function processSupply(params: {
 
   try {
     await updateGlobalYieldIndex(marketId);
+    await ensureUserHasFeeSolBalance({ userAddress: senderAddress });
 
     const receipt = await transferAsset({
       sourceSecret: accountSecret,
@@ -963,6 +972,7 @@ export async function processWithdrawSupply(params: {
   try {
     await updateGlobalYieldIndex(marketId);
 
+    await replenishTreasurySolBestEffort();
     const receipt = await transferAsset({
       sourceSecret: getTreasurySecret(),
       destinationAddress: userAddress,
