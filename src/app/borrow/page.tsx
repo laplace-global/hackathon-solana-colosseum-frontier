@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -28,6 +29,8 @@ import { getChainExplorerLink, restoreLocalAccount } from '@/lib/chain/client';
 import { loadLocalAccountSecret } from '@/lib/chain/storage';
 import type { LocalAccount } from '@/lib/chain/types';
 import { getAssetId, getAssetSymbol } from '@/lib/assets/asset-symbols';
+import { hotels } from '@/data/hotels';
+import { getPropertyTokenSymbol } from '@/data/property-tokens';
 
 const REPAY_BUFFER_RATE = 0.002;
 const FULL_REPAY_BUFFER_RATE = 0.0001;
@@ -51,6 +54,23 @@ interface TokenBalance {
 }
 
 export default function LendingPage() {
+  return (
+    <Suspense fallback={<LendingPageFallback />}>
+      <LendingPageContent />
+    </Suspense>
+  );
+}
+
+function LendingPageFallback() {
+  return (
+    <div className="lp-light-surface flex min-h-screen items-center justify-center bg-background pt-24 text-foreground">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+}
+
+function LendingPageContent() {
+  const searchParams = useSearchParams();
   const [config, setConfig] = useState<LendingConfig | null>(null);
   const [configError, setConfigError] = useState('');
   const [wallet, setWallet] = useState<LocalAccount | null>(null);
@@ -73,11 +93,76 @@ export default function LendingPage() {
   const [repayAmount, setRepayAmount] = useState('0');
   const [repayKind, setRepayKind] = useState<RepayKind>('regular');
   const [withdrawAmount, setWithdrawAmount] = useState('1');
+  const [actionTab, setActionTab] = useState('deposit');
+  const [reinvestTokenAmount, setReinvestTokenAmount] = useState('1');
+  const [reinvestCompleted, setReinvestCompleted] = useState(false);
+
+  const requestedHotelId = searchParams.get('hotelId') ?? '';
+  const requestedUnitId = searchParams.get('unitId') ?? '';
+  const isGuidedReinvestFlow = searchParams.get('flow') === 'reinvest';
+  const requestedCollateralSymbol = getPropertyTokenSymbol(requestedHotelId);
 
   const selectedMarket = useMemo(
     () => config?.markets.find((market) => market.id === selectedMarketId) ?? null,
     [config?.markets, selectedMarketId]
   );
+
+  const reinvestTarget = useMemo(() => {
+    const fallbackHotel = hotels.find((entry) => entry.id === 'the-sail') ?? hotels[0];
+    const hotel = hotels.find((entry) => entry.id === requestedHotelId) ?? fallbackHotel;
+    const unit = hotel.units.find((entry) => entry.id === requestedUnitId) ?? hotel.units[0];
+
+    return { hotel, unit };
+  }, [requestedHotelId, requestedUnitId]);
+
+  const reinvestTokenPrice = selectedMarket?.prices?.collateralPriceUsd ?? reinvestTarget.hotel.tokenPrice;
+  const parsedReinvestTokenAmount = Number(reinvestTokenAmount);
+  const safeReinvestTokenAmount =
+    Number.isFinite(parsedReinvestTokenAmount) && parsedReinvestTokenAmount > 0 ? parsedReinvestTokenAmount : 0;
+  const reinvestTotalPrice = safeReinvestTokenAmount * reinvestTokenPrice;
+  const reinvestTargetName = `${reinvestTarget.hotel.name} / ${reinvestTarget.unit.name}`;
+  const guidedFlowSteps = useMemo(
+    () => [
+      {
+        id: 'connect',
+        label: 'Connect',
+        complete: Boolean(wallet),
+        active: !wallet,
+      },
+      {
+        id: 'invest',
+        label: 'Invest',
+        complete: isGuidedReinvestFlow,
+        active: Boolean(wallet) && !(position?.collateralAmount ?? 0),
+      },
+      {
+        id: 'deposit',
+        label: 'Deposit',
+        complete: (position?.collateralAmount ?? 0) > 0,
+        active: actionTab === 'deposit',
+      },
+      {
+        id: 'borrow',
+        label: 'Borrow',
+        complete: (metrics?.totalDebt ?? 0) > 0,
+        active: actionTab === 'borrow',
+      },
+      {
+        id: 'reinvest',
+        label: 'Reinvest',
+        complete: reinvestCompleted,
+        active: actionTab === 'reinvest',
+      },
+    ],
+    [actionTab, isGuidedReinvestFlow, metrics?.totalDebt, position?.collateralAmount, reinvestCompleted, wallet]
+  );
+  const guidedFlowProgress = useMemo(() => {
+    const activeIndex = guidedFlowSteps.findIndex((step) => step.active && !step.complete);
+    const lastCompleteIndex = guidedFlowSteps.reduce((lastIndex, step, index) => (step.complete ? index : lastIndex), -1);
+    const currentIndex = activeIndex >= 0 ? activeIndex : lastCompleteIndex;
+
+    return Math.max(0, Math.min(100, (currentIndex / Math.max(1, guidedFlowSteps.length - 1)) * 100));
+  }, [guidedFlowSteps]);
 
   const showGlobalLoading = networkPendingCount > 0;
 
@@ -177,13 +262,20 @@ export default function LendingPage() {
         setConfig(payload.data);
         const markets = payload.data.markets as Market[];
         if (markets.length > 0) {
+          const requestedMarket = requestedCollateralSymbol
+            ? markets.find(
+                (market) =>
+                  getAssetSymbol(market.collateralCurrency).toUpperCase() === requestedCollateralSymbol ||
+                  getAssetSymbol(market.collateralAssetId).toUpperCase() === requestedCollateralSymbol
+              )
+            : null;
           const sailMarket = markets.find((market) => {
             const nameHasSail = market.name.toUpperCase().includes('SAIL');
             const collateralIsSail = getAssetSymbol(market.collateralCurrency).toUpperCase() === 'SAIL';
             const debtIsSail = getAssetSymbol(market.debtCurrency).toUpperCase() === 'SAIL';
             return nameHasSail || collateralIsSail || debtIsSail;
           });
-          setSelectedMarketId((sailMarket ?? markets[0]).id);
+          setSelectedMarketId((requestedMarket ?? sailMarket ?? markets[0]).id);
         }
 
         const secret = loadLocalAccountSecret();
@@ -196,7 +288,7 @@ export default function LendingPage() {
     }
 
     bootstrap();
-  }, [withNetworkLoading]);
+  }, [requestedCollateralSymbol, withNetworkLoading]);
 
   useEffect(() => {
     if (!wallet?.address) return;
@@ -274,9 +366,13 @@ export default function LendingPage() {
 
       toast.success('Collateral locked');
       await refreshPosition();
+      if (isGuidedReinvestFlow) {
+        setActionTab('borrow');
+      }
     });
   }, [
     depositAmount,
+    isGuidedReinvestFlow,
     refreshPosition,
     selectedMarket,
     wallet,
@@ -316,8 +412,65 @@ export default function LendingPage() {
 
       toast.success('Borrow successful');
       await refreshPosition();
+      if (isGuidedReinvestFlow) {
+        setActionTab('reinvest');
+      }
     });
-  }, [borrowAmount, metrics, refreshPosition, selectedMarket, wallet, withAction, withNetworkLoading]);
+  }, [
+    borrowAmount,
+    isGuidedReinvestFlow,
+    metrics,
+    refreshPosition,
+    selectedMarket,
+    wallet,
+    withAction,
+    withNetworkLoading,
+  ]);
+
+  const handleReinvest = useCallback(async () => {
+    if (!wallet || !selectedMarket) return;
+    const tokenAmount = Number(reinvestTokenAmount);
+    if (!Number.isFinite(tokenAmount) || tokenAmount <= 0) return;
+
+    await withAction('reinvest', async () => {
+      const response = await withNetworkLoading(() =>
+        fetch('/api/purchase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userAddress: wallet.address,
+            accountSecret: wallet.secret,
+            hotelId: reinvestTarget.hotel.id,
+            unitId: reinvestTarget.unit.id,
+            tokenAmount,
+            pricePerToken: reinvestTokenPrice,
+            totalPrice: tokenAmount * reinvestTokenPrice,
+            paymentMethod: 'wallet',
+            idempotencyKey: crypto.randomUUID(),
+          }),
+        })
+      );
+      const payload = await response.json();
+      if (!payload.success) {
+        toast.error(payload.error?.message ?? 'Reinvest failed');
+        return;
+      }
+
+      toast.success('Reinvest complete');
+      setReinvestCompleted(true);
+      void refreshBalances();
+    });
+  }, [
+    refreshBalances,
+    reinvestTarget.hotel.id,
+    reinvestTarget.unit.id,
+    reinvestTokenAmount,
+    reinvestTokenPrice,
+    selectedMarket,
+    wallet,
+    withAction,
+    withNetworkLoading,
+  ]);
 
   const handleRepay = useCallback(async () => {
     if (!wallet || !selectedMarket) return;
@@ -476,10 +629,75 @@ export default function LendingPage() {
             </TabsList>
 
             <TabsContent value="market-action" className="space-y-6">
+              {isGuidedReinvestFlow && (
+                <section
+                  className="border-y border-border px-1 py-7 sm:px-4"
+                  data-testid="guided-flow-card"
+                >
+                  <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <p className="text-eyebrow text-muted-foreground">DeFi Finance</p>
+                      <h2 className="mt-2 font-serif text-2xl font-light leading-tight text-foreground">
+                        Borrow Against Your Portfolio
+                      </h2>
+                    </div>
+                    <div className="text-right text-[8px] uppercase tracking-[0.18em] text-muted-foreground">
+                      {reinvestTargetName}
+                    </div>
+                  </div>
+                  <div className="overflow-hidden pb-1" aria-label="Connect to Reinvest flow">
+                    <div className="relative w-full px-1 pb-1 pt-2 sm:px-2">
+                      <div className="absolute left-[10%] top-[26px] h-px w-[80%] bg-border" />
+                      <div
+                        className="absolute left-[10%] top-[26px] h-px bg-foreground transition-[width] duration-500 ease-[cubic-bezier(.16,1,.3,1)]"
+                        style={{ width: `${guidedFlowProgress * 0.8}%` }}
+                      />
+                      <div className="relative z-10 grid grid-cols-5">
+                        {guidedFlowSteps.map((step, index) => {
+                          const isCurrent = step.active && !step.complete;
+                          const numberClassName = step.complete
+                            ? 'border-foreground bg-foreground text-background'
+                            : isCurrent
+                            ? 'border-foreground bg-card text-foreground shadow-[0_0_0_4px_rgba(23,21,16,0.04)]'
+                            : 'border-border bg-background text-muted-foreground';
+                          const labelClassName = step.complete || isCurrent ? 'text-foreground' : 'text-muted-foreground';
+
+                          return (
+                            <div
+                              key={step.id}
+                              data-testid={`guided-flow-step-${step.id}`}
+                              className="group flex min-w-0 flex-col items-center text-center"
+                            >
+                              <div
+                                className={`flex h-8 w-8 items-center justify-center border text-[9px] transition-all duration-300 sm:h-9 sm:w-9 sm:text-[10px] ${numberClassName}`}
+                              >
+                                {String(index + 1).padStart(2, '0')}
+                              </div>
+                              <div
+                                className={`mt-3 max-w-full truncate text-[6.5px] uppercase tracking-[0.08em] transition-colors sm:text-[8px] sm:tracking-[0.2em] ${labelClassName}`}
+                              >
+                                {step.label}
+                              </div>
+                              <div
+                                className={`mt-3 h-px w-4 transition-colors sm:w-6 ${
+                                  step.complete || isCurrent ? 'bg-foreground' : 'bg-border'
+                                }`}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )}
+
               <MarketActionsCard
                 market={selectedMarket}
                 walletConnected={Boolean(wallet)}
                 loading={loading}
+                actionTab={actionTab}
+                onActionTabChange={setActionTab}
                 collateralAssetReady={collateralAssetReady}
                 debtAssetReady={debtAssetReady}
                 poolLoading={Boolean(wallet?.address && selectedMarketId) && (positionLoading || !positionHydrated)}
@@ -495,10 +713,17 @@ export default function LendingPage() {
                 repayKind={repayKind}
                 withdrawAmount={withdrawAmount}
                 setWithdrawAmount={setWithdrawAmount}
+                reinvestTokenAmount={reinvestTokenAmount}
+                setReinvestTokenAmount={setReinvestTokenAmount}
+                reinvestTokenPrice={reinvestTokenPrice}
+                reinvestTotalPrice={reinvestTotalPrice}
+                reinvestTargetName={reinvestTargetName}
+                reinvestYieldPercentage={reinvestTarget.hotel.roiPercentage}
                 onDeposit={handleDeposit}
                 onBorrow={handleBorrow}
                 onRepay={handleRepay}
                 onWithdraw={handleWithdraw}
+                onReinvest={handleReinvest}
                 onApplyRepayPreset={applyRepayPreset}
               />
 
