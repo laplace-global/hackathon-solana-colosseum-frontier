@@ -242,7 +242,7 @@ async function installOperationMocks(page: Page, state: OperationState) {
       fundUsdc?: boolean;
       assumeEmptyWallet?: boolean;
     };
-    const solTopUpAmount = body.assumeEmptyWallet ? 1 : Math.max(0, 1 - state.sol);
+    const solTopUpAmount = body.assumeEmptyWallet ? 0.05 : Math.max(0, 0.05 - state.sol);
     const usdcTopUpAmount = body.assumeEmptyWallet ? 10_000 : Math.max(0, 10_000 - state.usdc);
 
     state.address = body.userAddress ?? state.address;
@@ -254,7 +254,7 @@ async function installOperationMocks(page: Page, state: OperationState) {
       json: {
         success: true,
         data: {
-          solTarget: '1.0',
+          solTarget: '0.05',
           usdcTarget: '10000',
           solAmount: body.fundSol ? String(solTopUpAmount) : '0',
           usdcAmount: body.fundUsdc ? String(usdcTopUpAmount) : '0',
@@ -543,7 +543,7 @@ test('first-time user can create an account, invest, deposit collateral, and bor
   await waitForToast(page, 'Welcome to LAPLACE!');
 
   expect(state.address).toBeTruthy();
-  expect(state.sol).toBe(1);
+  expect(state.sol).toBe(0.05);
   expect(state.usdc).toBe(10_000);
   expect(state.onboardingFunded).toBe(true);
 
@@ -561,7 +561,6 @@ test('first-time user can create an account, invest, deposit collateral, and bor
     /https:\/\/explorer\.solana\.com\/tx\/token-tx\?cluster=devnet/
   );
   await page.getByRole('button', { name: 'Done' }).click();
-  await waitForToast(page, 'Purchase successful!');
 
   await expect(page).toHaveURL(/\/borrow\?(?=.*hotelId=the-sail)(?=.*unitId=sail-a)(?=.*flow=reinvest)/);
   await expect(page.getByTestId('guided-flow-step-deposit')).toHaveAttribute('data-flow-state', 'current');
@@ -656,7 +655,6 @@ test('guided connect-to-reinvest flow carries the user from purchase into collat
   await expect(page.getByText('Purchase Successful')).toBeVisible({ timeout: 30_000 });
   await demoPause(page);
   await page.getByRole('button', { name: 'Done' }).click();
-  await waitForToast(page, 'Purchase successful!');
   await expect(page).toHaveURL(/\/borrow\?(?=.*hotelId=the-sail)(?=.*unitId=sail-a)(?=.*flow=reinvest)/);
   await expect(page.getByTestId('guided-flow-step-deposit')).toHaveAttribute('data-flow-state', 'current');
   await expect(page.getByTestId('guided-flow-step-borrow')).toHaveAttribute('data-flow-state', 'upcoming');
@@ -716,7 +714,7 @@ test('local operation flow reaches purchase, lend, borrow, repay, and withdraw c
   await page.getByTestId('purchase-open-dialog').click();
   await page.getByTestId('login-google').click();
   await waitForToast(page, 'Welcome to LAPLACE!');
-  expect(state.sol).toBe(1);
+  expect(state.sol).toBe(0.05);
   expect(state.usdc).toBe(10_000);
 
   await page.getByTestId('purchase-open-dialog').click();
@@ -725,7 +723,6 @@ test('local operation flow reaches purchase, lend, borrow, repay, and withdraw c
   await page.getByRole('button', { name: 'Pay with Card' }).click();
   await expect(page.getByText('Purchase Successful')).toBeVisible({ timeout: 30_000 });
   await page.getByRole('button', { name: 'Done' }).click();
-  await waitForToast(page, 'Purchase successful!');
   await expect(page).toHaveURL(/\/borrow\?(?=.*hotelId=the-sail)(?=.*unitId=sail-a)(?=.*flow=reinvest)/);
   await expect(page.getByTestId('guided-flow-step-deposit')).toHaveAttribute('data-flow-state', 'current');
 

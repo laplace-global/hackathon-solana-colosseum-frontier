@@ -7,6 +7,7 @@ import {
   transferAsset,
 } from '@/lib/chain/client';
 import { buildAssetDefinitions } from '@/lib/chain/config';
+import { ensureUserHasFeeSolBalance } from '@/lib/chain/fee-topup';
 import { getTreasuryAddress } from '@/lib/chain/service-account';
 
 function parseAmount(rawAmount: unknown): number | null {
@@ -75,6 +76,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    await ensureUserHasFeeSolBalance({ userAddress });
 
     const tx = await transferAsset({
       sourceSecret: accountSecret,

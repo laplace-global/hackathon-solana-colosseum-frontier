@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAllActiveMarkets } from '@/lib/db/seed';
 import { getAssetBySymbol, isValidChainAddress, transferAsset } from '@/lib/chain/client';
 import { buildAssetDefinitions } from '@/lib/chain/config';
+import { replenishTreasurySolBestEffort } from '@/lib/chain/fee-topup';
 import { getTreasuryAccount } from '@/lib/chain/service-account';
 
 function parseAmount(rawAmount: unknown): number | null {
@@ -43,6 +44,8 @@ export async function POST(request: NextRequest) {
     }
 
     const treasuryAccount = getTreasuryAccount();
+    await replenishTreasurySolBestEffort();
+
     const tx = await transferAsset({
       sourceSecret: treasuryAccount.secret,
       destinationAddress: userAddress,

@@ -64,3 +64,16 @@ export function getFaucetAccount(): LocalAccount {
 export function getFaucetAddress(): string {
   return readFirstEnv(['FAUCET_ADDRESS']) ?? getFaucetAccount().address;
 }
+
+export function getReserveSecret(): string | null {
+  return readFirstEnv(['RESERVE_WALLET_SECRET', 'RESERVE_SECRET']);
+}
+
+export function getReserveAccount(): LocalAccount | null {
+  const secret = getReserveSecret();
+  return secret ? restoreLocalAccount(secret) : null;
+}
+
+export function getReserveAddress(): string | null {
+  return readFirstEnv(['RESERVE_ADDRESS']) ?? getReserveAccount()?.address ?? null;
+}
