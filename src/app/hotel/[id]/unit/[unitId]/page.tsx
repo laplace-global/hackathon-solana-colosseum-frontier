@@ -134,14 +134,7 @@ export default function UnitDetailPage() {
     toast.success('Purchase successful!', {
       description: `You've purchased ${purchaseAmount} tokens for ${unit.name}`,
     });
-    const isGuidedReinvestFlow =
-      typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('flow') === 'reinvest';
-
-    if (isGuidedReinvestFlow) {
-      router.push(`/borrow?hotelId=${hotel.id}&unitId=${unit.id}&flow=reinvest`);
-      return;
-    }
-    router.push('/portfolio');
+    router.push(`/borrow?hotelId=${hotel.id}&unitId=${unit.id}&flow=reinvest`);
   };
 
   const purchaseTotal = purchaseAmount * tokenPrice;

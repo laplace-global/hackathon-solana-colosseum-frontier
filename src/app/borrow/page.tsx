@@ -31,6 +31,7 @@ import type { LocalAccount } from '@/lib/chain/types';
 import { getAssetId, getAssetSymbol } from '@/lib/assets/asset-symbols';
 import { hotels } from '@/data/hotels';
 import { getPropertyTokenSymbol } from '@/data/property-tokens';
+import { buildGuidedFlowSteps, calculateGuidedFlowProgress } from './guided-flow';
 
 const REPAY_BUFFER_RATE = 0.002;
 const FULL_REPAY_BUFFER_RATE = 0.0001;
@@ -122,47 +123,18 @@ function LendingPageContent() {
   const reinvestTotalPrice = safeReinvestTokenAmount * reinvestTokenPrice;
   const reinvestTargetName = `${reinvestTarget.hotel.name} / ${reinvestTarget.unit.name}`;
   const guidedFlowSteps = useMemo(
-    () => [
-      {
-        id: 'connect',
-        label: 'Connect',
-        complete: Boolean(wallet),
-        active: !wallet,
-      },
-      {
-        id: 'invest',
-        label: 'Invest',
-        complete: isGuidedReinvestFlow,
-        active: Boolean(wallet) && !(position?.collateralAmount ?? 0),
-      },
-      {
-        id: 'deposit',
-        label: 'Deposit',
-        complete: (position?.collateralAmount ?? 0) > 0,
-        active: actionTab === 'deposit',
-      },
-      {
-        id: 'borrow',
-        label: 'Borrow',
-        complete: (metrics?.totalDebt ?? 0) > 0,
-        active: actionTab === 'borrow',
-      },
-      {
-        id: 'reinvest',
-        label: 'Reinvest',
-        complete: reinvestCompleted,
-        active: actionTab === 'reinvest',
-      },
-    ],
+    () =>
+      buildGuidedFlowSteps({
+        hasWallet: Boolean(wallet),
+        isGuidedReinvestFlow,
+        actionTab,
+        collateralAmount: position?.collateralAmount ?? 0,
+        totalDebt: metrics?.totalDebt ?? 0,
+        reinvestCompleted,
+      }),
     [actionTab, isGuidedReinvestFlow, metrics?.totalDebt, position?.collateralAmount, reinvestCompleted, wallet]
   );
-  const guidedFlowProgress = useMemo(() => {
-    const activeIndex = guidedFlowSteps.findIndex((step) => step.active && !step.complete);
-    const lastCompleteIndex = guidedFlowSteps.reduce((lastIndex, step, index) => (step.complete ? index : lastIndex), -1);
-    const currentIndex = activeIndex >= 0 ? activeIndex : lastCompleteIndex;
-
-    return Math.max(0, Math.min(100, (currentIndex / Math.max(1, guidedFlowSteps.length - 1)) * 100));
-  }, [guidedFlowSteps]);
+  const guidedFlowProgress = useMemo(() => calculateGuidedFlowProgress(guidedFlowSteps), [guidedFlowSteps]);
 
   const showGlobalLoading = networkPendingCount > 0;
 
@@ -654,18 +626,20 @@ function LendingPageContent() {
                       />
                       <div className="relative z-10 grid grid-cols-5">
                         {guidedFlowSteps.map((step, index) => {
-                          const isCurrent = step.active && !step.complete;
-                          const numberClassName = step.complete
+                          const isCurrent = step.state === 'current';
+                          const isComplete = step.state === 'complete';
+                          const numberClassName = isComplete
                             ? 'border-foreground bg-foreground text-background'
                             : isCurrent
                             ? 'border-foreground bg-card text-foreground shadow-[0_0_0_4px_rgba(23,21,16,0.04)]'
                             : 'border-border bg-background text-muted-foreground';
-                          const labelClassName = step.complete || isCurrent ? 'text-foreground' : 'text-muted-foreground';
+                          const labelClassName = isComplete || isCurrent ? 'text-foreground' : 'text-muted-foreground';
 
                           return (
                             <div
                               key={step.id}
                               data-testid={`guided-flow-step-${step.id}`}
+                              data-flow-state={step.state}
                               className="group flex min-w-0 flex-col items-center text-center"
                             >
                               <div
@@ -680,7 +654,7 @@ function LendingPageContent() {
                               </div>
                               <div
                                 className={`mt-3 h-px w-4 transition-colors sm:w-6 ${
-                                  step.complete || isCurrent ? 'bg-foreground' : 'bg-border'
+                                  isComplete || isCurrent ? 'bg-foreground' : 'bg-border'
                                 }`}
                               />
                             </div>
