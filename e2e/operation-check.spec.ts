@@ -1,14 +1,10 @@
 import { expect, type Page, test } from '@playwright/test';
 
 const THE_SAIL_UNIT_URL = '/hotel/the-sail/unit/sail-a';
-const THE_SAIL_HOTEL_UNITS_URL = '/hotel/the-sail?tab=units';
-const THE_SAIL_GUIDED_UNIT_URL = `${THE_SAIL_UNIT_URL}?flow=reinvest`;
 const PURCHASE_AMOUNT = '10';
 const SUPPLY_AMOUNT = '200';
 const DEPOSIT_AMOUNT = '10';
 const BORROW_AMOUNT = '50';
-const REINVEST_BORROW_AMOUNT = '100';
-const REINVEST_TOKEN_AMOUNT = '1';
 const WITHDRAW_AMOUNT = '10';
 
 const MARKET_ID = 'market-sail';
@@ -17,20 +13,6 @@ const ASSETS = {
   USDC: 'usdc-mint',
   NYRA: 'nyra-mint',
 } as const;
-const RECORDING_MODE = process.env.PW_DEMO_VIDEO === '1';
-const RECORDING_SLOW_MO_MS = Number(process.env.PW_DEMO_SLOW_MO_MS ?? '450');
-const RECORDING_PAUSE_MS = Number(process.env.PW_DEMO_PAUSE_MS ?? '900');
-
-test.use({
-  launchOptions: {
-    slowMo: RECORDING_MODE ? RECORDING_SLOW_MO_MS : 0,
-  },
-  video: RECORDING_MODE ? 'on' : 'retain-on-failure',
-  viewport: {
-    width: 1440,
-    height: 1100,
-  },
-});
 
 interface OperationState {
   address: string | null;
@@ -301,15 +283,8 @@ async function installOperationMocks(page: Page, state: OperationState) {
   });
 
   await page.route('**/api/purchase', async (route) => {
-    const body = route.request().postDataJSON() as {
-      paymentMethod?: string;
-      tokenAmount?: number;
-      totalPrice?: number;
-    };
+    const body = route.request().postDataJSON() as { tokenAmount?: number };
     const tokenAmount = Number(body.tokenAmount ?? 0);
-    if (body.paymentMethod === 'wallet') {
-      state.usdc = Math.max(0, state.usdc - Number(body.totalPrice ?? 0));
-    }
     state.sail += tokenAmount;
     state.purchaseCreated = true;
 
@@ -526,11 +501,6 @@ async function waitForToast(page: Page, message: string | RegExp) {
   await expect(page.getByText(message)).toBeVisible({ timeout: 30_000 });
 }
 
-async function demoPause(page: Page, ms = 900) {
-  if (!RECORDING_MODE) return;
-  await page.waitForTimeout(ms === 900 ? RECORDING_PAUSE_MS : ms);
-}
-
 test('first-time user can create an account, invest, deposit collateral, and borrow without opening admin', async ({ page }) => {
   test.slow();
   const state = createState();
@@ -570,119 +540,13 @@ test('first-time user can create an account, invest, deposit collateral, and bor
   await expect(page.getByTestId('borrow-position-loan')).toContainText('50.00 USDC');
 });
 
-test('hotel detail Buy Tokens purchase continues through collateral, borrow, and reinvest', async ({ page }) => {
-  test.slow();
-  const state = createState();
-  await installOperationMocks(page, state);
-
-  await page.goto(THE_SAIL_HOTEL_UNITS_URL);
-  await demoPause(page);
-  await page.getByRole('button', { name: 'Buy Tokens' }).first().click();
-  await page.getByTestId('login-google').click();
-  await waitForToast(page, 'Welcome to LAPLACE!');
-  await demoPause(page);
-
-  await page.getByRole('button', { name: 'Buy Tokens' }).first().click();
-  await expect(page.getByText('Confirm Token Purchase')).toBeVisible();
-  await page.getByText('Credit / Debit Card').click();
-  await demoPause(page);
-  await page.getByRole('button', { name: 'Pay with Card' }).click();
-  await expect(page.getByText('Purchase Successful')).toBeVisible({ timeout: 30_000 });
-  await demoPause(page);
-  await page.getByRole('button', { name: 'Done' }).click();
-  await waitForToast(page, 'Token purchase confirmed!');
-
-  await expect(page).toHaveURL(/\/borrow\?(?=.*hotelId=the-sail)(?=.*unitId=sail-a)(?=.*flow=reinvest)/);
-  await expect(page.getByTestId('guided-flow-card')).toBeVisible({ timeout: 30_000 });
-  await demoPause(page);
-
-  await expect(page.getByTestId('borrow-deposit-submit')).toBeEnabled({ timeout: 30_000 });
-  await page.getByTestId('borrow-deposit-amount').fill(DEPOSIT_AMOUNT);
-  await page.getByTestId('borrow-deposit-submit').click();
-  await waitForToast(page, 'Collateral locked');
-  await expect(page.getByTestId('borrow-position-collateral')).toContainText('10.00 SAIL');
-  await expect(page.getByTestId('borrow-amount')).toBeVisible();
-  await demoPause(page);
-
-  await expect(page.getByTestId('borrow-submit')).toBeEnabled({ timeout: 30_000 });
-  await page.getByTestId('borrow-amount').fill(REINVEST_BORROW_AMOUNT);
-  await page.getByTestId('borrow-submit').click();
-  await waitForToast(page, 'Borrow successful');
-  await expect(page.getByTestId('borrow-position-loan')).toContainText('100.00 USDC');
-  await expect(page.getByRole('tab', { name: 'Reinvest' })).toHaveAttribute('data-state', 'active');
-  await demoPause(page);
-
-  await page.getByTestId('borrow-reinvest-token-amount').fill(REINVEST_TOKEN_AMOUNT);
-  await expect(page.getByTestId('borrow-reinvest-submit')).toBeEnabled({ timeout: 30_000 });
-  await demoPause(page);
-  await page.getByTestId('borrow-reinvest-submit').click();
-  await waitForToast(page, 'Reinvest complete');
-
-  expect(state.sail).toBe(1);
-  expect(state.usdc).toBe(10_000);
-});
-
-test('guided connect-to-reinvest flow carries the user from purchase into collateral, borrow, and reinvest', async ({ page }) => {
-  test.slow();
-  const state = createState();
-  await installOperationMocks(page, state);
-
-  await page.goto(THE_SAIL_GUIDED_UNIT_URL);
-  await demoPause(page);
-  await page.getByTestId('purchase-token-amount-input').fill(PURCHASE_AMOUNT);
-  await demoPause(page);
-  await page.getByTestId('purchase-open-dialog').click();
-  await page.getByTestId('login-google').click();
-  await waitForToast(page, 'Welcome to LAPLACE!');
-  await demoPause(page);
-
-  await page.getByTestId('purchase-open-dialog').click();
-  await expect(page.getByText('Confirm Token Purchase')).toBeVisible();
-  await page.getByText('Credit / Debit Card').click();
-  await demoPause(page);
-  await page.getByRole('button', { name: 'Pay with Card' }).click();
-  await expect(page.getByText('Purchase Successful')).toBeVisible({ timeout: 30_000 });
-  await demoPause(page);
-  await page.getByRole('button', { name: 'Done' }).click();
-  await waitForToast(page, 'Purchase successful!');
-  await expect(page).toHaveURL(/\/borrow\?(?=.*hotelId=the-sail)(?=.*unitId=sail-a)(?=.*flow=reinvest)/);
-  await expect(page.getByTestId('guided-flow-step-reinvest')).toBeVisible({ timeout: 30_000 });
-  await demoPause(page);
-
-  await expect(page.getByTestId('borrow-deposit-submit')).toBeEnabled({ timeout: 30_000 });
-  await page.getByTestId('borrow-deposit-amount').fill(DEPOSIT_AMOUNT);
-  await page.getByTestId('borrow-deposit-submit').click();
-  await waitForToast(page, 'Collateral locked');
-  await expect(page.getByTestId('borrow-position-collateral')).toContainText('10.00 SAIL');
-  await expect(page.getByTestId('borrow-amount')).toBeVisible();
-  await demoPause(page);
-
-  await expect(page.getByTestId('borrow-submit')).toBeEnabled({ timeout: 30_000 });
-  await page.getByTestId('borrow-amount').fill(REINVEST_BORROW_AMOUNT);
-  await page.getByTestId('borrow-submit').click();
-  await waitForToast(page, 'Borrow successful');
-  await expect(page.getByTestId('borrow-position-loan')).toContainText('100.00 USDC');
-  await expect(page.getByRole('tab', { name: 'Reinvest' })).toHaveAttribute('data-state', 'active');
-  await demoPause(page);
-
-  await page.getByTestId('borrow-reinvest-token-amount').fill(REINVEST_TOKEN_AMOUNT);
-  await expect(page.getByTestId('borrow-reinvest-submit')).toBeEnabled({ timeout: 30_000 });
-  await demoPause(page);
-  await page.getByTestId('borrow-reinvest-submit').click();
-  await waitForToast(page, 'Reinvest complete');
-  await expect(page.getByTestId('borrow-reinvest-submit')).toBeEnabled({ timeout: 30_000 });
-
-  expect(state.sail).toBe(1);
-  expect(state.usdc).toBe(10_000);
-});
-
 test('local operation flow reaches purchase, lend, borrow, repay, and withdraw checks', async ({ page }) => {
   test.slow();
   const state = createState();
   await installOperationMocks(page, state);
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Own the World. 1 SOL. 1 click.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "The world's penthouses. 1 SOL. 1 click." })).toBeVisible();
   await page.waitForTimeout(800);
   await page.getByRole('link', { name: 'Explore Properties', exact: true }).click();
   await expect(page).toHaveURL(/\/discover$/);

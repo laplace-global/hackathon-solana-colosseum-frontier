@@ -149,10 +149,6 @@ export default function HotelPage() {
     toast.success('Token purchase confirmed!', {
       description: `You've successfully purchased ${tokenAmount} tokens for ${selectedUnit?.name}.`,
     });
-    if (selectedUnit) {
-      router.push(`/borrow?hotelId=${hotel.id}&unitId=${selectedUnit.id}&flow=reinvest`);
-      return;
-    }
     router.push('/portfolio');
   };
 
