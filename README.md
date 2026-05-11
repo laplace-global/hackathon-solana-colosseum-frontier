@@ -489,11 +489,20 @@ cp .env.example .env.local
 # TREASURY_WALLET_SECRET=<bs58 Solana keypair secret>
 # OPERATOR_WALLET_SECRET=<bs58 Solana keypair secret>
 
+# Optional but recommended for stable devnet demos:
+# SOLANA_RPC_URL=https://devnet.helius-rpc.com/?api-key=...
+# RESERVE_WALLET_SECRET=<bs58 Solana keypair secret>
+# TREASURY_SOL_MINIMUM=5
+# TREASURY_SOL_TARGET=20
+
 # Optional: generate protocol accounts
 pnpm dev-tools protocol-accounts
 
 # Optional: create demo SPL mints when not using APP_DEFAULTS.demoMintAddresses
 pnpm dev-tools demo-mints --payer-role operator --payer-airdrop 1
+
+# Optional: top Treasury SOL up to the configured target from Reserve, with devnet airdrop fallback
+pnpm dev-tools treasury-sol --minimum 5 --target 20
 
 # Initialize database schema and seed default markets
 pnpm db:up

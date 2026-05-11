@@ -16,6 +16,7 @@
  *   npx tsx scripts/dev-tools.ts protocol-accounts
  *   npx tsx scripts/dev-tools.ts protocol-accounts --json
  *   npx tsx scripts/dev-tools.ts airdrop --address <wallet> --amount 2
+ *   npx tsx scripts/dev-tools.ts treasury-sol --minimum 5 --target 20
  *   npx tsx scripts/dev-tools.ts demo-mints --payer-secret <bs58>
  *   npx tsx scripts/dev-tools.ts demo-mints --symbols ZAABEL,BURJV --payer-role treasury --json
  *
@@ -46,6 +47,7 @@ import {
   transferChecked,
 } from '@solana/spl-token';
 import { APP_DEFAULTS } from '../src/lib/config/defaults';
+import { ensureTreasuryHasSolBalance } from '../src/lib/chain/fee-topup';
 
 dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
@@ -80,7 +82,10 @@ interface DemoMintResult {
   faucetAmount: string | null;
 }
 
-const RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || APP_DEFAULTS.solana.rpcUrl;
+const RPC_URL =
+  process.env.SOLANA_RPC_URL ||
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
+  APP_DEFAULTS.solana.rpcUrl;
 const COMMITMENT =
   (process.env.NEXT_PUBLIC_SOLANA_COMMITMENT as CommitmentLevel | undefined) ||
   APP_DEFAULTS.solana.commitment;
@@ -855,6 +860,7 @@ Laplace Dev Tools CLI
 Commands:
   protocol-accounts [--json]
   airdrop --address <wallet> [--amount 2]
+  treasury-sol [--minimum 5] [--target 20] [--json]
   demo-mints --payer-secret <bs58> [--decimals 8] [--treasury-address <wallet>] [--faucet-address <wallet>] [--skip-bootstrap] [--json]
   demo-mints [--symbols ZAABEL,BURJV] [--payer-role treasury|operator] [--payer-airdrop 1] [--decimals 8] [--treasury-address <wallet>] [--faucet-address <wallet>] [--skip-bootstrap] [--json]
 `);
@@ -901,6 +907,27 @@ async function runCliCommand(): Promise<boolean> {
         signature,
         explorerUrl: explorerUrl('tx', signature),
       }, null, 2));
+      return true;
+    }
+
+    case 'treasury-sol': {
+      const minimumSol = optionalStringFlag(flags, 'minimum') ?? '5';
+      const targetSol = optionalStringFlag(flags, 'target') ?? '20';
+      const result = await ensureTreasuryHasSolBalance({ minimumSol, targetSol });
+
+      if (hasFlag(flags, 'json')) {
+        console.log(JSON.stringify(result, null, 2));
+      } else {
+        console.log('Treasury SOL replenishment check');
+        console.log(`  Treasury: ${result.treasuryAddress}`);
+        console.log(`  Balance before: ${result.balanceBeforeSol} SOL`);
+        console.log(`  Top-up amount: ${result.topUpAmount ?? '0'} SOL`);
+        console.log(`  Source: ${result.source ?? 'none'}`);
+        if (result.txHash) {
+          console.log(`  Tx: ${result.txHash}`);
+          console.log(`  Explorer: ${explorerUrl('tx', result.txHash)}`);
+        }
+      }
       return true;
     }
 

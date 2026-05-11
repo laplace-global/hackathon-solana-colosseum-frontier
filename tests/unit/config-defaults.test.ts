@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { APP_DEFAULTS } from '../../src/lib/config/defaults';
+import { getSolanaRpcUrl } from '../../src/lib/config/runtime';
 
 describe('application defaults', () => {
   it('keeps public demo defaults in one place', () => {
@@ -24,5 +25,31 @@ describe('application defaults', () => {
     });
 
     assert.equal(APP_DEFAULTS.lending.loanTermMonths, 24);
+  });
+
+  it('uses server-only Solana RPC configuration before public browser configuration', () => {
+    const originalServerRpc = process.env.SOLANA_RPC_URL;
+    const originalPublicRpc = process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
+
+    try {
+      process.env.SOLANA_RPC_URL = 'https://server-rpc.example';
+      process.env.NEXT_PUBLIC_SOLANA_RPC_URL = 'https://public-rpc.example';
+      assert.equal(getSolanaRpcUrl(), 'https://server-rpc.example');
+
+      delete process.env.SOLANA_RPC_URL;
+      assert.equal(getSolanaRpcUrl(), 'https://public-rpc.example');
+    } finally {
+      if (originalServerRpc === undefined) {
+        delete process.env.SOLANA_RPC_URL;
+      } else {
+        process.env.SOLANA_RPC_URL = originalServerRpc;
+      }
+
+      if (originalPublicRpc === undefined) {
+        delete process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
+      } else {
+        process.env.NEXT_PUBLIC_SOLANA_RPC_URL = originalPublicRpc;
+      }
+    }
   });
 });
