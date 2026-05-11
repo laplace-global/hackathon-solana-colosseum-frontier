@@ -552,10 +552,20 @@ test('first-time user can create an account, invest, deposit collateral, and bor
   await page.getByText('Credit / Debit Card').click();
   await page.getByRole('button', { name: 'Pay with Card' }).click();
   await expect(page.getByText('Purchase Successful')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole('link', { name: /payment-tx/ })).toHaveAttribute(
+    'href',
+    /https:\/\/explorer\.solana\.com\/tx\/payment-tx\?cluster=devnet/
+  );
+  await expect(page.getByRole('link', { name: /token-tx/ })).toHaveAttribute(
+    'href',
+    /https:\/\/explorer\.solana\.com\/tx\/token-tx\?cluster=devnet/
+  );
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForToast(page, 'Purchase successful!');
 
-  await page.goto('/borrow');
+  await expect(page).toHaveURL(/\/borrow\?(?=.*hotelId=the-sail)(?=.*unitId=sail-a)(?=.*flow=reinvest)/);
+  await expect(page.getByTestId('guided-flow-step-deposit')).toHaveAttribute('data-flow-state', 'current');
+  await expect(page.getByTestId('guided-flow-step-borrow')).toHaveAttribute('data-flow-state', 'upcoming');
   await expect(page.getByTestId('borrow-deposit-submit')).toBeEnabled({ timeout: 30_000 });
   await page.getByTestId('borrow-deposit-amount').fill(DEPOSIT_AMOUNT);
   await page.getByTestId('borrow-deposit-submit').click();
@@ -594,6 +604,8 @@ test('hotel detail Buy Tokens purchase continues through collateral, borrow, and
 
   await expect(page).toHaveURL(/\/borrow\?(?=.*hotelId=the-sail)(?=.*unitId=sail-a)(?=.*flow=reinvest)/);
   await expect(page.getByTestId('guided-flow-card')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId('guided-flow-step-deposit')).toHaveAttribute('data-flow-state', 'current');
+  await expect(page.getByTestId('guided-flow-step-borrow')).toHaveAttribute('data-flow-state', 'upcoming');
   await demoPause(page);
 
   await expect(page.getByTestId('borrow-deposit-submit')).toBeEnabled({ timeout: 30_000 });
@@ -646,7 +658,8 @@ test('guided connect-to-reinvest flow carries the user from purchase into collat
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForToast(page, 'Purchase successful!');
   await expect(page).toHaveURL(/\/borrow\?(?=.*hotelId=the-sail)(?=.*unitId=sail-a)(?=.*flow=reinvest)/);
-  await expect(page.getByTestId('guided-flow-step-reinvest')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId('guided-flow-step-deposit')).toHaveAttribute('data-flow-state', 'current');
+  await expect(page.getByTestId('guided-flow-step-borrow')).toHaveAttribute('data-flow-state', 'upcoming');
   await demoPause(page);
 
   await expect(page.getByTestId('borrow-deposit-submit')).toBeEnabled({ timeout: 30_000 });
@@ -713,8 +726,8 @@ test('local operation flow reaches purchase, lend, borrow, repay, and withdraw c
   await expect(page.getByText('Purchase Successful')).toBeVisible({ timeout: 30_000 });
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForToast(page, 'Purchase successful!');
-  await expect(page).toHaveURL(/\/portfolio$/);
-  await expect(page.getByText('THE SAIL Hotel Tower')).toBeVisible();
+  await expect(page).toHaveURL(/\/borrow\?(?=.*hotelId=the-sail)(?=.*unitId=sail-a)(?=.*flow=reinvest)/);
+  await expect(page.getByTestId('guided-flow-step-deposit')).toHaveAttribute('data-flow-state', 'current');
 
   await page.goto('/lend');
   await expect(page.getByTestId('lend-supply-submit')).toBeEnabled({ timeout: 30_000 });

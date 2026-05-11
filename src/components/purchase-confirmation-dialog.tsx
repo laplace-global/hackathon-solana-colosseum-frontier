@@ -13,7 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Building2, CheckCircle, CreditCard, Home, Loader2, Shield, TrendingUp, Wallet } from 'lucide-react';
+import { AlertCircle, Building2, CheckCircle, CreditCard, ExternalLink, Home, Loader2, Shield, TrendingUp, Wallet } from 'lucide-react';
+import { getChainExplorerLink } from '@/lib/chain/client';
 
 type Status = 'payment-select' | 'processing' | 'success' | 'error';
 type PaymentMethod = 'wallet' | 'card' | 'wire';
@@ -504,13 +505,29 @@ export function PurchaseConfirmationDialog({
                   {txHash ? (
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Payment Tx</span>
-                      <span className="font-mono text-xs">{txHash.slice(0, 12)}...</span>
+                      <a
+                        href={getChainExplorerLink('tx', txHash)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline"
+                      >
+                        {txHash.slice(0, 12)}...
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
                     </div>
                   ) : null}
                   {tokenTxHash ? (
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">RWA Tx</span>
-                      <span className="font-mono text-xs">{tokenTxHash.slice(0, 12)}...</span>
+                      <a
+                        href={getChainExplorerLink('tx', tokenTxHash)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline"
+                      >
+                        {tokenTxHash.slice(0, 12)}...
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
                     </div>
                   ) : null}
                 </div>
