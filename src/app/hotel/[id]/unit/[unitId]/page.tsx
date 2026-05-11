@@ -122,10 +122,13 @@ export default function UnitDetailPage() {
   };
 
   const handlePurchaseSuccess = () => {
+    setShowConfirmDialog(false);
     toast.success('Purchase successful!', {
       description: `You've purchased ${purchaseAmount} tokens for ${unit.name}`,
     });
-    router.push(`/borrow?hotelId=${hotel.id}&unitId=${unit.id}&flow=reinvest`);
+    window.setTimeout(() => {
+      router.push(`/borrow?hotelId=${hotel.id}&unitId=${unit.id}&flow=reinvest`);
+    }, 0);
   };
 
   const purchaseTotal = purchaseAmount * tokenPrice;

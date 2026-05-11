@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -86,6 +86,7 @@ export function PurchaseConfirmationDialog({
   const [txHash, setTxHash] = useState<string | null>(null);
   const [tokenTxHash, setTokenTxHash] = useState<string | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('wallet');
+  const doneHandledRef = useRef(false);
 
   const annualReturn = useMemo(() => (totalPrice * roiPercentage) / 100, [roiPercentage, totalPrice]);
   const deficit = Math.max(0, totalPrice - usdcBalance);
@@ -107,6 +108,7 @@ export function PurchaseConfirmationDialog({
       setTxHash(null);
       setTokenTxHash(null);
       setSelectedPaymentMethod('wallet');
+      doneHandledRef.current = false;
     }
   }, [open]);
 
@@ -237,16 +239,29 @@ export function PurchaseConfirmationDialog({
 
   const handleCancel = () => {
     if (status === 'payment-select' || status === 'error' || status === 'success') {
-      if (status === 'success') {
-        onSuccess?.();
-      }
       onOpenChange(false);
       resetState();
     }
   };
 
+  const handleDone = () => {
+    if (doneHandledRef.current) return;
+    doneHandledRef.current = true;
+    onOpenChange(false);
+    resetState();
+    onSuccess?.();
+  };
+
+  const handleDialogOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && status === 'success') {
+      handleDone();
+      return;
+    }
+    onOpenChange(nextOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={status === 'processing' ? undefined : onOpenChange}>
+    <Dialog open={open} onOpenChange={status === 'processing' ? undefined : handleDialogOpenChange}>
       <DialogContent className="lp-light-surface border-border bg-background text-foreground sm:max-w-[520px]">
         {status === 'payment-select' && (
           <>
@@ -540,7 +555,9 @@ export function PurchaseConfirmationDialog({
             </div>
 
             <DialogFooter>
-              <Button onClick={handleCancel}>Done</Button>
+              <Button type="button" onPointerDownCapture={handleDone} onClickCapture={handleDone}>
+                Done
+              </Button>
             </DialogFooter>
           </>
         )}

@@ -146,14 +146,19 @@ export default function HotelPage() {
   };
 
   const handlePurchaseSuccess = () => {
+    setShowConfirmDialog(false);
     toast.success('Token purchase confirmed!', {
       description: `You've successfully purchased ${tokenAmount} tokens for ${selectedUnit?.name}.`,
     });
     if (selectedUnit) {
-      router.push(`/borrow?hotelId=${hotel.id}&unitId=${selectedUnit.id}&flow=reinvest`);
+      window.setTimeout(() => {
+        router.push(`/borrow?hotelId=${hotel.id}&unitId=${selectedUnit.id}&flow=reinvest`);
+      }, 0);
       return;
     }
-    router.push('/portfolio');
+    window.setTimeout(() => {
+      router.push('/portfolio');
+    }, 0);
   };
 
   const tokenPrice = getTokenPrice(hotel.id, hotel.tokenPrice);
