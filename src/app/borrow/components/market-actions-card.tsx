@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowDownLeft, ArrowUpRight, Loader2, Repeat2 } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Loader2 } from 'lucide-react';
 
 import { getAssetSymbol } from '@/lib/assets/asset-symbols';
 
@@ -16,8 +16,6 @@ interface MarketActionsCardProps {
   market: Market;
   walletConnected: boolean;
   loading: string;
-  actionTab: string;
-  onActionTabChange: (value: string) => void;
   collateralAssetReady: boolean;
   debtAssetReady: boolean;
   poolLoading: boolean;
@@ -33,17 +31,10 @@ interface MarketActionsCardProps {
   repayKind: RepayKind;
   withdrawAmount: string;
   setWithdrawAmount: Dispatch<SetStateAction<string>>;
-  reinvestTokenAmount: string;
-  setReinvestTokenAmount: Dispatch<SetStateAction<string>>;
-  reinvestTokenPrice: number;
-  reinvestTotalPrice: number;
-  reinvestTargetName: string;
-  reinvestYieldPercentage: number;
   onDeposit: () => Promise<void>;
   onBorrow: () => Promise<void>;
   onRepay: () => Promise<void>;
   onWithdraw: () => Promise<void>;
-  onReinvest: () => Promise<void>;
   onApplyRepayPreset: (kind: RepayKind) => void;
 }
 
@@ -51,8 +42,6 @@ export function MarketActionsCard({
   market,
   walletConnected,
   loading,
-  actionTab,
-  onActionTabChange,
   collateralAssetReady,
   debtAssetReady,
   poolLoading,
@@ -68,17 +57,10 @@ export function MarketActionsCard({
   repayKind,
   withdrawAmount,
   setWithdrawAmount,
-  reinvestTokenAmount,
-  setReinvestTokenAmount,
-  reinvestTokenPrice,
-  reinvestTotalPrice,
-  reinvestTargetName,
-  reinvestYieldPercentage,
   onDeposit,
   onBorrow,
   onRepay,
   onWithdraw,
-  onReinvest,
   onApplyRepayPreset,
 }: MarketActionsCardProps) {
   const resolvedLiquidity = metrics?.availableLiquidity ?? market.totalSupplied ?? 0;
@@ -89,10 +71,6 @@ export function MarketActionsCard({
   const safeDepositAmount = Number.isFinite(parsedDepositAmount) && parsedDepositAmount > 0 ? parsedDepositAmount : 0;
   const parsedBorrowAmount = Number(borrowAmount);
   const safeBorrowAmount = Number.isFinite(parsedBorrowAmount) && parsedBorrowAmount > 0 ? parsedBorrowAmount : 0;
-  const parsedReinvestTokenAmount = Number(reinvestTokenAmount);
-  const safeReinvestTokenAmount =
-    Number.isFinite(parsedReinvestTokenAmount) && parsedReinvestTokenAmount > 0 ? parsedReinvestTokenAmount : 0;
-  const reinvestSpread = Math.max(0, reinvestYieldPercentage - market.baseInterestRate * 100);
 
   const depositBasedBorrowCapacity = (() => {
     if (safeDepositAmount <= 0) return 0;
@@ -112,12 +90,12 @@ export function MarketActionsCard({
   });
 
   return (
-    <Card className="rounded-none border-border bg-card">
-      <CardContent className="min-h-60 p-0">
+    <Card>
+      <CardContent className="min-h-60">
         <div className="flex flex-col lg:flex-row justify-between">
-          <section className="flex-1 space-y-4 p-6 lg:p-10">
+          <section className="flex-1 space-y-4 pr-10">
             <div className="flex items-center gap-4">
-              <h2 className="font-serif text-2xl font-light">Market</h2>
+              <h2 className="text-lg font-semibold">Market</h2>
               <Badge variant="outline" className="rounded-none border-primary/40 text-primary">
                 {(market.baseInterestRate * 100).toFixed(2)}% APR
               </Badge>
@@ -160,19 +138,18 @@ export function MarketActionsCard({
           <div className="h-px bg-border lg:hidden" />
           <div className="hidden w-px self-stretch bg-border lg:block" />
 
-          <section className="flex-1 p-6 lg:p-10">
-            <h2 className="mb-5 font-serif text-2xl font-light">Borrower Actions</h2>
+          <section className="flex-1 pl-10">
+            <h2 className="mb-4 text-lg font-semibold">Borrower Actions</h2>
 
             {!walletConnected ? (
               <p className="text-sm text-muted-foreground">Generate or connect a wallet from the admin flow to enable actions.</p>
             ) : (
-              <Tabs value={actionTab} onValueChange={onActionTabChange}>
-                <TabsList className="mb-5 grid h-auto w-full grid-cols-2 gap-px rounded-none bg-border p-0 sm:grid-cols-5">
-                  <TabsTrigger className="rounded-none bg-background py-3 text-[8px] uppercase tracking-[0.18em] data-[state=active]:bg-card data-[state=active]:text-foreground" value="deposit">Deposit</TabsTrigger>
-                  <TabsTrigger className="rounded-none bg-background py-3 text-[8px] uppercase tracking-[0.18em] data-[state=active]:bg-card data-[state=active]:text-foreground" value="borrow">Borrow</TabsTrigger>
-                  <TabsTrigger className="rounded-none bg-background py-3 text-[8px] uppercase tracking-[0.18em] data-[state=active]:bg-card data-[state=active]:text-foreground" value="reinvest">Reinvest</TabsTrigger>
-                  <TabsTrigger className="rounded-none bg-background py-3 text-[8px] uppercase tracking-[0.18em] data-[state=active]:bg-card data-[state=active]:text-foreground" value="repay">Repay</TabsTrigger>
-                  <TabsTrigger className="rounded-none bg-background py-3 text-[8px] uppercase tracking-[0.18em] data-[state=active]:bg-card data-[state=active]:text-foreground" value="withdraw">Withdraw</TabsTrigger>
+              <Tabs defaultValue="deposit">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="deposit">Deposit</TabsTrigger>
+                  <TabsTrigger value="borrow">Borrow</TabsTrigger>
+                  <TabsTrigger value="repay">Repay</TabsTrigger>
+                  <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="deposit" className="space-y-3">
@@ -250,70 +227,6 @@ export function MarketActionsCard({
                     <span className="text-primary">Interest rate: {(market.baseInterestRate * 100).toFixed(2)}% APR</span>
                     <span>Loan period: {market.loanTermMonths} months </span>
                     <span>Estimated total repayment: {projectedRepayment.totalRepayment.toFixed(4)} {debtSymbol} </span>
-                  </p>
-                </TabsContent>
-
-                <TabsContent value="reinvest" className="space-y-3">
-                  <div className="border border-border bg-muted/40 p-6">
-                    <div className="mb-4 text-[7px] uppercase tracking-[0.28em] text-muted-foreground">
-                      Reinvest your USDC
-                    </div>
-                    <div className="font-serif text-xl font-light text-foreground">
-                      Earn <span className="text-primary">{reinvestYieldPercentage.toFixed(1)}%</span> on your borrowed USDC
-                    </div>
-                    <p className="mt-3 text-[11px] leading-7 tracking-[0.04em] text-muted-foreground">
-                      You borrowed at {(market.baseInterestRate * 100).toFixed(1)}% APR. Reinvest in {reinvestTargetName} and aim for a{' '}
-                      <span className="text-primary">+{reinvestSpread.toFixed(1)}%</span> net spread without selling the original holding.
-                    </p>
-                    <div className="mt-5 grid gap-px bg-border text-xs sm:grid-cols-3">
-                      <div className="bg-card p-3">
-                        <p className="text-[7.5px] uppercase tracking-[0.2em] text-muted-foreground">Token Price</p>
-                        <p className="mt-2 font-serif text-lg font-light text-foreground">
-                          {reinvestTokenPrice.toFixed(2)} {debtSymbol}
-                        </p>
-                      </div>
-                      <div className="bg-card p-3">
-                        <p className="text-[7.5px] uppercase tracking-[0.2em] text-muted-foreground">Order Total</p>
-                        <p className="mt-2 font-serif text-lg font-light text-foreground">
-                          {reinvestTotalPrice.toFixed(2)} {debtSymbol}
-                        </p>
-                      </div>
-                      <div className="bg-card p-3">
-                        <p className="text-[7.5px] uppercase tracking-[0.2em] text-muted-foreground">Net Spread</p>
-                        <p className="mt-2 font-serif text-lg font-light text-primary">
-                          +{reinvestSpread.toFixed(1)}%
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.1"
-                      value={reinvestTokenAmount}
-                      onChange={(event) => setReinvestTokenAmount(event.target.value)}
-                      className="min-h-12 w-full border border-border bg-background px-4 py-2 text-center font-serif text-xl font-light text-foreground sm:w-40"
-                      data-testid="borrow-reinvest-token-amount"
-                    />
-                    <Button
-                      className="min-h-12 flex-1 rounded-none text-[8.5px] uppercase tracking-[0.24em]"
-                      onClick={() => {
-                        void onReinvest();
-                      }}
-                      disabled={loading === 'reinvest' || !debtAssetReady || safeReinvestTokenAmount <= 0}
-                      data-testid="borrow-reinvest-submit"
-                    >
-                      {loading === 'reinvest' ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Repeat2 className="mr-2 h-4 w-4" />
-                      )}
-                      Reinvest
-                    </Button>
-                  </div>
-                  <p className="text-[9px] tracking-[0.08em] text-muted-foreground">
-                    Amount is in {collateralSymbol}; payment is settled from available {debtSymbol}.
                   </p>
                 </TabsContent>
 
