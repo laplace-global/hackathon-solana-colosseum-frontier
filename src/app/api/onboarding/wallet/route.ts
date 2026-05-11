@@ -6,8 +6,8 @@ import {
   getAccountBalances,
   getAssetBySymbol,
   isValidChainAddress,
+  requestTestFunds,
   transferAsset,
-  transferNativeAsset,
 } from '@/lib/chain/client';
 import { buildAssetDefinitions } from '@/lib/chain/config';
 import { getTreasuryAccount } from '@/lib/chain/service-account';
@@ -54,7 +54,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const treasuryAccount = getTreasuryAccount();
     let usdcAsset: NonNullable<ReturnType<typeof getAssetBySymbol>> | null = null;
 
     if (fundUsdc) {
@@ -91,15 +90,11 @@ export async function POST(request: NextRequest) {
 
     const [solTransfer, usdcTransfer] = await Promise.all([
       solTopUpAmount
-        ? transferNativeAsset({
-            sourceSecret: treasuryAccount.secret,
-            destinationAddress: userAddress,
-            amount: solTopUpAmount,
-          })
+        ? requestTestFunds(userAddress, Number(solTopUpAmount))
         : Promise.resolve(null),
       usdcTopUpAmount && usdcAsset
         ? transferAsset({
-            sourceSecret: treasuryAccount.secret,
+            sourceSecret: getTreasuryAccount().secret,
             destinationAddress: userAddress,
             asset: usdcAsset,
             amount: usdcTopUpAmount,
@@ -114,7 +109,7 @@ export async function POST(request: NextRequest) {
         usdcTarget: ONBOARDING_USDC_TARGET,
         solAmount: solTopUpAmount ?? '0',
         usdcAmount: usdcTopUpAmount ?? '0',
-        solTxHash: solTransfer?.txHash ?? null,
+        solTxHash: solTransfer?.signature ?? null,
         usdcTxHash: usdcTransfer?.txHash ?? null,
       },
     });
