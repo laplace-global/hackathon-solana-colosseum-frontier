@@ -1,4 +1,4 @@
-# Laplace: a RWA netive marketplace and an On-Chain Credit & Lending protocol for Tokenized Real Estate on Solana
+# Laplace: a RWA native On-Chain Credit & Lending Protocol for Tokenized Real Estate on Solana
 
 Laplace is a Solana devnet MVP for turning premium real estate tokens into usable collateral. It connects property token purchase, wallet balances, lending supply, collateral deposit, USDC borrowing, repayment, and withdrawal in one working application.
 
