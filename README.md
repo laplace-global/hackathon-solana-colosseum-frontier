@@ -1,4 +1,4 @@
-# Laplace: On-Chain Credit Infrastructure for Tokenized Real Estate on Solana
+# Laplace: a RWA netive marketplace and an On-Chain Credit & Lending protocol for Tokenized Real Estate on Solana
 
 Laplace is a Solana devnet MVP for turning premium real estate tokens into usable collateral. It connects property token purchase, wallet balances, lending supply, collateral deposit, USDC borrowing, repayment, and withdrawal in one working application.
 
@@ -34,7 +34,7 @@ The bottleneck is no longer only token issuance. The missing layer is reusable c
 
 Laplace demonstrates a Solana-based credit layer for real estate RWAs:
 
-- Users acquire hotel-backed property tokens.
+- Users acquire real assets-backed property tokens.
 - Users lock property tokens as collateral by transferring them to a protocol-managed operator address.
 - Borrowers receive USDC from the treasury wallet within LTV limits.
 - Suppliers provide USDC liquidity and track supply positions.
@@ -568,6 +568,13 @@ pnpm build
 - Add compliance-aware investor onboarding.
 - Publish reproducible devnet transaction evidence for demo submissions.
 
+### Launch
+
+- May 2026: Live on devnet.
+- June 2026: Complete off-chain SPV setup.
+- July 2026: Register legal & title deed and product distribution.
+- August 2026: Launch on mainnet.
+
 ## 15. Tech Stack
 
 | Layer | Technology |
@@ -590,9 +597,10 @@ The key opportunity is to let investors keep exposure to real estate-backed toke
 
 Laplace can operate as protocol-based RWA credit infrastructure rather than a balance-sheet lender.
 
-Potential revenue streams:
+Revenue streams:
 
-- Credit execution fees for borrow, repay, collateral state transition, and liquidation events
+- Marketplace commission fee on sales, cherged by real estate developers
+- Credit protocol fees for borrow, repay, collateral state transition, and liquidation events
 - RWA onboarding and certification fees for property issuers
 - Institutional API access for lenders and asset platforms
 - Treasury or reserve spreads where legally and operationally permitted
@@ -612,22 +620,26 @@ Production deployment requires:
 - Disclosure and risk documentation for investors and lenders
 - Independent legal, tax, and security review
 
-Laplace's intended role is protocol and infrastructure coordination: structuring tokenized real estate collateral workflows, anchoring transaction evidence on-chain, and exposing verifiable credit state to approved participants.
+Laplace's intended role is protocol and infrastructure coordination: structuring tokenized real estate collateral workflows, anchoring transaction evidence on-chain, and exposing verifiable credit state to approved participants with licensed partners, fully complient.
 
 ## 19. Team
 
-Team and partner details should be kept current in the hackathon submission materials. The repository currently focuses on the working Solana devnet MVP and technical documentation.
+Yusuke Hirota (Founder & CEO): 10 years AI and blockchain business & technical background (biz dev, product, marketing, engneering). Ex-Amazon.
+Johnathan Froeming (CTO): 15 years full-stack engineering. Ex-Amazon. Ex-bitbank (the largest crypto exchange in Japan).
+Rindo Katsura (Tech Leads): 15 years full-stack engineering.
 
 ## 20. Quick Links
 
 - GitHub: `git@github.com:laplace-global/hackathon-solana-colosseum-frontier.git`
 - Local app: `https://localhost:3001`
 - Solana Explorer: `https://explorer.solana.com/?cluster=devnet`
+- Website: `https://www.laplacetoken.com/`
+- X: `https://x.com/laplace_global`
 
 ## 21. Status
 
-- Development: Solana devnet MVP
+- Development: Launched Solana devnet MVP (May 2026)
 - Chain state: SOL and SPL token transfers on devnet
 - Credit state: App-managed Postgres lending ledger
 - Liquidation: Out of scope for current MVP
-- Next step: production wallet signing, smart-contract-backed collateral, and published transaction evidence
+- Next step: production wallet signing, smart-contract-backed collateral, published transaction evidence, and launch on main-net (August 2026)
