@@ -4,6 +4,10 @@ Laplace is a Solana devnet MVP for turning premium real estate tokens into usabl
 
 Built for Solana Frontier Hackathon (April 6 - May 11, 2026).
 
+Website: `https://www.laplacetoken.com/`
+Pitch Video: `https://www.youtube.com/watch?v=p5Fy0A139i4`
+X: `https://x.com/laplace_global`
+
 ## 1. Project Overview
 
 Tokenized real estate is easy to display but hard to reuse financially. Laplace focuses on the next step: allowing tokenized property exposure to support credit flows without forcing investors to sell the underlying asset.
