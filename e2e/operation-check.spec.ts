@@ -10,6 +10,7 @@ const BORROW_AMOUNT = '50';
 const REINVEST_BORROW_AMOUNT = '100';
 const REINVEST_TOKEN_AMOUNT = '1';
 const WITHDRAW_AMOUNT = '10';
+const ONBOARDING_USDC_TARGET = 500_000;
 
 const MARKET_ID = 'market-sail';
 const ASSETS = {
@@ -243,7 +244,9 @@ async function installOperationMocks(page: Page, state: OperationState) {
       assumeEmptyWallet?: boolean;
     };
     const solTopUpAmount = body.assumeEmptyWallet ? 0.05 : Math.max(0, 0.05 - state.sol);
-    const usdcTopUpAmount = body.assumeEmptyWallet ? 10_000 : Math.max(0, 10_000 - state.usdc);
+    const usdcTopUpAmount = body.assumeEmptyWallet
+      ? ONBOARDING_USDC_TARGET
+      : Math.max(0, ONBOARDING_USDC_TARGET - state.usdc);
 
     state.address = body.userAddress ?? state.address;
     if (body.fundSol) state.sol += solTopUpAmount;
@@ -255,7 +258,7 @@ async function installOperationMocks(page: Page, state: OperationState) {
         success: true,
         data: {
           solTarget: '0.05',
-          usdcTarget: '10000',
+          usdcTarget: String(ONBOARDING_USDC_TARGET),
           solAmount: body.fundSol ? String(solTopUpAmount) : '0',
           usdcAmount: body.fundUsdc ? String(usdcTopUpAmount) : '0',
           solTxHash: body.fundSol ? 'onboarding-sol-tx' : null,
@@ -544,7 +547,7 @@ test('first-time user can create an account, invest, deposit collateral, and bor
 
   expect(state.address).toBeTruthy();
   expect(state.sol).toBe(0.05);
-  expect(state.usdc).toBe(10_000);
+  expect(state.usdc).toBe(ONBOARDING_USDC_TARGET);
   expect(state.onboardingFunded).toBe(true);
 
   await page.getByTestId('purchase-open-dialog').click();
@@ -630,7 +633,7 @@ test('hotel detail Buy Tokens purchase continues through collateral, borrow, and
   await waitForToast(page, 'Reinvest complete');
 
   expect(state.sail).toBe(1);
-  expect(state.usdc).toBe(10_000);
+  expect(state.usdc).toBe(ONBOARDING_USDC_TARGET);
 });
 
 test('guided connect-to-reinvest flow carries the user from purchase into collateral, borrow, and reinvest', async ({ page }) => {
@@ -684,7 +687,7 @@ test('guided connect-to-reinvest flow carries the user from purchase into collat
   await expect(page.getByTestId('borrow-reinvest-submit')).toBeEnabled({ timeout: 30_000 });
 
   expect(state.sail).toBe(1);
-  expect(state.usdc).toBe(10_000);
+  expect(state.usdc).toBe(ONBOARDING_USDC_TARGET);
 });
 
 test('local operation flow reaches purchase, lend, borrow, repay, and withdraw checks', async ({ page }) => {
@@ -715,7 +718,7 @@ test('local operation flow reaches purchase, lend, borrow, repay, and withdraw c
   await page.getByTestId('login-google').click();
   await waitForToast(page, 'Welcome to LAPLACE!');
   expect(state.sol).toBe(0.05);
-  expect(state.usdc).toBe(10_000);
+  expect(state.usdc).toBe(ONBOARDING_USDC_TARGET);
 
   await page.getByTestId('purchase-open-dialog').click();
   await expect(page.getByText('Confirm Token Purchase')).toBeVisible();
