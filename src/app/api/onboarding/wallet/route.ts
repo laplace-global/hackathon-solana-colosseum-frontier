@@ -17,7 +17,7 @@ import { withDemoTokenAssetDefinitions } from '@/lib/assets/demo-token-assets';
 import type { AssetBalance } from '@/lib/chain/types';
 
 const ONBOARDING_SOL_TARGET = '0.05';
-const ONBOARDING_USDC_TARGET = '10000';
+const ONBOARDING_USDC_TARGET = '500000';
 
 function toBoolean(value: unknown): boolean {
   return value === true;
