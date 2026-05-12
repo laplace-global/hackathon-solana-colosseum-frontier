@@ -4,9 +4,9 @@ Laplace is a Solana devnet MVP for turning premium real estate tokens into usabl
 
 Built for Solana Frontier Hackathon (April 6 - May 11, 2026).
 
-- Website: `https://www.laplacetoken.com/`
-- Pitch Video: `https://www.youtube.com/watch?v=p5Fy0A139i4`
-- X: `https://x.com/laplace_global`
+- Website: [`https://www.laplacetoken.com/`](https://www.laplacetoken.com/)
+- Pitch Video: [`https://www.youtube.com/watch?v=p5Fy0A139i4`](https://www.youtube.com/watch?v=p5Fy0A139i4)
+- X: [`https://x.com/laplace_global`](https://x.com/laplace_global)
 
 ## 1. Project Overview
 
