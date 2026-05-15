@@ -130,6 +130,33 @@ describe('SOL fee top-up', () => {
     }
   });
 
+  it('times out best-effort Treasury replenishment before a hung airdrop blocks the caller', async () => {
+    const originalWarn = console.warn;
+    console.warn = () => {};
+
+    try {
+      const startedAt = Date.now();
+      const result = await replenishTreasurySolBestEffort(
+        { timeoutMs: 20 },
+        {
+          getSolBalance: async () => ({ lamports: 4_000_000_000, solAmount: 4 }),
+          getTreasuryAddress: () => 'treasury-address',
+          getTreasurySecret: () => 'treasury-secret',
+          getReserveSecret: () => null,
+          transferNativeAsset: async () => {
+            throw new Error('reserve should not be used');
+          },
+          requestTestFunds: () => new Promise(() => {}),
+        }
+      );
+
+      assert.equal(result, null);
+      assert.ok(Date.now() - startedAt < 1_000);
+    } finally {
+      console.warn = originalWarn;
+    }
+  });
+
   it('replenishes Treasury before topping up a user wallet', async () => {
     const transfers: Array<{ sourceSecret: string; destinationAddress: string; amount: string }> = [];
 

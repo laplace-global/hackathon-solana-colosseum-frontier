@@ -13,11 +13,21 @@ describe('onboarding wallet route', () => {
     assert.match(source, /const ONBOARDING_USDC_TARGET = '500000';/);
   });
 
-  it('tries a devnet airdrop before falling back to the Treasury wallet', () => {
+  it('tops onboarding wallets up to the guided collateral target', () => {
+    assert.match(source, /const ONBOARDING_COLLATERAL_TARGET = '10';/);
+    assert.match(source, /collateralSymbols/);
+    assert.match(source, /collateralTransfers/);
+    assert.match(source, /collateralTxHashes/);
+  });
+
+  it('uses the Treasury wallet before falling back to devnet airdrop', () => {
     assert.match(source, /requestTestFunds/);
-    assert.match(source, /requestTestFunds\(userAddress, Number\(amount\)\)/);
-    assert.match(source, /catch \(airdropError\)/);
+    assert.match(source, /catch \(treasuryError\)/);
     assert.match(source, /transferNativeAsset/);
     assert.match(source, /sourceSecret: getTreasurySecret\(\)/);
+    assert.ok(
+      source.indexOf('transferNativeAsset({') <
+        source.indexOf('requestTestFunds(userAddress, Number(amount))')
+    );
   });
 });

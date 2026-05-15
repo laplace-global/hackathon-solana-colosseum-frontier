@@ -11,6 +11,7 @@ const REINVEST_BORROW_AMOUNT = '100';
 const REINVEST_TOKEN_AMOUNT = '1';
 const WITHDRAW_AMOUNT = '10';
 const ONBOARDING_USDC_TARGET = 500_000;
+const ONBOARDING_COLLATERAL_TARGET = 10;
 
 const MARKET_ID = 'market-sail';
 const ASSETS = {
@@ -241,16 +242,27 @@ async function installOperationMocks(page: Page, state: OperationState) {
       userAddress?: string;
       fundSol?: boolean;
       fundUsdc?: boolean;
+      collateralSymbols?: string[];
       assumeEmptyWallet?: boolean;
     };
     const solTopUpAmount = body.assumeEmptyWallet ? 0.05 : Math.max(0, 0.05 - state.sol);
     const usdcTopUpAmount = body.assumeEmptyWallet
       ? ONBOARDING_USDC_TARGET
       : Math.max(0, ONBOARDING_USDC_TARGET - state.usdc);
+    const collateralAmounts = Object.fromEntries(
+      (body.collateralSymbols ?? []).map((symbol) => {
+        const current = symbol === 'NYRA' ? state.nyra : state.sail;
+        return [symbol, body.assumeEmptyWallet ? ONBOARDING_COLLATERAL_TARGET : Math.max(0, ONBOARDING_COLLATERAL_TARGET - current)];
+      })
+    );
 
     state.address = body.userAddress ?? state.address;
     if (body.fundSol) state.sol += solTopUpAmount;
     if (body.fundUsdc) state.usdc += usdcTopUpAmount;
+    for (const [symbol, amount] of Object.entries(collateralAmounts)) {
+      if (symbol === 'NYRA') state.nyra += amount;
+      if (symbol === 'SAIL') state.sail += amount;
+    }
     if (body.fundSol || body.fundUsdc) state.onboardingFunded = true;
 
     await route.fulfill({
@@ -261,8 +273,13 @@ async function installOperationMocks(page: Page, state: OperationState) {
           usdcTarget: String(ONBOARDING_USDC_TARGET),
           solAmount: body.fundSol ? String(solTopUpAmount) : '0',
           usdcAmount: body.fundUsdc ? String(usdcTopUpAmount) : '0',
+          collateralTarget: String(ONBOARDING_COLLATERAL_TARGET),
+          collateralAmounts,
           solTxHash: body.fundSol ? 'onboarding-sol-tx' : null,
           usdcTxHash: body.fundUsdc ? 'onboarding-usdc-tx' : null,
+          collateralTxHashes: Object.fromEntries(
+            Object.keys(collateralAmounts).map((symbol) => [symbol, `onboarding-${symbol.toLowerCase()}-tx`])
+          ),
         },
       },
     });
@@ -632,7 +649,7 @@ test('hotel detail Buy Tokens purchase continues through collateral, borrow, and
   await page.getByTestId('borrow-reinvest-submit').click();
   await waitForToast(page, 'Reinvest complete');
 
-  expect(state.sail).toBe(1);
+  expect(state.sail).toBe(2);
   expect(state.usdc).toBe(ONBOARDING_USDC_TARGET);
 });
 
@@ -686,7 +703,7 @@ test('guided connect-to-reinvest flow carries the user from purchase into collat
   await waitForToast(page, 'Reinvest complete');
   await expect(page.getByTestId('borrow-reinvest-submit')).toBeEnabled({ timeout: 30_000 });
 
-  expect(state.sail).toBe(1);
+  expect(state.sail).toBe(ONBOARDING_COLLATERAL_TARGET + 1);
   expect(state.usdc).toBe(ONBOARDING_USDC_TARGET);
 });
 

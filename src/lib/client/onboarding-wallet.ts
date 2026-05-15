@@ -3,9 +3,11 @@ import {
   loadLocalAccountSecret,
   saveLocalAccountSecret,
 } from '@/lib/chain/storage';
+import { getPropertyTokenSymbol } from '@/data/property-tokens';
 import type { LocalAccount } from '@/lib/chain/types';
 
-export const ONBOARDING_WALLET_FUNDED_PREFIX = 'laplace.onboarding.wallet-funded:';
+export const ONBOARDING_WALLET_FUNDED_PREFIX = 'laplace.onboarding.wallet-funded:v2:';
+const DEFAULT_ONBOARDING_COLLATERAL_SYMBOL = 'SAIL';
 
 interface ProvisionResponse {
   success?: boolean;
@@ -32,6 +34,7 @@ export interface OnboardingWalletDependencies {
   connectLocalWallet: () => Promise<void>;
   createLocalAccount?: () => LocalAccount;
   fetch?: FetchLike;
+  getCurrentPath?: () => string;
   isWalletFunded?: (address: string) => boolean;
   loadLocalAccountSecret?: () => string | null;
   markWalletFunded?: (address: string) => void;
@@ -41,6 +44,21 @@ export interface OnboardingWalletDependencies {
 
 function isBrowser(): boolean {
   return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+}
+
+function getBrowserPath(): string {
+  if (typeof window === 'undefined') return '';
+  return `${window.location.pathname}${window.location.search}`;
+}
+
+export function getOnboardingCollateralSymbols(path: string): string[] {
+  const [pathname, query = ''] = path.split('?');
+  const params = new URLSearchParams(query);
+  const queryHotelId = params.get('hotelId');
+  const pathHotelId = pathname.match(/^\/hotel\/([^/]+)/)?.[1] ?? null;
+  const symbol = getPropertyTokenSymbol(queryHotelId ?? pathHotelId ?? '');
+
+  return [symbol ?? DEFAULT_ONBOARDING_COLLATERAL_SYMBOL];
 }
 
 export function isOnboardingWalletFunded(address: string): boolean {
@@ -64,9 +82,10 @@ async function requestOnboardingFunding(params: {
   userAddress: string;
   fundSol: boolean;
   fundUsdc: boolean;
+  collateralSymbols: string[];
   assumeEmptyWallet: boolean;
 }): Promise<void> {
-  if (!params.fundSol && !params.fundUsdc) return;
+  if (!params.fundSol && !params.fundUsdc && params.collateralSymbols.length === 0) return;
 
   const response = await params.fetchImpl('/api/onboarding/wallet', {
     method: 'POST',
@@ -75,6 +94,7 @@ async function requestOnboardingFunding(params: {
       userAddress: params.userAddress,
       fundSol: params.fundSol,
       fundUsdc: params.fundUsdc,
+      collateralSymbols: params.collateralSymbols,
       assumeEmptyWallet: params.assumeEmptyWallet,
     }),
   });
@@ -93,6 +113,7 @@ export async function ensureOnboardingLocalWallet(
   const createAccount = dependencies.createLocalAccount ?? createLocalAccount;
   const restoreAccount = dependencies.restoreLocalAccount ?? restoreLocalAccount;
   const fetchImpl = dependencies.fetch ?? ((input, init) => fetch(input, init));
+  const getCurrentPath = dependencies.getCurrentPath ?? getBrowserPath;
   const isFunded = dependencies.isWalletFunded ?? isOnboardingWalletFunded;
   const markFunded = dependencies.markWalletFunded ?? markOnboardingWalletFunded;
 
@@ -110,6 +131,7 @@ export async function ensureOnboardingLocalWallet(
     userAddress: wallet.address,
     fundSol: shouldFundWallet,
     fundUsdc: shouldFundWallet,
+    collateralSymbols: shouldFundWallet ? getOnboardingCollateralSymbols(getCurrentPath()) : [],
     assumeEmptyWallet: createdWallet,
   });
 

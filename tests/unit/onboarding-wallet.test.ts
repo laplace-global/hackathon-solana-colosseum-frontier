@@ -57,6 +57,7 @@ describe('ensureOnboardingLocalWallet', () => {
           userAddress: 'created-address',
           fundSol: true,
           fundUsdc: true,
+          collateralSymbols: ['SAIL'],
           assumeEmptyWallet: true,
         },
       },
@@ -132,9 +133,42 @@ describe('ensureOnboardingLocalWallet', () => {
           userAddress: 'restored-address',
           fundSol: true,
           fundUsdc: true,
+          collateralSymbols: ['SAIL'],
           assumeEmptyWallet: false,
         },
       },
     ]);
+  });
+
+  it('requests the current hotel collateral token when onboarding starts on a hotel URL', async () => {
+    const requests: Array<{ url: string; body: unknown }> = [];
+
+    await ensureOnboardingLocalWallet({
+      connectLocalWallet: async () => {},
+      createLocalAccount: () => account('created-address', 'created-secret'),
+      fetch: async (url, init) => {
+        requests.push({
+          url: String(url),
+          body: init?.body ? JSON.parse(String(init.body)) : null,
+        });
+        return {
+          ok: true,
+          json: async () => ({ success: true }),
+        } as Response;
+      },
+      getCurrentPath: () => '/hotel/nyra/unit/nyra-a?flow=reinvest',
+      isWalletFunded: () => false,
+      loadLocalAccountSecret: () => null,
+      markWalletFunded: () => {},
+      saveLocalAccountSecret: () => {},
+    });
+
+    assert.deepEqual(requests[0]?.body, {
+      userAddress: 'created-address',
+      fundSol: true,
+      fundUsdc: true,
+      collateralSymbols: ['NYRA'],
+      assumeEmptyWallet: true,
+    });
   });
 });
