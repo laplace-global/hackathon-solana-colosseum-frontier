@@ -12,6 +12,8 @@ export const USER_SOL_FEE_MINIMUM = '0.01';
 export const USER_SOL_FEE_TARGET = '0.05';
 export const TREASURY_SOL_MINIMUM = '5';
 export const TREASURY_SOL_TARGET = '20';
+export const TREASURY_REPLENISHMENT_TIMEOUT_MS = 5_000;
+const TREASURY_REPLENISHMENT_TIMED_OUT = Symbol('treasury-replenishment-timed-out');
 
 type SolBalanceReader = typeof getSolBalance;
 type NativeAssetTransfer = (params: {
@@ -75,6 +77,20 @@ function getTreasuryTargetSol(value?: string): string {
   return value ?? process.env.TREASURY_SOL_TARGET ?? TREASURY_SOL_TARGET;
 }
 
+function getTreasuryReplenishmentTimeoutMs(value?: number): number {
+  const parsed =
+    value ??
+    (process.env.TREASURY_REPLENISHMENT_TIMEOUT_MS
+      ? Number(process.env.TREASURY_REPLENISHMENT_TIMEOUT_MS)
+      : TREASURY_REPLENISHMENT_TIMEOUT_MS);
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return TREASURY_REPLENISHMENT_TIMEOUT_MS;
+  }
+
+  return parsed;
+}
+
 export async function ensureTreasuryHasSolBalance(
   params: {
     minimumSol?: string;
@@ -136,14 +152,40 @@ export async function replenishTreasurySolBestEffort(
   params: {
     minimumSol?: string;
     targetSol?: string;
+    timeoutMs?: number;
   } = {},
   deps: SolFeeTopUpDependencies = DEFAULT_DEPS
 ): Promise<TreasurySolTopUpResult | null> {
+  const timeoutMs = getTreasuryReplenishmentTimeoutMs(params.timeoutMs);
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
   try {
-    return await ensureTreasuryHasSolBalance(params, deps);
+    const result = await Promise.race([
+      ensureTreasuryHasSolBalance(
+        {
+          minimumSol: params.minimumSol,
+          targetSol: params.targetSol,
+        },
+        deps
+      ),
+      new Promise<typeof TREASURY_REPLENISHMENT_TIMED_OUT>((resolve) => {
+        timeout = setTimeout(() => resolve(TREASURY_REPLENISHMENT_TIMED_OUT), timeoutMs);
+      }),
+    ]);
+
+    if (result === TREASURY_REPLENISHMENT_TIMED_OUT) {
+      console.warn(`Treasury SOL auto-replenishment timed out after ${timeoutMs}ms`);
+      return null;
+    }
+
+    return result;
   } catch (error) {
     console.warn('Treasury SOL auto-replenishment failed:', error);
     return null;
+  } finally {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
   }
 }
 
