@@ -185,15 +185,15 @@ export default function HomePage() {
           >
             <div className="flex items-center gap-3">
               <span className="h-px w-6 bg-primary" />
-              <p className="text-[7px] font-medium uppercase tracking-[0.36em] text-primary">
-                Founding Member Access
+              <p className="text-[14px] font-medium uppercase tracking-[0.36em] text-primary">
+                Early access · Now open
               </p>
             </div>
             <h2 className="mt-4 font-serif text-[clamp(22px,6vw,28px)] font-light leading-[1.12] tracking-normal text-white md:mt-5 md:text-[clamp(24px,2.8vw,32px)]">
-              The first to move. <em className="font-light">Own the most.</em>
+              The world's finest. <em className="font-light">Before anyone else.</em>
             </h2>
-            <p className="mt-3 max-w-sm text-[10px] leading-6 tracking-[0.05em] text-white/65 md:text-[11px] md:leading-7">
-              Priority access · Zero platform fees · Guaranteed spot
+            <p className="mt-3 max-w-sm text-[12px] leading-6 tracking-[0.05em] text-white/65 md:text-[11px] md:leading-7">
+              48h pre-sale · Zero fees · Guaranteed allocation
             </p>
             {heroWaitlistSubmitted ? (
               <div
@@ -238,8 +238,8 @@ export default function HomePage() {
                     {heroWaitlistError}
                   </p>
                 ) : null}
-                <p className="mt-2 text-[9px] tracking-[0.06em] text-white/35">
-                  No spam. Priority window closes soon.
+                <p className="mt-2 text-[14px] tracking-[0.06em] text-white/35">
+                  Invitation-only after launch.
                 </p>
               </div>
             )}
@@ -267,14 +267,14 @@ export default function HomePage() {
             >
               <Link
                 href="/discover"
-                className="group relative flex h-12 w-full items-center justify-center overflow-hidden border border-white/60 bg-[#050505] px-10 text-[8px] font-medium uppercase tracking-[0.24em] text-white transition-colors hover:border-white/80 sm:w-[230px] md:bg-transparent"
+                className="group relative flex h-12 w-full items-center justify-center overflow-hidden border border-white/60 bg-[#050505] px-10 text-[12px] font-medium uppercase tracking-[0.24em] text-white transition-colors hover:border-white/80 sm:w-[230px] md:bg-transparent"
               >
                 Explore Properties
                 <span className="absolute bottom-0 left-[-100%] hidden h-px w-full bg-primary transition-[left] duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:left-0 md:block" />
               </Link>
               <Link
                 href="#protocol"
-                className="text-[8px] uppercase tracking-[0.24em] text-white/42 transition-colors hover:text-white"
+                className="text-[12px] uppercase tracking-[0.24em] text-white/42 transition-colors hover:text-white"
               >
                 How It Works
               </Link>
@@ -293,7 +293,7 @@ export default function HomePage() {
           <div className="flex items-start gap-4 text-right">
             <LiveMetric value="1 SOL" label="Min. entry" accent />
             <MetricRule />
-            <LiveMetric value="9.2%" label="Avg. yield" />
+            <LiveMetric value="7.8%" label="Avg. yield" />
             <MetricRule />
             <LiveMetric value={String(catalogProperties.length)} label="Properties" />
           </div>
@@ -338,14 +338,14 @@ export default function HomePage() {
       <section id="portfolio" className="bg-[#FAFAF8] pt-20 md:pt-24">
         <div className="lp-scroll-reveal mb-12 flex flex-col items-start justify-between gap-6 px-5 md:flex-row md:items-end md:px-16" data-lp-reveal>
           <div>
-            <p className="mb-5 text-[7px] uppercase tracking-[0.32em] text-[#3D3B35]/70">Properties</p>
+            <p className="mb-5 text-[12px] uppercase tracking-[0.32em] text-[#3D3B35]/70">Properties</p>
             <h2 className="font-serif text-[clamp(34px,4.6vw,54px)] font-light leading-[1.08] text-[#1A1916]">
               The world's finest properties.
             </h2>
           </div>
           <Link
             href="/discover"
-            className="border-b border-transparent pb-1 text-[7.5px] uppercase tracking-[0.22em] text-[#1A1916]/45 transition-colors hover:border-[#1A1916]/25 hover:text-[#1A1916]"
+            className="border-b border-transparent pb-1 text-[12px] uppercase tracking-[0.22em] text-[#1A1916]/45 transition-colors hover:border-[#1A1916]/25 hover:text-[#1A1916]"
           >
             View All
           </Link>
