@@ -189,7 +189,7 @@ export default function HomePage() {
                 Early access · Now open
               </p>
             </div>
-            <h2 className="mt-4 font-serif text-[clamp(22px,6vw,28px)] font-light leading-[1.12] tracking-normal text-white md:mt-5 md:text-[clamp(24px,2.8vw,32px)]">
+            <h2 className="mt-4 font-serif text-[clamp(20px,6vw,26px)] font-light leading-[1.12] tracking-normal text-white md:mt-5 md:text-[clamp(22px,2.8vw,29px)]">
               The world's finest. <em className="font-light">Before anyone else.</em>
             </h2>
             <p className="mt-3 max-w-sm text-[12px] leading-6 tracking-[0.05em] text-white/65 md:text-[11px] md:leading-7">
@@ -267,14 +267,14 @@ export default function HomePage() {
             >
               <Link
                 href="/discover"
-                className="group relative flex h-12 w-full items-center justify-center overflow-hidden border border-white/60 bg-[#050505] px-10 text-[12px] font-medium uppercase tracking-[0.24em] text-white transition-colors hover:border-white/80 sm:w-[230px] md:bg-transparent"
+                className="group relative flex h-12 w-full items-center justify-center overflow-hidden border border-white/60 bg-[#050505] px-10 text-[10px] font-medium uppercase tracking-[0.24em] text-white transition-colors hover:border-white/80 sm:w-[230px] md:bg-transparent"
               >
                 Explore Properties
                 <span className="absolute bottom-0 left-[-100%] hidden h-px w-full bg-primary transition-[left] duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:left-0 md:block" />
               </Link>
               <Link
                 href="#protocol"
-                className="text-[12px] uppercase tracking-[0.24em] text-white/42 transition-colors hover:text-white"
+                className="text-[10px] uppercase tracking-[0.24em] text-white/42 transition-colors hover:text-white"
               >
                 How It Works
               </Link>
