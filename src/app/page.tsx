@@ -408,7 +408,7 @@ export default function HomePage() {
           className="absolute inset-[-10%] animate-[lp-kenburns_20s_ease-out_both] bg-cover bg-center opacity-55"
           style={{
             backgroundImage:
-              "url('https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1920&q=90&auto=format&fit=crop')",
+              "url(''/images/Hero_bottom.png'')",
           }}
         />
         <div className="absolute inset-0 bg-black/72" />
