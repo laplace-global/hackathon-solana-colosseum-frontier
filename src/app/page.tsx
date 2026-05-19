@@ -169,7 +169,7 @@ export default function HomePage() {
         >
           <source src="/videos/hero_sp.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,#0a0806_0%,#12100c_30%,#0d1a18_60%,#080c10_100%)] opacity-45" />
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,#0a0806_0%,#12100c_30%,#0d1a18_60%,#080c10_100%)] opacity-35" />
         <div className="absolute right-0 top-[-20%] h-[70%] w-[60%] animate-[lp-light-drift-1_12s_ease-in-out_infinite] bg-[radial-gradient(ellipse,rgba(200,160,80,.18)_0%,transparent_65%)] md:right-[-10%]" />
         <div className="absolute bottom-[-10%] left-0 h-[60%] w-[50%] animate-[lp-light-drift-2_16s_ease-in-out_infinite] bg-[radial-gradient(ellipse,rgba(20,180,160,.1)_0%,transparent_60%)] md:left-[-5%]" />
         <div className="lp-grain absolute inset-0 opacity-[.18]" />
@@ -411,7 +411,7 @@ export default function HomePage() {
               "url('/images/Hero_bottom.png')",
           }}
         />
-        <div className="absolute inset-0 bg-black/72" />
+        <div className="absolute inset-0 bg-black/50" />
         <div className="lp-scroll-reveal relative z-10 mx-auto max-w-[540px]" data-lp-reveal>
           <div className="mx-auto mb-9 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm text-[#0C0B09]">
             *
